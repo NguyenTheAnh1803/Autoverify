@@ -1,0 +1,11 @@
+{
+    "CustomFeatureList": [
+        {
+            "Index": 0,
+            "Name": "Y_X_Ratio",
+            "Desc": "",
+            "Script": "return  (G012_RealWidth / G013_RealHeight) *100\r\n",
+            "ID": "{1feb0b93-9f37-4706-acca-9c158991abdb}"
+        }
+    ]
+}

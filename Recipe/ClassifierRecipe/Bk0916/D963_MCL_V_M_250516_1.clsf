@@ -1,0 +1,329 @@
+{
+    "ClassifierRecipe": {
+        "Version": "",
+        "Rules": [
+            {
+                "Priority": 0,
+                "Name": "Light_Fail",
+                "GUID": "{5c117490-152e-4bae-a9a9-11326689753b}",
+                "DefectTypeID": "{c79df3f9-4f5a-43d3-821c-7f62c2cc03ba}",
+                "Script": "#MCL Block1\r\nMCL_Position1 = (G010_VpID==1) and (G008_LightID ==1) and (G009_RoiID == 24 or G009_RoiID == 25)\r\nMCL_Light1 = (G062_OrgGrayMax < 40 and G064_OrgGrayStdDev < 5)\r\nMCL_Block1 = MCL_Position1 and MCL_Light1\r\n\r\n#MCL Block2\r\nMCL_Position2 = (G010_VpID==1) and (G008_LightID ==2) and (G009_RoiID == 3 or G009_RoiID == 4)\r\nMCL_Light2 = (G062_OrgGrayMax < 30 and G064_OrgGrayStdDev < 5)\r\nMCL_Block2 = MCL_Position2 and MCL_Light2\r\n\r\n#MCL Block4\r\nMCL_Position4 = (G010_VpID==1) and (G008_LightID ==4) and (G009_RoiID == 8 or G009_RoiID == 9)\r\nMCL_Light4 = (G062_OrgGrayMax < 30 and G064_OrgGrayStdDev < 5)\r\nMCL_Block4 = MCL_Position4 and MCL_Light4\r\n\r\n#SR_Block1\r\nSR_Position1 = (G010_VpID==2) and (G008_LightID ==1) and (G009_RoiID == 2 or G009_RoiID == 3)\r\nSR_Light1 = (G062_OrgGrayMax < 50 and G064_OrgGrayStdDev < 5)\r\nSR_Block1 = SR_Position1 and SR_Light1\r\n\r\n#SR_Block2\r\nSR_Position2 = (G010_VpID==2) and (G008_LightID ==2) and (G009_RoiID == 5 or G009_RoiID == 6)\r\nSR_Light2 = (G062_OrgGrayMax < 40 and G064_OrgGrayStdDev < 5)\r\nSR_Block2 = SR_Position2 and SR_Light2\r\n\r\n#SR_Block3\r\nSR_Position3 = (G010_VpID==2) and (G008_LightID ==3) and (G009_RoiID == 2 or G009_RoiID == 3)\r\nSR_Light3 = (G062_OrgGrayMax < 40 and G064_OrgGrayStdDev < 5)\r\nSR_Block3 = SR_Position3 and SR_Light3\r\n\r\nreturn MCL_Block1 or MCL_Block2 or MCL_Block4 or SR_Block1 or SR_Block2 or SR_Block3"
+            },
+            {
+                "Priority": 1,
+                "Name": "DIC_Crack",
+                "GUID": "{925918e0-9daa-4ca2-b30b-48b7842a0a97}",
+                "DefectTypeID": "{12084a83-674f-4380-803b-071fa389f4e6}",
+                "Script": "if( G010_VpID != 1):\r\n\treturn False\r\n\r\nif( G008_LightID != 1 ):\r\n\treturn False\r\n\t\r\nif( G009_RoiID != 1 ):\r\n\treturn False\r\n\t\r\nif(G131_Real_DicToLeft>400 and G132_Real_DicToRigt>400 and G133_Real_DicToTop>400 and G134_Real_DicToBot>400 and G063_OrgGrayMin> 120):\r\n\treturn False\r\n\r\nIP_Cond = V003_VP_IP == 200131 or V003_VP_IP == 200231\r\nif(V003_VP_IP == 1):\r\n\tIP_Cond = 1\r\n\r\nVP_Info1 = (G008_LightID ==1) and (G009_RoiID == 1)\r\n\r\nCond1 = ( G020_PxlArea > 90 and (G017_PxlWidth > 20 or G018_PxlHeight > 20))\r\nCond2 = ( G038_PrcGrayMin <  45 )\r\n#Improve DIC CRACK line  240807\r\nAVG_Line = G018_PxlHeight /G017_PxlWidth\r\nif(G018_PxlHeight <  10):\r\n\tCond2 = (G038_PrcGrayMin < 220)\r\nif(Cond2 ==1 and AVG_Line < 0.8):\r\n\tCond1 = (G020_PxlArea > 20 )\r\n\t\r\nif(G017_PxlWidth > 80):\r\n\tCond2 = (G038_PrcGrayMin <  150)\r\n\r\nDL_Cond = MLClass01 > 90\r\n\r\nreturn IP_Cond and VP_Info1 and Cond1 and Cond2 and DL_Cond"
+            },
+            {
+                "Priority": 2,
+                "Name": "MCL_AA_Bubble",
+                "GUID": "{170ec3cb-88a2-4d69-ad3d-193b5fe0a470}",
+                "DefectTypeID": "{8298830f-717a-4050-9546-15e7b801c55b}",
+                "Script": "if(G003_GridType == 1 and G004_GridPos > 0 and G004_GridPos < 13 and L0131_real_bb_outer_wid < 145) :\r\n\treturn False\r\n\t\r\nif(G003_GridType == 1 and G004_GridPos > 12 and G004_GridPos < 25 and L0131_real_bb_outer_wid < 95) :\r\n\treturn False\r\n\t\r\nif(G003_GridType == 1 and G004_GridPos > 24 and G004_GridPos < 37 and L0131_real_bb_outer_wid < 65) :\r\n\treturn False\r\n\t\r\nif(G003_GridType == 1 and G004_GridPos > 36 and G004_GridPos < 49 and L0131_real_bb_outer_wid < 95) :\r\n\treturn False\r\n\t\r\nif(G003_GridType == 1 and G004_GridPos > 48 and G004_GridPos < 61 and L0131_real_bb_outer_wid < 145) :\r\n\treturn False\r\n\r\nif(G010_VpID != 1):\r\n\treturn False\r\n\r\n\t\r\nif( G008_LightID != 1):\r\n\treturn False\r\n\r\nif(G017_PxlWidth <=7 or G017_PxlWidth > 150):\r\n\treturn False\r\n\t\r\nIP_Cond = V003_VP_IP == 200131 or V003_VP_IP == 200231\r\nif(V003_VP_IP == 1):\r\n\tIP_Cond =1\r\n\t\r\nVP_Info1 = (G008_LightID ==1) and (G009_RoiID == 10)\r\n\r\nCond1 = (G017_PxlWidth > 8 and G017_PxlWidth < 150)\r\n\r\nCond2 = (G034_PrcGrayAvg < 100 and G037_PrcGrayMax > 45 and G038_PrcGrayMin < 70)\r\n\r\nDL_Cond = MLClass01 > 90\r\n\r\nreturn IP_Cond and VP_Info1 and Cond1 and Cond2 and DL_Cond\r\n\r\n\t\r\n\r\n"
+            },
+            {
+                "Priority": 3,
+                "Name": "MCL_Patten_Bubble",
+                "GUID": "{3f9449e1-50a8-4364-a5f7-3496dd3ecc1d}",
+                "DefectTypeID": "{1a8af134-d6e2-4fab-9942-19afe668d8e5}",
+                "Script": "if(G003_GridType == 1 and G004_GridPos > 0 and G004_GridPos < 13 and L0131_real_bb_outer_wid < 150) :\r\n\treturn False\r\n\t\r\nif(G003_GridType == 1 and G004_GridPos > 12 and G004_GridPos < 25 and L0131_real_bb_outer_wid < 100) :\r\n\treturn False\r\n\t\r\nif(G003_GridType == 1 and G004_GridPos > 24 and G004_GridPos < 37 and L0131_real_bb_outer_wid < 70) :\r\n\treturn False\r\n\t\r\nif(G003_GridType == 1 and G004_GridPos > 36 and G004_GridPos < 49 and L0131_real_bb_outer_wid < 100) :\r\n\treturn False\r\n\t\r\nif(G003_GridType == 1 and G004_GridPos > 48 and G004_GridPos < 61 and L0131_real_bb_outer_wid < 150) :\r\n\treturn False\r\n\r\nif( G010_VpID != 1):\r\n\treturn False\r\n\r\nif( G008_LightID != 1):\r\n\treturn False\r\n\t\r\nIP_Cond = V003_VP_IP == 200131 or V003_VP_IP == 200231\r\nif(V003_VP_IP == 1):\r\n\tIP_Cond =1\r\n\r\nVP_Info1 = (G008_LightID ==1) and (G009_RoiID > 3 and G009_RoiID <8)\r\n\r\nCond1 = (G017_PxlWidth > 6)\r\n\r\nDL_Cond = MLClass01 > 90\r\n\r\nreturn IP_Cond and VP_Info1 and Cond1 and DL_Cond\r\n\r\n"
+            },
+            {
+                "Priority": 4,
+                "Name": "MCL_Micro_Bubble",
+                "GUID": "{8199f69d-f41b-47c9-9b15-887454be26ab}",
+                "DefectTypeID": "{8298830f-717a-4050-9546-15e7b801c55b}",
+                "Script": "if(G003_GridType == 1 and G004_GridPos > 0 and G004_GridPos < 13 and L0131_real_bb_outer_wid < 150) :\r\n\treturn False\r\n\t\r\nif(G003_GridType == 1 and G004_GridPos > 12 and G004_GridPos < 25 and L0131_real_bb_outer_wid < 100) :\r\n\treturn False\r\n\t\r\nif(G003_GridType == 1 and G004_GridPos > 24 and G004_GridPos < 37 and L0131_real_bb_outer_wid < 70) :\r\n\treturn False\r\n\t\r\nif(G003_GridType == 1 and G004_GridPos > 36 and G004_GridPos < 49 and L0131_real_bb_outer_wid < 100) :\r\n\treturn False\r\n\t\r\nif(G003_GridType == 1 and G004_GridPos > 48 and G004_GridPos < 61 and L0131_real_bb_outer_wid < 150) :\r\n\treturn False\r\n\r\nif(G010_VpID != 1):\r\n\treturn False\r\n\r\nif(G008_LightID != 1):\r\n\treturn False\r\n\t\r\nIP_Cond = V003_VP_IP == 200131 or V003_VP_IP == 200231\r\nif(V003_VP_IP == 1):\r\n\tIP_Cond = 1\r\n\r\nVP_Info1 = (G008_LightID ==1) and (G009_RoiID == 8 or G009_RoiID == 9)\r\n\r\nCond1 = (G078_DFT_VAR_SRC > 2000)\r\n\r\nreturn IP_Cond and VP_Info1 and Cond1 "
+            },
+            {
+                "Priority": 5,
+                "Name": "MCL_Side_Bubble",
+                "GUID": "{33ecdc07-71e0-433a-bd97-f33ee01fcfdd}",
+                "DefectTypeID": "{64bff83e-03aa-4365-9534-6bad7cc53442}",
+                "Script": "if(G003_GridType == 1 and G004_GridPos > 0 and G004_GridPos < 13 and L0331_real_bb_outer_wid < 150) :\r\n\treturn False\r\n\t\r\nif(G003_GridType == 1 and G004_GridPos > 12 and G004_GridPos < 25 and L0331_real_bb_outer_wid < 100) :\r\n\treturn False\r\n\t\r\nif(G003_GridType == 1 and G004_GridPos > 24 and G004_GridPos < 37 and L0331_real_bb_outer_wid < 70) :\r\n\treturn False\r\n\t\r\nif(G003_GridType == 1 and G004_GridPos > 36 and G004_GridPos < 49 and L0331_real_bb_outer_wid < 100) :\r\n\treturn False\r\n\t\r\nif(G003_GridType == 1 and G004_GridPos > 48 and G004_GridPos < 61 and L0331_real_bb_outer_wid < 150) :\r\n\treturn False\r\n\r\nif( G010_VpID != 1):\r\n\treturn False\r\n\r\nif( G008_LightID != 3):\r\n\treturn False\r\n\t\r\nif( G018_PxlHeight <=8):\r\n\treturn False\r\n\t\r\nIP_Cond = V003_VP_IP == 200131 or V003_VP_IP == 200231\r\nif(V003_VP_IP == 1):\r\n\tIP_Cond =1\r\n\r\nVP_Info1 = (G008_LightID ==3) and (G009_RoiID ==1)\r\n\r\nCond1 = (G034_PrcGrayAvg > 65 and G034_PrcGrayAvg < 130)\r\n\r\nCond2 = (G061_OrgGrayAvg < 128) and (MLClass01 > 90)\r\n\r\nCond3 = (G038_PrcGrayMin < 45) and (G022_Circularity > 22) and (abs(G053_Correlation) < 80)\r\n\r\nreturn IP_Cond and VP_Info1 and Cond1 and Cond2 and Cond3"
+            },
+            {
+                "Priority": 6,
+                "Name": "MCL_Mid_Bubble",
+                "GUID": "{71a27807-b151-4d72-9d7f-ab0cc5a1a0ba}",
+                "DefectTypeID": "{944ec003-6fd2-41d3-abf7-5bc4618be640}",
+                "Script": "if(G003_GridType == 1 and G004_GridPos > 0 and G004_GridPos < 13 and L0331_real_bb_outer_wid < 150) :\r\n\treturn False\r\n\t\r\nif(G003_GridType == 1 and G004_GridPos > 12 and G004_GridPos < 25 and L0331_real_bb_outer_wid < 100) :\r\n\treturn False\r\n\t\r\nif(G003_GridType == 1 and G004_GridPos > 24 and G004_GridPos < 37 and L0331_real_bb_outer_wid < 70) :\r\n\treturn False\r\n\t\r\nif(G003_GridType == 1 and G004_GridPos > 36 and G004_GridPos < 49 and L0331_real_bb_outer_wid < 100) :\r\n\treturn False\r\n\t\r\nif(G003_GridType == 1 and G004_GridPos > 48 and G004_GridPos < 61 and L0331_real_bb_outer_wid < 150) :\r\n\treturn False\r\n\r\nif( G010_VpID != 1):\r\n\treturn False\r\n\r\nif( G008_LightID != 3):\r\n\treturn False\r\n\t\r\nif( G018_PxlHeight <=8):\r\n\treturn False\r\n\t\r\nIP_Cond = V003_VP_IP == 200131 or V003_VP_IP == 200231\r\nif(V003_VP_IP == 1):\r\n\tIP_Cond =1\r\n\r\nVP_Info1 = (G008_LightID ==3) and (G009_RoiID ==1)\r\n\r\nCond = (G034_PrcGrayAvg < 100 and G037_PrcGrayMax > 70 and G038_PrcGrayMin  < 80)\r\n\r\n#return IP_Cond and VP_Info1 and Cond\r\n\r\nreturn False"
+            },
+            {
+                "Priority": 7,
+                "Name": "CTQ_MCL_Overflow_UCL",
+                "GUID": "{9e0cdadb-73b5-4d9b-ae5b-23fc61902a75}",
+                "DefectTypeID": "{590cffea-1aa4-4c2e-b1d5-9ecb2618726c}",
+                "Script": "if(G010_VpID != 1):\r\n\treturn False\r\n\r\nIP_Cond = V003_VP_IP == 200131 or V003_VP_IP == 200231\r\nif(V003_VP_IP == 1):\r\n\tIP_Cond = 1\r\n\r\nROI_Info1 = (G008_LightID ==1) and (G009_RoiID > 25 and G009_RoiID < 31)\r\n\r\nSmall_1 = (G034_PrcGrayAvg < 120) and (G038_PrcGrayMin < 115) and (G017_PxlWidth > 12)\r\n\r\n#Improve deviating Mark align top & bot\r\n#if(abs(G228_SG_MCL_OF_LGD_Real_ResinWidth_05 - G220_SG_MCL_OF_LGD_Real_ResinWidth_01)> 100):\r\n\t#return False\r\n\t\r\n#if(G228_SG_MCL_OF_LGD_Real_ResinWidth_05 > G226_SG_MCL_OF_LGD_Real_ResinWidth_04 > G224_SG_MCL_OF_LGD_Real_ResinWidth_03 > G222_SG_MCL_OF_LGD_Real_ResinWidth_02 > G220_SG_MCL_OF_LGD_Real_ResinWidth_01 > 250):\r\n\t#return False\r\n#if(G228_SG_MCL_OF_LGD_Real_ResinWidth_05 < G226_SG_MCL_OF_LGD_Real_ResinWidth_04 < G224_SG_MCL_OF_LGD_Real_ResinWidth_03 < G222_SG_MCL_OF_LGD_Real_ResinWidth_02 < G220_SG_MCL_OF_LGD_Real_ResinWidth_01 and G220_SG_MCL_OF_LGD_Real_ResinWidth_01 > 250):\r\n\t#return False\r\n\t\r\n# Doi ung MCL Overflow miss align S16~S20 5 area Pol Overkill high rate (Upper Limit & Lower Limit)\r\n#if((G220_SG_MCL_OF_LGD_Real_ResinWidth_01 > 270 and G222_SG_MCL_OF_LGD_Real_ResinWidth_02 > 319 and G224_SG_MCL_OF_LGD_Real_ResinWidth_03 > 319 and G226_SG_MCL_OF_LGD_Real_ResinWidth_04 > 319 and G228_SG_MCL_OF_LGD_Real_ResinWidth_05 > 270)):\r\n\t#return False\r\n\r\nCount = 0\r\nif(G220_SG_MCL_OF_LGD_Real_ResinWidth_01  > 195 and G220_SG_MCL_OF_LGD_Real_ResinWidth_01 < 8888):\r\n\tCount = Count + 1\r\nif(G222_SG_MCL_OF_LGD_Real_ResinWidth_02  > 195 and G222_SG_MCL_OF_LGD_Real_ResinWidth_02 < 8888):\r\n\tCount = Count + 1\r\nif(G224_SG_MCL_OF_LGD_Real_ResinWidth_03 > 195 and G224_SG_MCL_OF_LGD_Real_ResinWidth_03 < 8888):\r\n\tCount = Count + 1\r\nif(G226_SG_MCL_OF_LGD_Real_ResinWidth_04  > 195 and G226_SG_MCL_OF_LGD_Real_ResinWidth_04 < 8888):\r\n\tCount = Count + 1\r\nif(G228_SG_MCL_OF_LGD_Real_ResinWidth_05  > 195 and G228_SG_MCL_OF_LGD_Real_ResinWidth_05 < 8888):\r\n\tCount = Count + 1\r\nif(Count < 3):\r\n\treturn False\r\n\r\n#Improve Overkill\t\r\nif((G205_SG_MCL_OF_Real_ResinMaxWidth2_01 - G204_SG_MCL_OF_Real_ResinMinWidth2_01) > 250):\r\n\treturn False\r\nif((G208_SG_MCL_OF_Real_ResinMaxWidth2_02 - G207_SG_MCL_OF_Real_ResinMinWidth2_02) > 250):\r\n\treturn False\r\nif((G211_SG_MCL_OF_Real_ResinMaxWidth2_03 - G210_SG_MCL_OF_Real_ResinMinWidth2_03) > 250):\r\n\treturn False\r\nif((G214_SG_MCL_OF_Real_ResinMaxWidth2_04 - G213_SG_MCL_OF_Real_ResinMinWidth2_04) > 250):\r\n\treturn False\r\nif((G217_SG_MCL_OF_Real_ResinMaxWidth2_05 - G216_SG_MCL_OF_Real_ResinMinWidth2_05) > 250):\r\n\treturn False\r\n\t\r\nCond1 = ROI_Info1 and Small_1\r\n\r\nreturn IP_Cond and Cond1"
+            },
+            {
+                "Priority": 8,
+                "Name": "CTQ_MCL_Overflow_LCL",
+                "GUID": "{b91ff4df-5a58-4f75-8457-37e80249384f}",
+                "DefectTypeID": "{590cffea-1aa4-4c2e-b1d5-9ecb2618726c}",
+                "Script": "if(G010_VpID != 1):\r\n\treturn False\r\n\r\nIP_Cond = V003_VP_IP == 200131 or V003_VP_IP == 200231\r\nif(V003_VP_IP == 1):\r\n\tIP_Cond = 1\r\n\r\nROI_Info1 = (G008_LightID ==1) and (G009_RoiID > 25 and G009_RoiID < 31)\r\n\r\nSmall_1 = (G034_PrcGrayAvg < 120) and (G038_PrcGrayMin < 115) and (G017_PxlWidth > 12)\r\n\r\n#Improve deviating Mark align top & bot\r\nif(abs(G228_SG_MCL_OF_LGD_Real_ResinWidth_05 - G220_SG_MCL_OF_LGD_Real_ResinWidth_01)> 100):\r\n\treturn False\r\n\r\nCount = 0\r\nif(G220_SG_MCL_OF_LGD_Real_ResinWidth_01  < 28 and G220_SG_MCL_OF_LGD_Real_ResinWidth_01 > 8):\r\n\tCount = Count + 1\r\nif(G224_SG_MCL_OF_LGD_Real_ResinWidth_03 < 28 and G224_SG_MCL_OF_LGD_Real_ResinWidth_03 > 8):\r\n\tCount = Count + 1\r\nif(G228_SG_MCL_OF_LGD_Real_ResinWidth_05  < 28 and G228_SG_MCL_OF_LGD_Real_ResinWidth_05 > 8):\r\n\tCount = Count + 1\r\nif(Count < 2):\r\n\treturn False\r\n\r\nCond1 = ROI_Info1 and Small_1\r\n\r\n#return IP_Cond and Cond1\r\nreturn False\r\n\r\n"
+            },
+            {
+                "Priority": 9,
+                "Name": "MCL_OverFlow2",
+                "GUID": "{1292baaa-a09e-4859-8343-195f2f6632a4}",
+                "DefectTypeID": "{590cffea-1aa4-4c2e-b1d5-9ecb2618726c}",
+                "Script": "if(G010_VpID != 1):\r\n\treturn False\r\n\r\nIP_Cond = V003_VP_IP == 200131 or V003_VP_IP == 200231\r\nif(V003_VP_IP == 1):\r\n\tIP_Cond = 1\r\n\r\nLGD_Resin = (G009_RoiID > 25 and G009_RoiID <  31)\r\nAvg_Resin = (G009_RoiID > 10 and G009_RoiID <  16)\r\n\r\nROI_Info1 = (G008_LightID ==1) and LGD_Resin and Avg_Resin\r\n\r\nSmall_1 = (G034_PrcGrayAvg <  120) and (G038_PrcGrayMin <  115) and (G017_PxlWidth > 12)\r\n\r\n#Improve Leakage caused by G22x features\r\nCount = 0\r\nif((G220_SG_MCL_OF_LGD_Real_ResinWidth_01 == 8888 and LGD_Resin) \r\nand (G206_SG_MCL_OF_Real_ResinAvgWidth2_01 > 195 and Avg_Resin)):\r\n\tCount = Count + 1\r\nif((G224_SG_MCL_OF_LGD_Real_ResinWidth_03 == 8888 and LGD_Resin)\r\nand (G212_SG_MCL_OF_Real_ResinAvgWidth2_03 > 195 and Avg_Resin)):\r\n\tCount = Count + 1\r\nif((G228_SG_MCL_OF_LGD_Real_ResinWidth_05 == 8888 and LGD_Resin)\r\nand (G218_SG_MCL_OF_Real_ResinAvgWidth2_05 > 195 and Avg_Resin)):\r\n\tCount = Count + 1\r\nif(Count <  1 ):\r\n\treturn False\r\n\t\r\nCond1 = ROI_Info1 and Small_1\r\n\r\nreturn IP_Cond and Cond1"
+            },
+            {
+                "Priority": 10,
+                "Name": "MCL_No_Resin",
+                "GUID": "{f1e1b647-7e34-4012-a06d-60a263a88c38}",
+                "DefectTypeID": "{685280ce-5a65-4e45-a969-0a47e1c00f8e}",
+                "Script": "if( G010_VpID != 1):\r\n\treturn False\r\n\r\nif( G008_LightID != 2 ):\r\n\treturn False\r\n\t\r\n#if( G024_InspPass != 1 ):\r\n\t#return False\r\n\r\nif(G020_PxlArea != 0 ):\r\n\treturn False\r\n\r\nif(G107_SG_MCL_Real_ResinAvgWidth01 != 0 or G110_SG_MCL_Real_ResinAvgWidth02 != 0 or G113_SG_MCL_Real_ResinAvgWidth03 != 0 or G116_SG_MCL_Real_ResinAvgWidth04 != 0 or G119_SG_MCL_Real_ResinAvgWidth05 != 0):\r\n       return False \r\n\t\r\nIP_Cond = V003_VP_IP == 200131 or V003_VP_IP == 200231\r\nif(V003_VP_IP == 1):\r\n\tIP_Cond = 1\r\n\r\nVP_Info1 = (G008_LightID ==2) and (G009_RoiID == 1)\r\n\t\r\nreturn IP_Cond and VP_Info1 \r\n\r\n\r\n\r\n"
+            },
+            {
+                "Priority": 11,
+                "Name": "MCL_Open",
+                "GUID": "{72c5db25-88d5-4082-8ad3-2e9a5b3e2225}",
+                "DefectTypeID": "{4694b1be-4925-4802-a19a-7896138cde8e}",
+                "Script": "if(G010_VpID != 1):\r\n\treturn False\r\n\r\nIP_Cond = V003_VP_IP == 200131 or V003_VP_IP == 200231\r\nif(V003_VP_IP == 1):\r\n\tIP_Cond = 1\r\n\r\nROI_Info1 = (G008_LightID ==1) and (G009_RoiID > 25 and G009_RoiID <  31)\r\n\r\nROI_Info2 = (G008_LightID == 3) and G009_RoiID == 5\r\n\r\nSmall_1 = (G034_PrcGrayAvg <  120) and (G038_PrcGrayMin <  115) and (G017_PxlWidth > 12)\r\n\r\nCount = 0\r\nif(G220_SG_MCL_OF_LGD_Real_ResinWidth_01  == 0 or G220_SG_MCL_OF_LGD_Real_ResinWidth_01 == 8888):\r\n\tCount = Count + 1\r\nif(G222_SG_MCL_OF_LGD_Real_ResinWidth_02  == 0 or G222_SG_MCL_OF_LGD_Real_ResinWidth_02 == 8888):\r\n\tCount = Count + 1\r\nif(G224_SG_MCL_OF_LGD_Real_ResinWidth_03 == 0 or G224_SG_MCL_OF_LGD_Real_ResinWidth_03 == 8888):\r\n\tCount = Count + 1\r\nif(G226_SG_MCL_OF_LGD_Real_ResinWidth_04  == 0 or G226_SG_MCL_OF_LGD_Real_ResinWidth_04 == 8888):\r\n\tCount = Count + 1\r\nif(G228_SG_MCL_OF_LGD_Real_ResinWidth_05  == 0 or G228_SG_MCL_OF_LGD_Real_ResinWidth_05 == 8888):\r\n\tCount = Count + 1\r\nif(Count <  5):\r\n\treturn False\r\n\r\nCond1 = ROI_Info1 and Small_1\r\n\r\nSmall_2 = (L0305_Prc_GrayAvgL <  120) and (G016_RealArea > 400)\r\n\r\nDL_Cond = (MLClass02 > 90)\r\n\r\nCond2 = ROI_Info2 and Small_2 and DL_Cond\r\n\r\nif(ROI_Info2 == 0):\r\n\tCond2 = ROI_Info1 and Small_1\r\n\r\nreturn IP_Cond and Cond1 and Cond2"
+            },
+            {
+                "Priority": 12,
+                "Name": "MCL_Open_3",
+                "GUID": "{0ae446cd-2713-430d-b1f2-6a09fbae8368}",
+                "DefectTypeID": "{4694b1be-4925-4802-a19a-7896138cde8e}",
+                "Script": "if( G010_VpID != 1):\r\n\treturn False\r\n\r\nif(G018_PxlHeight < 6):\r\n\treturn False\r\n\t\r\nIP_Cond = V003_VP_IP == 200131 or V003_VP_IP == 200231\r\nif(V003_VP_IP == 1):\r\n\tIP_Cond = 1\r\n\r\nLight_Info = (G008_LightID == 3)\r\n\r\nROI_Info = (G009_RoiID == 1 or G009_RoiID == 5)\r\n\r\nCond1 = (L0305_Prc_GrayAvgL < 73) and (G016_RealArea > 3000)\r\n\r\nDL_Cond = (MLClass01 > 90)\r\nif(G009_RoiID == 5):\r\n\tDL_Cond = (MLClass02 > 90)\r\n\r\nreturn Light_Info and ROI_Info and Cond1 and DL_Cond"
+            },
+            {
+                "Priority": 13,
+                "Name": "CTQ_MCL_Width_UCL",
+                "GUID": "{570df793-dc4c-4be4-ab4f-0f9cade84412}",
+                "DefectTypeID": "{1c361aad-06eb-495b-8eb7-dbc7e0ebfd8b}",
+                "Script": "if( G010_VpID != 1):\r\n\treturn False\r\n\r\nif( G008_LightID != 2 ):\r\n\treturn False\r\n\t\r\nIP_Cond = V003_VP_IP == 200131 or V003_VP_IP == 200231\r\nif(V003_VP_IP == 1):\r\n\tIP_Cond = 1\r\n\r\nVP_Info1 = (G008_LightID ==2) and (G009_RoiID == 2)\r\n\r\nCount = 0\r\nif(G107_SG_MCL_Real_ResinAvgWidth01 > 1327):\r\n\tCount = Count + 1\r\nif(G113_SG_MCL_Real_ResinAvgWidth03 > 1327):\r\n\tCount = Count + 1\r\nif(G119_SG_MCL_Real_ResinAvgWidth05 > 1327):\r\n\tCount = Count + 1\r\nif(Count < 1):\r\n\treturn False\r\n\t\r\nreturn IP_Cond and VP_Info1 and (Cond1 or Cond2)"
+            },
+            {
+                "Priority": 14,
+                "Name": "CTQ_MCL_Width_LCL",
+                "GUID": "{919029cc-5928-4a9c-ba0b-64530a009b09}",
+                "DefectTypeID": "{591f4c9b-13e3-448c-b6ef-7b2d0c7465c0}",
+                "Script": "if( G010_VpID != 1):\r\n\treturn False\r\n\r\nif( G008_LightID != 2 ):\r\n\treturn False\r\n\t\r\nIP_Cond = V003_VP_IP == 200131 or V003_VP_IP == 200231\r\nif(V003_VP_IP == 1):\r\n\tIP_Cond = 1\r\n\r\nVP_Info1 = (G008_LightID ==2) and (G009_RoiID == 2)\r\n\r\nCond1 = (G091_Real_ResinMaxWidth01> 0 or G094_Real_ResinMaxWidth02 > 0 or G097_Real_ResinMaxWidth03 > 0)\r\nCond2 = (G100_Real_ResinMaxWidth04> 0 or G103_Real_ResinMaxWidth05 > 0)\r\n\r\nCount = 0\r\nif(G107_SG_MCL_Real_ResinAvgWidth01< 927):\r\n\tCount = Count + 1\r\nif(G113_SG_MCL_Real_ResinAvgWidth03 < 927):\r\n\tCount = Count + 1\r\nif(G119_SG_MCL_Real_ResinAvgWidth05 < 927):\r\n\tCount = Count + 1\r\nif(Count < 1):\r\n\treturn False\r\n\r\nreturn IP_Cond and VP_Info1 and (Cond1 or Cond2)"
+            },
+            {
+                "Priority": 15,
+                "Name": "MCL_ResinSize_Left",
+                "GUID": "{9e108684-f59d-4e2b-b942-8395a0b69123}",
+                "DefectTypeID": "{765de540-f93d-420f-9679-9c025b4fc91d}",
+                "Script": "if( G010_VpID != 1):\r\n\treturn False\r\n\r\nif( G008_LightID != 2 ):\r\n\treturn False\r\n\t\r\nIP_Cond = V003_VP_IP == 200131 or V003_VP_IP == 200231\r\nif(V003_VP_IP == 1):\r\n\tIP_Cond = 1\r\n\r\nVP_Info1 = (G008_LightID ==2) and (G009_RoiID == 2)\r\n\r\nCond1 = (G091_Real_ResinMaxWidth01> 0 or G094_Real_ResinMaxWidth02 > 0 or G097_Real_ResinMaxWidth03 > 0)\r\nCond2 = (G100_Real_ResinMaxWidth04> 0 or G103_Real_ResinMaxWidth05 > 0)\r\n\r\nreturn IP_Cond and VP_Info1 and (Cond1 or Cond2)"
+            },
+            {
+                "Priority": 16,
+                "Name": "MCL_ResinSize_Right",
+                "GUID": "{0eb71247-79a5-45f2-a208-b3553503a748}",
+                "DefectTypeID": "{765de540-f93d-420f-9679-9c025b4fc91d}",
+                "Script": "if( G010_VpID != 1):\r\n\treturn False\r\n\r\nif( G008_LightID != 2 ):\r\n\treturn False\r\n\t\r\nIP_Cond = V003_VP_IP == 200131 or V003_VP_IP == 200231\r\nif(V003_VP_IP == 1):\r\n\tIP_Cond = 1\r\n\r\nVP_Info1 = (G008_LightID ==2) and (G009_RoiID == 1)\r\n\r\nCond1 = (G091_Real_ResinMaxWidth01> 0 or G094_Real_ResinMaxWidth02 > 0 or G097_Real_ResinMaxWidth03 > 0)\r\nCond2 = (G100_Real_ResinMaxWidth04> 0 or G103_Real_ResinMaxWidth05 > 0)\r\n\r\nreturn IP_Cond and VP_Info1 and (Cond1 or Cond2)"
+            },
+            {
+                "Priority": 17,
+                "Name": "MCL_Particle",
+                "GUID": "{a3604e05-9d99-4e58-ad82-b34039c47f03}",
+                "DefectTypeID": "{7e573fa0-959b-4d9c-ada6-ff684da101cc}",
+                "Script": "if(G017_PxlWidth ==0 or G018_PxlHeight ==0 or MLClass02==100):\r\n\treturn False\r\n\r\nif(G017_PxlWidth/G018_PxlHeight > 5):\r\n\treturn False\t\r\n\t\r\nParticle_Info1 = G010_VpID == 1 and G008_LightID == 3 and G009_RoiID == 2\r\nParticle1 = ( G017_PxlWidth > 20 and G018_PxlHeight > 20 and G020_PxlArea > 200)\t\r\nParticle2 = G034_PrcGrayAvg < 80 and G038_PrcGrayMin < 70 and G061_OrgGrayAvg < 80 and G063_OrgGrayMin < 50\r\n\r\nPL1 = Particle_Info1 and Particle1 and Particle2\r\n\r\nParticle_Info2 = G010_VpID == 1 and G008_LightID == 1 and G009_RoiID > 3 and G009_RoiID < 11\r\nParticle3 = ( G020_PxlArea > 200)\t\r\nParticle4 = G034_PrcGrayAvg < 100 and G038_PrcGrayMin < 80 and G061_OrgGrayAvg < 70 and G063_OrgGrayMin < 50\r\n\r\nPL2 =  Particle_Info2 and Particle3 and Particle4\r\n\r\nVP_Info1 = (G008_LightID ==1) and (G009_RoiID == 10)\r\n\r\nCond1 = (G017_PxlWidth > 150 )\r\n\r\nCond2 = (G034_PrcGrayAvg < 100 and G037_PrcGrayMax > 85 and G038_PrcGrayMin < 30)\r\n\r\nPL3 = VP_Info1 and Cond1 and Cond2\r\n\r\nreturn PL1 or PL2 or PL3"
+            },
+            {
+                "Priority": 18,
+                "Name": "SR_Bubble",
+                "GUID": "{612b12da-721c-4c7e-a54f-3e45caa4dd03}",
+                "DefectTypeID": "{1818ed35-1422-475d-871e-98e462c46c21}",
+                "Script": "if(G010_VpID != 2):\r\n\treturn False\r\n\r\nif(G008_LightID != 2):\r\n\treturn False\r\n\t\r\nif(G009_RoiID != 4):\r\n\treturn False\r\n\r\n\r\nIP_Cond = V003_VP_IP == 200132 or V003_VP_IP == 200232\r\nif(V003_VP_IP == 1):\r\n\tIP_Cond = 1\r\n\r\nVP_Info1 = (G008_LightID ==2) and (G009_RoiID == 4)\r\n\r\nCond1 = (G022_Circularity > 30)\r\n\r\nCond2 = (G063_OrgGrayMin > 65) and (L0231_real_bb_outer_wid > 100) \r\n\r\nDL_Cond = MLClass01 > 90\r\n\r\nreturn IP_Cond and VP_Info1 and Cond1 and Cond2 and DL_Cond"
+            },
+            {
+                "Priority": 19,
+                "Name": "SR_OverFlow_Top",
+                "GUID": "{bd2bcd4d-b430-4451-a6ef-73c88bd1ccf5}",
+                "DefectTypeID": "{35a91708-6e0a-49f8-8156-d88462dbb0d9}",
+                "Script": "if(G008_LightID != 1):\r\n\treturn False\r\n\r\nif(G017_PxlWidth ==0 or G018_PxlHeight ==0):\r\n\treturn False\r\n\t\r\nif(G037_PrcGrayMax > 170 and G034_PrcGrayAvg > 145 and G031_PxlAreaH < 250 and ((G017_PxlWidth/G018_PxlHeight) >3)):\r\n\treturn False\r\n\r\nMCL_Over_Info = G010_VpID == 1 and G008_LightID == 1 and G009_RoiID == 2\r\n\r\nMCL1 = (G034_PrcGrayAvg > 130 and G037_PrcGrayMax > 137)\r\nMCL2 = (G031_PxlAreaH > 100)\r\nMCL3 = (G017_PxlWidth > 5 and G018_PxlHeight > 5)\r\n\r\nreturn MCL_Over_Info and MCL1 and MCL2 and MCL3"
+            },
+            {
+                "Priority": 20,
+                "Name": "SR_OverFlow_Bot",
+                "GUID": "{9ec28d0a-472e-4c92-b032-ce5b76059637}",
+                "DefectTypeID": "{702e68da-c00d-4125-9508-5301d23785af}",
+                "Script": "if(G008_LightID != 1):\r\n\treturn False\r\n\r\nif(G017_PxlWidth ==0 or G018_PxlHeight ==0):\r\n\treturn False\r\n\t\r\nif(G037_PrcGrayMax > 170 and G034_PrcGrayAvg > 145 and G031_PxlAreaH < 250 and ((G017_PxlWidth/G018_PxlHeight) >3)):\r\n\treturn False\r\n\r\nMCL_Over_Info = G010_VpID == 1 and G008_LightID == 1 and  G009_RoiID == 3\r\n\r\nMCL1 = (G034_PrcGrayAvg > 130 and G037_PrcGrayMax > 137)\r\nMCL2 = (G031_PxlAreaH > 100)\r\nMCL3 = (G017_PxlWidth > 5 and G018_PxlHeight > 5)\r\n\r\nreturn MCL_Over_Info and MCL1 and MCL2 and MCL3"
+            },
+            {
+                "Priority": 21,
+                "Name": "SR_Resin_Check_Top",
+                "GUID": "{076eefa1-1276-478b-a131-b76e8fedeb7e}",
+                "DefectTypeID": "{6683782c-731e-43f4-9786-f5bcabb39df1}",
+                "Script": "if(G008_LightID != 2):\r\n\treturn False\r\n\r\nif(G017_PxlWidth == 0 or G018_PxlHeight == 0):\r\n\treturn False\t\r\n\r\nSROpen_Info = G010_VpID ==2 and G008_LightID ==2 and G009_RoiID == 1\r\n\r\nSRTop_Open = G087_SrTopEdgeToDefect <  50 and G017_PxlWidth > 6\r\n\r\nreturn SROpen_Info and SRTop_Open"
+            },
+            {
+                "Priority": 22,
+                "Name": "SR_Resin_Check_Bot",
+                "GUID": "{d5265e0d-84df-41d0-b2d3-6b5150b7bd16}",
+                "DefectTypeID": "{fb29ee52-e7ef-42e5-93a9-c9b2c2f05e53}",
+                "Script": "if(G008_LightID != 2):\r\n\treturn False\r\n\r\nif(G017_PxlWidth == 0 or G018_PxlHeight == 0):\r\n\treturn False\t\r\n\r\nSROpen_Info = G010_VpID ==2 and G008_LightID ==2 and G009_RoiID == 2\r\n\r\nSRBot_Open = G088_SrBotEdgeToDefect < 50 and G017_PxlWidth > 6\r\n\r\nreturn SROpen_Info and SRBot_Open"
+            },
+            {
+                "Priority": 23,
+                "Name": "SR_No_Resin",
+                "GUID": "{5f8275d7-5800-43f9-b923-19c26879a866}",
+                "DefectTypeID": "{3a0080ce-c1cc-4f9a-90d7-16d9afe3bdda}",
+                "Script": "if( G010_VpID != 2):\r\n\treturn False\r\n\r\nif( G008_LightID != 3 ):\r\n\treturn False\r\n\t\r\nif( G024_InspPass != 1 ):\r\n\treturn False\r\n\r\n\t\r\nIP_Cond = V003_VP_IP == 200132 or V003_VP_IP == 200232\r\nif(V003_VP_IP == 1):\r\n\tIP_Cond = 1\r\n\r\nVP_Info1 = (G008_LightID ==3) and (G009_RoiID == 1)\r\n\r\nreturn IP_Cond and VP_Info1 "
+            },
+            {
+                "Priority": 24,
+                "Name": "SR_Open_OverFlow",
+                "GUID": "{4b10c8db-27bc-4373-8ca1-8a47e9e36d14}",
+                "DefectTypeID": "{35a91708-6e0a-49f8-8156-d88462dbb0d9}",
+                "Script": "return False\r\n\r\nif( G010_VpID != 2):\r\n\treturn False\r\n\r\nif( G008_LightID != 2 ):\r\n\treturn False\r\n\t\r\nif(G062_OrgGrayMax > 250):\r\n\treturn False\r\n\t\r\nIP_Cond = V003_VP_IP == 200132 or V003_VP_IP == 200232\r\nif(V003_VP_IP == 1):\r\n\tIP_Cond = 1\r\n\r\nVP_Info1 = (G008_LightID ==2) and (G009_RoiID == 1 or G009_RoiID == 2)\r\n\r\nCond1 = ( G017_PxlWidth > 17)\t\r\nCond2 = ( G062_OrgGrayMax > 160 )\r\n\r\nreturn IP_Cond and VP_Info1 and Cond1 and Cond2 "
+            },
+            {
+                "Priority": 25,
+                "Name": "SR_Open_Left",
+                "GUID": "{362af3e7-9d11-4da7-9603-373395330ac5}",
+                "DefectTypeID": "{13dad756-f98a-4853-8f1b-c58b56672614}",
+                "Script": "if(G008_LightID != 2):\r\n\treturn False\r\n\r\nif(G017_PxlWidth == 0 or G018_PxlHeight == 0):\r\n\treturn False\t\r\n\r\nSROpen_Info = G010_VpID ==2 and G008_LightID ==2 and G009_RoiID == 2\r\n\r\nSRBot_Open = G088_SrBotEdgeToDefect > 600 and G017_PxlWidth > 6 and G006_PxlY > 6055 and G006_PxlY < 6104\r\n\r\nreturn SROpen_Info and SRBot_Open"
+            },
+            {
+                "Priority": 26,
+                "Name": "SR_Open_Right",
+                "GUID": "{bd4018dd-6c75-4bb4-b61c-a958468c110f}",
+                "DefectTypeID": "{312bb326-4fc7-4017-801f-c5066f1e0a91}",
+                "Script": "if(G008_LightID != 2):\r\n\treturn False\r\n\r\nif(G017_PxlWidth == 0 or G018_PxlHeight == 0):\r\n\treturn False\t\r\n\r\nSROpen_Info = G010_VpID ==2 and G008_LightID ==2 and G009_RoiID == 1\r\n\r\nSRTop_Open = G087_SrTopEdgeToDefect> 600 and G017_PxlWidth > 6 and G006_PxlY < 1055 and G006_PxlY > 1005\r\n\r\nreturn SROpen_Info and SRTop_Open"
+            },
+            {
+                "Priority": 27,
+                "Name": "DIC_Chipping",
+                "GUID": "{69e47c48-ee8f-47ee-8cbe-292ebae71113}",
+                "DefectTypeID": "{d8780a57-3ecc-40f4-9f7b-3392690816ab}",
+                "Script": "if( G010_VpID != 1):\r\n\treturn False\r\n\r\nif( G008_LightID != 1 ):\r\n\treturn False\r\n\t\r\nif( G009_RoiID != 1 ):\r\n\treturn False\r\n\r\nIP_Cond = V003_VP_IP == 200131 or V003_VP_IP == 200231\r\nif(V003_VP_IP == 1):\r\n\tIP_Cond = 1\r\n\r\nVP_Info1 = (G008_LightID ==1) and (G009_RoiID == 1)\r\n\r\nCond1 = ( G020_PxlArea < 91 and G018_PxlHeight >= 4 and G017_PxlWidth >= 4)\r\nCond2 = ( G038_PrcGrayMin < 60 )\r\nCond3 = (G131_Real_DicToLeft<10) or (G132_Real_DicToRigt<10) or (G133_Real_DicToTop<10) or (G134_Real_DicToBot<10)\r\nCond4 = ( G063_OrgGrayMin < 52)\r\nreturn IP_Cond and VP_Info1 and Cond1 and Cond2 and Cond3 and Cond4"
+            },
+            {
+                "Priority": 28,
+                "Name": "CTQ_SR_Width_UCL",
+                "GUID": "{15dbf238-7321-42aa-94dc-dcb8e73897f0}",
+                "DefectTypeID": "{46d07121-49b8-4d15-96d7-f32bdeb8bda4}",
+                "Script": "if( G010_VpID != 2):\r\n\treturn False\r\n\r\nif( G008_LightID != 3 ):\r\n\treturn False\r\n\t\r\nIP_Cond = V003_VP_IP == 200132 or V003_VP_IP == 200232\r\nif(V003_VP_IP == 1):\r\n\tIP_Cond = 1\r\n\r\nVP_Info1 = (G008_LightID ==3) and (G009_RoiID == 1)\r\n\r\nCount = 0\r\nif(G122_SG_SR_Real_ResinAvgWidth01 > 800):\r\n\tCount = Count + 1\r\nif(G125_SG_SR_Real_ResinAvgWidth02 > 800):\r\n\tCount = Count + 1\r\nif(G128_SG_SR_Real_ResinAvgWidth03 > 800):\r\n\tCount = Count + 1\r\nif(Count < 1):\r\n\treturn False\r\n\r\nreturn IP_Cond and VP_Info1"
+            },
+            {
+                "Priority": 29,
+                "Name": "CTQ_SR_Width_LCL",
+                "GUID": "{be176da9-cf78-4692-827c-948311cf6332}",
+                "DefectTypeID": "{46d07121-49b8-4d15-96d7-f32bdeb8bda4}",
+                "Script": "if( G010_VpID != 2):\r\n\treturn False\r\n\r\nif( G008_LightID != 3 ):\r\n\treturn False\r\n\t\r\nIP_Cond = V003_VP_IP == 200132 or V003_VP_IP == 200232\r\nif(V003_VP_IP == 1):\r\n\tIP_Cond = 1\r\n\r\nVP_Info1 = (G008_LightID ==3) and (G009_RoiID == 1)\r\n\r\nCond1 = (G091_Real_ResinMaxWidth01> 0 or G094_Real_ResinMaxWidth02 > 0 or G097_Real_ResinMaxWidth03 > 0)\r\nCond2 = (G100_Real_ResinMaxWidth04> 0 or G103_Real_ResinMaxWidth05 > 0)\r\n\r\nCount = 0\r\nif(G122_SG_SR_Real_ResinAvgWidth01 < 500):\r\n\tCount = Count + 1\r\nif(G125_SG_SR_Real_ResinAvgWidth02 < 500):\r\n\tCount = Count + 1\r\nif(G128_SG_SR_Real_ResinAvgWidth03 < 500):\r\n\tCount = Count + 1\r\nif(Count < 2):\r\n\treturn False\r\n\r\nreturn IP_Cond and VP_Info1 and (Cond1 or Cond2)"
+            },
+            {
+                "Priority": 30,
+                "Name": "SR_ResinSize",
+                "GUID": "{34cc5b62-4f73-4e3a-b069-17054f93e63b}",
+                "DefectTypeID": "{6ff71473-7726-445a-b94d-0c00cec013eb}",
+                "Script": "if( G010_VpID != 2):\r\n\treturn False\r\n\r\nif( G008_LightID != 3 ):\r\n\treturn False\r\n\t\r\nIP_Cond = V003_VP_IP == 200132 or V003_VP_IP == 200232\r\nif(V003_VP_IP == 1):\r\n\tIP_Cond = 1\r\n\r\nVP_Info1 = (G008_LightID ==3) and (G009_RoiID == 1)\r\n\r\nCond1 = (G091_Real_ResinMaxWidth01> 0 or G094_Real_ResinMaxWidth02 > 0 or G097_Real_ResinMaxWidth03 > 0)\r\nCond2 = (G100_Real_ResinMaxWidth04> 0 or G103_Real_ResinMaxWidth05 > 0)\r\n\r\nreturn IP_Cond and VP_Info1 and (Cond1 or Cond2)"
+            },
+            {
+                "Priority": 31,
+                "Name": "MCL_Overflow_FD",
+                "GUID": "{304bc7da-1e38-4c58-a3c2-b8e992f89364}",
+                "DefectTypeID": "{2b5e1d87-bbe3-4145-8b03-d3a3cf4e7c26}",
+                "Script": "if(G010_VpID != 1):\r\n\treturn False\r\n\r\nIP_Cond = V003_VP_IP == 200131 or V003_VP_IP == 200231\r\nif(V003_VP_IP == 1):\r\n\tIP_Cond = 1\r\n\r\nif(G008_LightID ==1 and G009_RoiID > 25 and G009_RoiID < 31):\r\n\tOver_FD = 1\r\n\r\nreturn IP_Cond and Over_FD \r\n"
+            },
+            {
+                "Priority": 32,
+                "Name": "DIC_Image",
+                "GUID": "{2be67703-cbed-4fb2-be5c-793bbafa0df2}",
+                "DefectTypeID": "{70ce21e9-8e97-491f-a188-c0c0ec3a3a96}",
+                "Script": "if( G010_VpID != 1):\r\n\treturn False\r\n\r\nif( G008_LightID != 1 ):\r\n\treturn False\r\n\t\r\nif( G009_RoiID != 22 ):\r\n\treturn False\r\n\r\nDefect_Info = G057_DefectType ==311 \r\n\r\nreturn Defect_Info"
+            },
+            {
+                "Priority": 33,
+                "Name": "CTQ_DIC_COP_UCL",
+                "GUID": "{158b8566-8524-418e-9c7e-b945aba4c963}",
+                "DefectTypeID": "{b5f99812-6918-4506-8187-5071efded762}",
+                "Script": "if( G010_VpID != 1):\r\n\treturn False\r\n\r\nif( G008_LightID != 1 ):\r\n\treturn False\r\n\t\r\nif( G009_RoiID != 22 ):\r\n\treturn False\r\n\r\nDefect_Info = G057_DefectType == 308\r\n\r\nCount = 0\r\nif(G139_Real_COP_SqOut_D2_Max > 200):\r\n\tCount = Count + 1\r\nif(G145_Real_COP_SqOut_D4_Max > 200):\r\n\tCount = Count + 1\r\nif(G151_Real_COP_SqOut_D6_Max > 200):\r\n\tCount = Count + 1\r\nif(G157_Real_COP_SqOut_D8_Max > 200):\r\n\tCount = Count + 1\t\r\nif(Count < 2):\r\n\treturn False\r\n\r\nreturn Defect_Info"
+            },
+            {
+                "Priority": 34,
+                "Name": "CTQ_DIC_COP_LCL",
+                "GUID": "{093742fb-cb7c-4268-94b7-aa137c59f239}",
+                "DefectTypeID": "{b5f99812-6918-4506-8187-5071efded762}",
+                "Script": "if( G010_VpID != 1):\r\n\treturn False\r\n\r\nif( G008_LightID != 1 ):\r\n\treturn False\r\n\t\r\nif( G009_RoiID != 22 ):\r\n\treturn False\r\n\r\nDefect_Info = G057_DefectType == 308\r\n\r\nCount = 0\r\nif(G139_Real_COP_SqOut_D2_Max < 30):\r\n\tCount = Count + 1\r\nif(G145_Real_COP_SqOut_D4_Max < 30):\r\n\tCount = Count + 1\r\nif(G151_Real_COP_SqOut_D6_Max < 30):\r\n\tCount = Count + 1\r\nif(G157_Real_COP_SqOut_D8_Max < 30):\r\n\tCount = Count + 1\t\r\nif(Count < 2):\r\n\treturn False\r\n\r\nreturn Defect_Info"
+            },
+            {
+                "Priority": 35,
+                "Name": "DIC_COP",
+                "GUID": "{e70d4a73-c11e-4fd2-9373-a4dc0f014232}",
+                "DefectTypeID": "{70ce21e9-8e97-491f-a188-c0c0ec3a3a96}",
+                "Script": "if( G010_VpID != 1):\r\n\treturn False\r\n\r\nif( G008_LightID != 1 ):\r\n\treturn False\r\n\t\r\nif( G009_RoiID != 22 ):\r\n\treturn False\r\n\r\nDefect_Info = G057_DefectType == 308\r\n\r\nCond1 = (G136_Real_COP_SqOut_D1_Max > 0 or G139_Real_COP_SqOut_D2_Max > 0 or G142_Real_COP_SqOut_D3_Max >0)\r\nCond2 = (G145_Real_COP_SqOut_D4_Max > 0 or G148_Real_COP_SqOut_D5_Max > 0 or G151_Real_COP_SqOut_D6_Max >0)\r\nCond3 = (G154_Real_COP_SqOut_D7_Max > 0 or G157_Real_COP_SqOut_D8_Max > 0)\r\n\r\nreturn (Cond1 or Cond2 or Cond3) and Defect_Info"
+            },
+            {
+                "Priority": 36,
+                "Name": "CTQ_DIC_FOP_UCL",
+                "GUID": "{3d55329f-959e-4b1a-a037-f626e295d823}",
+                "DefectTypeID": "{354bf8fe-fcb4-4eed-821d-f52478f6bef2}",
+                "Script": "if( G010_VpID != 1):\r\n\treturn False\r\n\r\nif( G008_LightID != 1):\r\n\treturn False\r\n\t\r\nif( G009_RoiID != 23):\r\n\treturn False\r\n\r\nVP_Info1 = (G008_LightID ==1) and (G009_RoiID == 23)\r\n\r\n#Old rules\r\n#Cond1 = (G160_Real_FOP_SqOut_Left_Max > 550 and G163_Real_FOP_SqOut_Right_Max > 550)\r\n#Cond2 = (G166_Real_FOP_SqOut_SPC_O_Max > 430 or G169_Real_FOP_SqOut_SPC_P_Max > 430)\r\n\r\nCount = 0\r\nif(G160_Real_FOP_SqOut_Left_Max > 550 and G163_Real_FOP_SqOut_Right_Max > 550):\r\n\tCount = Count + 1\r\nif(G166_Real_FOP_SqOut_SPC_O_Max > 430):\r\n\tCount = Count + 1\r\nif(G169_Real_FOP_SqOut_SPC_P_Max > 430):\r\n\tCount = Count + 1\t\r\nif(Count < 1):\r\n\treturn False\r\n\r\n#return Cond1 or Cond2\r\n\r\nreturn VP_Info1"
+            },
+            {
+                "Priority": 37,
+                "Name": "CTQ_DIC_FOP_UCL_GB",
+                "GUID": "{154fb795-0623-45ca-be11-0da340f2c581}",
+                "DefectTypeID": "{354bf8fe-fcb4-4eed-821d-f52478f6bef2}",
+                "Script": "if( G010_VpID != 1):\r\n\treturn False\r\n\r\nif( G008_LightID != 1):\r\n\treturn False\r\n\t\r\nif( G009_RoiID != 23):\r\n\treturn False\r\n\r\nVP_Info1 = (G008_LightID ==1) and (G009_RoiID == 23)\r\n\r\n#Old rules\r\n#Cond1 = (G160_Real_FOP_SqOut_Left_Max > 550 and G163_Real_FOP_SqOut_Right_Max > 550)\r\n#Cond2 = (G166_Real_FOP_SqOut_SPC_O_Max > 430 or G169_Real_FOP_SqOut_SPC_P_Max > 430)\r\n\r\nCount = 0\r\nif(G160_Real_FOP_SqOut_Left_Max > 550 and G163_Real_FOP_SqOut_Right_Max > 550):\r\n\tCount = Count + 1\r\nif(G166_Real_FOP_SqOut_SPC_O_Max > 387 and G166_Real_FOP_SqOut_SPC_O_Max < 430):\r\n\tCount = Count + 1\r\nif(G169_Real_FOP_SqOut_SPC_P_Max > 387 and G169_Real_FOP_SqOut_SPC_P_Max < 430):\r\n\tCount = Count + 1\t\r\nif(Count < 1):\r\n\treturn False\r\n\r\nreturn VP_Info1\r\n\r\n#return Cond1 or Cond2"
+            },
+            {
+                "Priority": 38,
+                "Name": "CTQ_DIC_FOP_LCL",
+                "GUID": "{4fc1cc4b-2f4b-497a-a7b0-ce23d65e8500}",
+                "DefectTypeID": "{354bf8fe-fcb4-4eed-821d-f52478f6bef2}",
+                "Script": "if( G010_VpID != 1):\r\n\treturn False\r\n\r\nif( G008_LightID != 1 ):\r\n\treturn False\r\n\t\r\nif( G009_RoiID != 23 ):\r\n\treturn False\r\n\r\n# Old rules\r\n#Cond1 = (G160_Real_FOP_SqOut_Left_Max < 30 or G163_Real_FOP_SqOut_Right_Max < 30)\r\n#Cond2 = (G166_Real_FOP_SqOut_SPC_O_Max < 30 or G169_Real_FOP_SqOut_SPC_P_Max < 30)\r\n\r\nCount = 0\r\nif(G160_Real_FOP_SqOut_Left_Max < 30):\r\n\tCount = Count + 1\r\nif(G163_Real_FOP_SqOut_Right_Max < 30):\r\n\tCount = Count + 1\r\nif(G166_Real_FOP_SqOut_SPC_O_Max < 30):\r\n\tCount = Count + 1\r\nif(G169_Real_FOP_SqOut_SPC_P_Max < 30):\r\n\tCount = Count + 1\t\r\nif(Count < 2):\r\n\treturn False\r\n\r\n#return Cond1 or Cond2"
+            },
+            {
+                "Priority": 39,
+                "Name": "DIC_FOP",
+                "GUID": "{fc13c881-c5ad-4516-a9c9-6c234855e3b9}",
+                "DefectTypeID": "{7f5ab98c-654c-418c-9730-6a35c7c08a02}",
+                "Script": "if( G010_VpID != 1):\r\n\treturn False\r\n\r\nif( G008_LightID != 1 ):\r\n\treturn False\r\n\t\r\nif( G009_RoiID != 23 ):\r\n\treturn False\r\n\r\nCond1 = (G159_Real_FOP_SqOut_Left_Min > 0 or G162_Real_FOP_SqOut_Right_Min > 0)\r\nCond2 = (G165_Real_FOP_SqOut_SPC_O_Min > 0 or G168_Real_FOP_SqOut_SPC_P_Min > 0)\r\n\r\nreturn Cond1 or Cond2"
+            },
+            {
+                "Priority": 40,
+                "Name": "MCL_BL_AA_Bubble",
+                "GUID": "{f119cedc-2465-4746-8533-5f1c3f310c5d}",
+                "DefectTypeID": "{e379ce50-7dc1-4562-be8a-4d7299925716}",
+                "Script": "if(G003_GridType == 1 and G004_GridPos > 0 and G004_GridPos < 13 and L0431_real_bb_outer_wid < 150) :\r\n\treturn False\r\n\t\r\nif(G003_GridType == 1 and G004_GridPos > 12 and G004_GridPos < 25 and L0431_real_bb_outer_wid < 100) :\r\n\treturn False\r\n\t\r\nif(G003_GridType == 1 and G004_GridPos > 24 and G004_GridPos < 37 and L0431_real_bb_outer_wid < 70) :\r\n\treturn False\r\n\t\r\nif(G003_GridType == 1 and G004_GridPos > 36 and G004_GridPos < 49 and L0431_real_bb_outer_wid< 100) :\r\n\treturn False\r\n\t\r\nif(G003_GridType == 1 and G004_GridPos > 48 and G004_GridPos < 61 and L0431_real_bb_outer_wid < 150) :\r\n\treturn False\r\n\r\nif(G010_VpID != 1):\r\n\treturn False\r\n\r\nif( G008_LightID != 4):\r\n\treturn False\r\n\r\nif(G017_PxlWidth <=7 or G017_PxlWidth > 150):\r\n\treturn False\r\n\t\r\nIP_Cond = V003_VP_IP == 200131 or V003_VP_IP == 200231\r\nif(V003_VP_IP == 1):\r\n\tIP_Cond =1\r\n\t\r\nVP_Info1 = (G008_LightID ==4) and (G009_RoiID == 5)\r\n\r\nCond1 = (G017_PxlWidth > 8 and G017_PxlWidth < 150)\r\n\r\nCond2 = (G034_PrcGrayAvg < 110 and G037_PrcGrayMax > 70 and G038_PrcGrayMin < 95)\r\n\r\nreturn VP_Info1 and Cond1 and Cond2 \r\n\r\n\t"
+            },
+            {
+                "Priority": 41,
+                "Name": "MCL_BL_Pattern_Bubble",
+                "GUID": "{f5aa01b6-5dd9-40e0-9dc3-6e9cee0ebaad}",
+                "DefectTypeID": "{e379ce50-7dc1-4562-be8a-4d7299925716}",
+                "Script": "if(G003_GridType == 1 and G004_GridPos > 0 and G004_GridPos < 13 and L0431_real_bb_outer_wid < 150):\r\n\treturn False\r\n\t\r\nif(G003_GridType == 1 and G004_GridPos > 12 and G004_GridPos < 25 and L0431_real_bb_outer_wid < 100):\r\n\treturn False\r\n\t\r\nif(G003_GridType == 1 and G004_GridPos > 24 and G004_GridPos < 37 and L0431_real_bb_outer_wid < 70):\r\n\treturn False\r\n\t\r\nif(G003_GridType == 1 and G004_GridPos > 36 and G004_GridPos < 49 and L0431_real_bb_outer_wid< 100):\r\n\treturn False\r\n\t\r\nif(G003_GridType == 1 and G004_GridPos > 48 and G004_GridPos < 61 and L0431_real_bb_outer_wid < 150):\r\n\treturn False\r\n\r\nif(G010_VpID != 1):\r\n\treturn False\r\n\r\n\r\nif(G033_NumContours > 2):\r\n\treturn False\r\n\t\r\nif( G008_LightID != 4):\r\n\treturn False\r\n\r\nif(G034_PrcGrayAvg > 100):\r\n\treturn False\r\n\t\r\n\r\nVP_Info1 = (G008_LightID ==4 and G009_RoiID == 1)\r\n\r\nCond1 = (G017_PxlWidth > 5)\r\n\r\nreturn VP_Info1 and Cond1 \r\n"
+            },
+            {
+                "Priority": 42,
+                "Name": "MCL_Pol_Abnormal",
+                "GUID": "{43b9fdf3-4230-4866-adc9-8e299662300d}",
+                "DefectTypeID": "{e379ce50-7dc1-4562-be8a-4d7299925716}",
+                "Script": "if( G010_VpID != 1):\r\n\treturn False\r\n\r\nif( G008_LightID != 3 ):\r\n\treturn False\r\n\t\r\nif( G009_RoiID != 1 ):\r\n\treturn False\r\n\r\nCond1 = ( G017_PxlWidth >= 18)\t\r\nCond2 = ( G031_PxlAreaH > 100 )\r\n\r\n\r\nreturn Cond1 and Cond2\r\n"
+            },
+            {
+                "Priority": 43,
+                "Name": "SR_Bonding_Particle",
+                "GUID": "{e6999333-5eb0-447d-81ce-6a46cfdf1284}",
+                "DefectTypeID": "{ab799243-aca9-4cbc-aec6-e97d84d74ad3}",
+                "Script": "if(G010_VpID != 2):\r\n\treturn False\r\n\r\nLight_Info = (G008_LightID == 2)\r\n \r\nROI_Info = (G009_RoiID >= 7)\r\n \r\nCond1 = (G035_PrcGrayAvgH > 205)\r\n \r\nCond2 = (G020_PxlArea > 50)\r\n\r\nreturn Light_Info and ROI_Info and Cond1 and Cond2"
+            },
+            {
+                "Priority": 43,
+                "Name": "CTQ_Measure",
+                "GUID": "{2b94fe36-f7b7-401e-9978-7b673ac7bdab}",
+                "DefectTypeID": "{e379ce50-7dc1-4562-be8a-4d7299925716}",
+                "Script": "if(G057_DefectType > 2999 and G057_DefectType < 3005):\r\n   return True"
+            },
+            {
+                "Priority": 44,
+                "Name": "FD",
+                "GUID": "{23d225ef-bfb0-45aa-976e-585231a18e0b}",
+                "DefectTypeID": "{e379ce50-7dc1-4562-be8a-4d7299925716}",
+                "Script": "return True"
+            }
+        ]
+    }
+}

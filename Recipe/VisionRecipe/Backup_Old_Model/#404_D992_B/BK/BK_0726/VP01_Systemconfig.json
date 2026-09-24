@@ -1,0 +1,164 @@
+{
+    "BlockEvent": {
+        "notifyOnBlockEvent": false
+    },
+    "CameraSetting": [
+        {
+            "Camera": [
+                {
+                    "Frame": [
+                    ]
+                }
+            ]
+        }
+    ],
+    "FrameEvent": {
+        "notifyOnGrabbed": false
+    },
+    "InspectionDataSaver" : [
+        {
+            "comment" : "dummy VP"
+        },
+        {
+            "SavePath" : "D:\\Data\\inspectionResult_vp01",
+            "SaveExtraPath" : "",
+            "FrameSaveEnabled" : false,
+            "FrameImageType": "jpg",
+            "BlockSaveEnabled" : false,
+            "BlockImageType": "bmp",
+            "blocks" : [],
+            "BlockSeqRange" :[],
+            "ImageEncryption": false,
+            "DefectInfoSaveEnabled" : true,
+            "DefectImageSaveEnabled" : false,
+            "DefectImageType" : "grey",
+            "DefectImageWidth" : 500,
+            "DefectImageHeight" :100
+        },
+        {
+            "SavePath" : "D:\\Data\\inspectionResult_vp02",
+            "SaveExtraPath" : "",
+            "FrameSaveEnabled" : false,
+            "FrameImageType": "bmp",
+            "BlockSaveEnabled" : false,
+            "BlockImageType": "bmp",
+            "blocks" : [],
+            "BlockSeqRange" :[],
+            "ImageEncryption": false,
+            "DefectInfoSaveEnabled" : true,
+            "DefectImageSaveEnabled" : false,
+            "DefectImageType" : "grey",
+            "DefectImageWidth" : 500,
+            "DefectImageHeight" :100
+        },
+		        {
+            "SavePath" : "D:\\Data\\inspectionResult_vp03",
+            "SaveExtraPath" : "",
+            "FrameSaveEnabled" : false,
+            "FrameImageType": "bmp",
+            "BlockSaveEnabled" : false,
+            "BlockImageType": "bmp",
+            "blocks" : [],
+            "BlockSeqRange" :[],
+            "ImageEncryption": false,
+            "DefectInfoSaveEnabled" : true,
+            "DefectImageSaveEnabled" : false,
+            "DefectImageType" : "grey",
+            "DefectImageWidth" : 500,
+            "DefectImageHeight" :100
+        }
+    ],
+    "InspectionResult": {
+        "resultSeperated": false
+    },
+    "InspectionRule": {
+        "BlockGeneratorRule": {
+            "block01": {
+				"FrameSeperatedId" : 0,
+                "capacity": 4,
+                "inputs": "c1f1",
+                "overlap": 0,
+                "skip": 0
+            },
+            "block02": {
+				"FrameSeperatedId" : 1,
+                "capacity": 4,
+                "inputs": "c1f1",
+                "overlap": 0,
+                "skip": 0
+            },
+            "block03": {
+				"FrameSeperatedId" : 2,
+                "capacity": 4,
+                "inputs": "c1f1",
+                "overlap": 0,
+                "skip": 0
+            },
+            "block04": {
+				"FrameSeperatedId" : 3,
+                "capacity": 4,
+                "inputs": "c1f1",
+                "overlap": 0,
+                "skip": 0
+            }
+        },
+        "JobDispatchRule": {
+            "insp_blk1": {
+                "ProcessName": "AREA_SCAN_MULTI_B01",
+                "inputs": [
+                    "block01",
+                    "roi",
+					"insp_blk4"
+                ]
+            },
+            "insp_blk2": {
+                "ProcessName": "AREA_SCAN_MULTI_B02",
+                "inputs": [
+                    "block02",
+                    "roi",
+					"insp_blk4"
+                ]
+            },
+            "insp_blk3": {
+                "ProcessName": "AREA_SCAN_MULTI_B03",
+                "inputs": [
+                    "block03",
+                    "roi",
+					"insp_blk4"
+                ]
+            },
+		    "insp_blk4": {
+                "ProcessName": "AREA_SCAN_MULTI_B04",
+                "inputs": [
+                    "block04",
+                    "roi"
+					
+                ]
+            },
+            "result_merge": {
+                "ProcessName": "DFT_MERGE",
+                "inputs": [
+                    "insp_blk1",
+                    "insp_blk2",
+                    "insp_blk3",
+					"insp_blk4"
+                ]
+            },
+            "roi": {
+                "ProcessName": "ROI_FITTING",
+                "inputs": [
+                    "block01"
+                ]
+            },
+            "save": {
+                "ProcessName": "IMAGE_SAVE",
+                "inputs": [
+                    "block01",
+                    "block02",
+                    "block03",
+				    "block04"
+                ]
+            }
+        }
+    }
+}

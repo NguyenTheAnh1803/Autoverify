@@ -1,0 +1,302 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import ReactECharts from 'echarts-for-react'
+import { productionFeatureApi } from '../../api'
+import { formatDate } from '../../format'
+import type { Notice, ProductionFeatureAnalysis, ProductionFeatureJob } from '../../types'
+import { SpcCharts } from './SpcCharts'
+import { EwmaChart, CusumChart } from './TimeSeriesCharts'
+import { PcaCharts } from './PcaCharts'
+
+type Period = '1d' | '1w' | '1m' | 'custom'
+
+export function ProductionFeatureCharts({ onNotice }: { onNotice: (notice: Notice) => void }) {
+  const [machineCode, setMachineCode] = useState('All')
+  const [lineCode, setLineCode] = useState('All')
+  const [period, setPeriod] = useState<Period>('1w')
+  const [defectName, setDefectName] = useState('All')
+  const [judge, setJudge] = useState('All')
+  const [fromUtc, setFromUtc] = useState('')
+  const [toUtc, setToUtc] = useState('')
+  const [job, setJob] = useState<ProductionFeatureJob | null>(null)
+  const [selectedFeature, setSelectedFeature] = useState('')
+  const [starting, setStarting] = useState(false)
+  const [analysisType, setAnalysisType] = useState<'SPC' | 'EWMA' | 'CUSUM' | 'PCA'>('SPC')
+  const [analysis, setAnalysis] = useState<ProductionFeatureAnalysis | null>(null)
+  const [analyzing, setAnalyzing] = useState(false)
+  const pollRef = useRef<number | null>(null)
+
+  const stopPolling = useCallback(() => {
+    if (pollRef.current) {
+      window.clearTimeout(pollRef.current)
+      pollRef.current = null
+    }
+  }, [])
+
+  const pollJob = useCallback((jobId: string) => {
+    stopPolling()
+    const tick = async () => {
+      try {
+        const next = await productionFeatureApi.getJob(jobId)
+        setJob(next)
+        setSelectedFeature((current) => current && (next.series ?? []).some((s) => s.featureName === current)
+          ? current
+          : next.series?.[0]?.featureName ?? '')
+        if (next.status === 'Queued' || next.status === 'Running') {
+          pollRef.current = window.setTimeout(() => void tick(), 1200)
+        }
+      } catch {
+        pollRef.current = window.setTimeout(() => void tick(), 2500)
+      }
+    }
+    void tick()
+  }, [stopPolling])
+
+  useEffect(() => {
+    const controller = new AbortController()
+    productionFeatureApi.facets(controller.signal)
+      .then((facets) => setJob((current) => current ?? facets))
+      .catch(() => undefined)
+    return () => {
+      controller.abort()
+      stopPolling()
+    }
+  }, [stopPolling])
+
+  async function startJob() {
+    if (period === 'custom' && (!fromUtc || !toUtc)) {
+      onNotice({ tone: 'error', message: 'Custom period requires both From and To.' })
+      return
+    }
+    setStarting(true)
+    try {
+      if (job?.jobId && (job.status === 'Queued' || job.status === 'Running')) {
+        await productionFeatureApi.cancelJob(job.jobId)
+      }
+      const next = await productionFeatureApi.startJob({
+        machineCode: machineCode === 'All' ? undefined : machineCode,
+        lineCode: lineCode === 'All' ? undefined : lineCode,
+        period,
+        fromUtc: period === 'custom' && fromUtc ? new Date(fromUtc).toISOString() : undefined,
+        toUtc: period === 'custom' && toUtc ? new Date(toUtc).toISOString() : undefined,
+        defectName: defectName === 'All' ? undefined : defectName,
+        judge: judge === 'All' ? undefined : judge,
+      })
+      setJob(next)
+      setSelectedFeature(next.series[0]?.featureName ?? '')
+      if (next.status === 'Queued' || next.status === 'Running') pollJob(next.jobId)
+    } catch (error) {
+      onNotice({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to start feature loading.' })
+    } finally {
+      setStarting(false)
+    }
+  }
+
+  async function runAnalysis(featureName = selectedFeature) {
+    if (!job?.jobId || (job.series ?? []).length === 0) return
+    setAnalyzing(true)
+    try {
+      const next = await productionFeatureApi.analyze(
+        job.jobId,
+        analysisType,
+        featureName || job.series?.[0]?.featureName,
+        analysisType === 'PCA' ? (job.series ?? []).slice(0, 4).map((s) => s.featureName) : undefined,
+      )
+      setAnalysis(next)
+    } catch (error) {
+      onNotice({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to analyze loaded features.' })
+    } finally {
+      setAnalyzing(false)
+    }
+  }
+
+  async function cancelJob() {
+    if (!job?.jobId) return
+    try {
+      const next = await productionFeatureApi.cancelJob(job.jobId)
+      setJob(next)
+      stopPolling()
+    } catch (error) {
+      onNotice({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to cancel feature loading.' })
+    }
+  }
+
+  const running = job?.status === 'Queued' || job?.status === 'Running'
+  const activeSeries = (job?.series ?? []).find((s) => s.featureName === selectedFeature) ?? job?.series?.[0]
+  const chartOption = useMemo(() => {
+    if (!activeSeries) return null
+    return {
+      color: ['#2563eb'],
+      tooltip: {
+        trigger: 'axis',
+        formatter: (params: Array<{ dataIndex: number }>) => {
+          const point = activeSeries.points[params[0]?.dataIndex]
+          if (!point) return ''
+          return [
+            `<strong>${activeSeries.featureName}</strong>`,
+            `Value: ${point.value}`,
+            `Key: ${point.keyId}`,
+            `Defect: ${point.defectName || '—'}`,
+            `Judge: ${point.judge || '—'}`,
+            formatDate(point.inspectedAtUtc),
+          ].join('<br/>')
+        },
+      },
+      grid: { left: 48, right: 24, top: 28, bottom: 48 },
+      xAxis: {
+        type: 'category',
+        data: activeSeries.points.map((p) => formatDate(p.inspectedAtUtc)),
+        axisLabel: { color: '#64748b', fontSize: 10, rotate: 35 },
+      },
+      yAxis: { type: 'value', name: activeSeries.featureName, axisLabel: { color: '#64748b' } },
+      series: [{
+        name: activeSeries.featureName,
+        type: 'line',
+        smooth: true,
+        showSymbol: activeSeries.points.length <= 80,
+        data: activeSeries.points.map((p) => p.value),
+        areaStyle: { color: 'rgba(37,99,235,.08)' },
+      }],
+    }
+  }, [activeSeries])
+
+  return (
+    <section className="panel production-feature-panel">
+      <div className="section-heading">
+        <div>
+          <p className="eyebrow">PACED FEATURE EXTRACTION</p>
+          <h2>Load production features in small batches</h2>
+        </div>
+        <div className="production-feature-actions">
+          <button type="button" disabled={starting} onClick={() => void startJob()}>
+            {starting ? 'Starting…' : running ? 'Restart load' : 'Start load'}
+          </button>
+          {running && (
+            <button type="button" className="ghost-button" onClick={() => void cancelJob()}>Stop</button>
+          )}
+        </div>
+      </div>
+
+      <div className="production-feature-filters compact">
+        <label>
+          Machine
+          <select value={machineCode} onChange={(e) => setMachineCode(e.target.value)}>
+            <option value="All">All</option>
+            {(job?.machines ?? []).map((item) => <option key={item} value={item}>{item}</option>)}
+          </select>
+        </label>
+        <label>
+          Line
+          <select value={lineCode} onChange={(e) => setLineCode(e.target.value)}>
+            <option value="All">All</option>
+            {(job?.lines ?? []).map((item) => <option key={item} value={item}>{item}</option>)}
+          </select>
+        </label>
+        <label>
+          Defect
+          <select value={defectName} onChange={(e) => setDefectName(e.target.value)}>
+            <option value="All">All names</option>
+            {(job?.defectNames ?? []).map((item) => <option key={item} value={item}>{item}</option>)}
+          </select>
+        </label>
+        <label>
+          Judge
+          <select value={judge} onChange={(e) => setJudge(e.target.value)}>
+            <option value="All">All</option>
+            {(job?.judges ?? []).map((item) => <option key={item} value={item}>{item}</option>)}
+          </select>
+        </label>
+        <label>
+          Period
+          <select value={period} onChange={(e) => setPeriod(e.target.value as Period)}>
+            <option value="1d">1d</option>
+            <option value="1w">1w</option>
+            <option value="1m">1m</option>
+            <option value="custom">Custom</option>
+          </select>
+        </label>
+        {period === 'custom' && (
+          <>
+            <label>
+              From
+              <input type="datetime-local" value={fromUtc} onChange={(e) => setFromUtc(e.target.value)} />
+            </label>
+            <label>
+              To
+              <input type="datetime-local" value={toUtc} onChange={(e) => setToUtc(e.target.value)} />
+            </label>
+          </>
+        )}
+      </div>
+
+      <div className="production-feature-progress">
+        <div className="production-feature-progress-bar">
+          <span style={{ width: `${Math.round((job?.progress ?? 0) * 100)}%` }} />
+        </div>
+        <p className="muted">{job?.message || 'Choose a scope, then start a paced SeaweedFS load.'}</p>
+        <div className="production-feature-summary">
+          <span>{job?.processedDefects.toLocaleString() ?? 0}/{job?.totalDefects.toLocaleString() ?? 0} defects</span>
+          <span>{job?.loadedPacks.toLocaleString() ?? 0} packs</span>
+          <span>{job?.featureValueCount.toLocaleString() ?? 0} values</span>
+          <span>{job?.featuresWithValues.toLocaleString() ?? 0} series</span>
+          <span>{job?.status || 'Idle'}</span>
+        </div>
+      </div>
+
+      {job && (job.series ?? []).length > 0 ? (
+        <>
+          <div className="production-feature-pills">
+            {(job.series ?? []).map((series) => (
+              <button
+                key={series.featureName}
+                type="button"
+                className={series.featureName === activeSeries?.featureName ? 'active' : ''}
+                onClick={() => {
+                  setSelectedFeature(series.featureName)
+                  if (job.jobId) void runAnalysis(series.featureName)
+                }}
+              >
+                {series.featureName}
+                <small>{series.sampleCount}</small>
+              </button>
+            ))}
+          </div>
+          {chartOption && <ReactECharts option={chartOption} style={{ height: 360, width: '100%' }} notMerge />}
+          {activeSeries && (
+            <p className="muted">
+              {activeSeries.featureName}: min {activeSeries.min.toFixed(3)}, mean {activeSeries.mean.toFixed(3)}, max {activeSeries.max.toFixed(3)}
+            </p>
+          )}
+
+          <div className="production-analysis-bar">
+            {(['SPC', 'EWMA', 'CUSUM', 'PCA'] as const).map((type) => (
+              <button
+                key={type}
+                type="button"
+                className={analysisType === type ? 'active' : ''}
+                onClick={() => {
+                  setAnalysisType(type)
+                  void runAnalysis(selectedFeature)
+                }}
+              >
+                {type}
+              </button>
+            ))}
+            <button type="button" className="ghost-button compact" disabled={analyzing} onClick={() => void runAnalysis()}>
+              {analyzing ? 'Analyzing…' : `Analyze ${selectedFeature || 'selected feature'}`}
+            </button>
+          </div>
+
+          {analysis?.spc && <SpcCharts result={analysis.spc} isNgOnlyDataset onSelectRowIndex={() => undefined} />}
+          {analysis?.ewma && <EwmaChart result={analysis.ewma} onSelectRowIndex={() => undefined} />}
+          {analysis?.cusum && <CusumChart result={analysis.cusum} onSelectRowIndex={() => undefined} />}
+          {analysis?.pca && <PcaCharts result={analysis.pca} onSelectRowIndex={() => undefined} />}
+        </>
+      ) : (
+        <div className="dashboard-report-empty">
+          <strong>Waiting for extracted values</strong>
+          <span>The worker reads small product-pack batches, extracts numbers, then the chart updates as each batch arrives.</span>
+        </div>
+      )}
+    </section>
+  )
+}

@@ -1,0 +1,3246 @@
+{
+    "Inspection": {
+        "Camera": [
+            {
+                "Common": {
+                    "BaseGrayBlk": [
+                        128,
+                        128,
+                        128
+                    ],
+                    "BlkImgProcessing": "Flip_Vert_Horz",
+                    "CtqFopSqOutOffset": 0,
+                    "D_SaveLineFitting": 0,
+                    "D_SaveMavinImage": 0,
+                    "D_SaveRefImage": 0,
+                    "EmptyPanelSkip": 1,
+                    "GridOffset": [
+                        4712,
+                        340,
+                        340,
+                        340
+                    ],
+                    "LightOffsetX": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "LightOffsetY": [
+                        0,
+                        -313,
+                        -230,
+                        -147
+                    ],
+                    "MCLMeasureXWidth": [
+                        2530,
+                        1300,
+                        1517,
+                        1300,
+                        2530
+                    ],
+                    "MCLMeasureYOffset": [
+                        14785,
+                        7000,
+                        0,
+                        7770,
+                        15532
+                    ],
+                    "M_Address_Inferencer": "192.168.200.131:8100",
+                    "M_Address_Local": "192.168.200.131:8101",
+                    "M_T_Classification": 2,
+                    "M_T_Classification_Model1": "AA_Bubble_BigC_250303",
+                    "M_T_Classification_Model2": "DIC_Crack_DL_250526_V1",
+                    "M_T_Classification_Model3": "MCL_Open_250610_V3",
+                    "M_T_Classification_PositionID1": [
+                        0,
+                        1
+                    ],
+                    "M_T_Classification_PositionID2": [
+                        0,
+                        2
+                    ],
+                    "M_T_Classification_PositionID3": [
+                        0,
+                        3
+                    ],
+                    "M_T_InferenceType": "Each",
+                    "M_T_SkipDefault": 1,
+                    "MaxDefectPerGlass": 2000,
+                    "MaxDefectPerLight": 1000,
+                    "MaxObjNum": 20000,
+                    "R_FitType": "Match_2P",
+                    "R_Fit_MatchingOp": "EDGE_ENHANCED",
+                    "Ref_MinScore": 50,
+                    "Ref_OffsetX": 128,
+                    "Ref_OffsetY": 128,
+                    "Resolution": 94400,
+                    "SGLineXOffset": 8920,
+                    "SaveMapBlk": 0,
+                    "SaveOrgBlk": [
+                        1,
+                        2,
+                        3,
+                        4
+                    ],
+                    "SaveResultBlk": 0,
+                    "SeqLightOffsetY2": [
+                        0,
+                        -7,
+                        -2,
+                        0
+                    ],
+                    "SeqOffsetX": [
+                        -77,
+                        2
+                    ],
+                    "SeqOffsetY": [
+                        10,
+                        6
+                    ],
+                    "SkipInspBlk": 0,
+                    "Yellow_Coverlay": 1,
+                    "refPos": [
+                        {
+                            "Height": 64,
+                            "Width": 64
+                        },
+                        {
+                            "Image": "e3l+fn19f3p6fHt9fIB9enp8eX56fn96en14f3l8en5+fn99enx9e3Z4eXh6eXt4eHh8eXl7eHp1dnp3enl4eXt8gHx+fX9+f39/g4KCf4CAgH1+fHx+e4B6fn5+gnuAfn19fn5+f319eYB8fYB6fH18gn18f3uAfnx7e358fXh9fH59gXp8gHx6e39+fHt9enl5ent7fn16f3Z/eYB8e3t5enx8fHx8enh5d312fHl8eHx4eX14e3t8fX58dnx4e3x+foN8en19f398foGBfX59fn1/f35/fXmEenx8e4CBfn+Af31+foF5gXuBgX6Cgn1/fH6CfoB7enx+fXh+en2Afn2AgX1+f35/fYCAgoCBgX99fX56e319eYB7eXuBgH5+fn18fHx7fHh+fHx8e3x6e3p6e3t9fnl3eHx6fHiBg35/fIJ/gYF+gH+CfoCCfoF/fn6FfoGDen5+gYB9hIJ/fn9+f4B+gH6BgX6Ce35+f31/f32BgX59f3x+ent+gYF9hH2Ae4B9gIJ8fX1/fX2AfHt6gnl8fX16gHuAfYKDgH59fX9+e3t6fXt9fH19fHx3fH58gH17eHt5f314e4B9gH+IgYF/gYCFfn+Bf3+BgYGAgIKAen+Afn9+fH9/gIF/fX5/fn19fX99fn19fH5+gHt9gX16en58eH5+e3x/gIF/gX18fH2BgH5/e4B7e3x9fX1/f3t9fH9+gXl8en98e35/e3p+fH58fnt8eHh5gHd9en5/e3t+dX15fXV8gn6BeIR9gHp+goGAgHyBfYCAgYKAgYKAfX98hH9+fHx+gH9+f35+f318gH2Cfn98fnx+en1+gH+AfH55gnl7fX2CgoF+fn+Df36DfX5/fH2Afn5/fn1+fnp+eYB7f3x9fH9+e3t9fX1/gHyBfH95eX57e3t3fnh+e3x7eHx8fHuEfoF7h32Cf4B9gXx+gH5+g39+gICAgIB9foB7gX6EgIB+fn+AfX6DfXp+fISAgn+Afn96gnWBfH18fnqAfoB+fX6AgH97fYOBgn+Ag4CGgoJ9fH5/f39+e31/e398gHx8fHx8fXx9gH5+eoB9f3p7fHx7fHx6e3t9e3iAfX57f357fnmDfIGAfoB/f4F+hIKDf35+f39/fX2AfYN/f35+fYB/fH6Af35+e35+g3+Af356gXt+f3t+gHl+fYN6fn1+f4F8f32Bgn18gn1+fn2BgX5+fn+AgH5/fn6CgXt9f359e31/fHp7fHt7fn59enp7gHh/eX17enl5dn13fHd3fYCAfn+AgIKBf4F7gXt+fYF+f31/gIJ/gIJ+gYB7f36BgH+AgX9+gn6Bf3+DfX9+fn+Afnx9f359fn15fXt5eH2AgH9/f35/gYF+fn5/fH1/fHp6eXx+fnt/f4KCfXx7fn59fYB/fXx+fHx+gXt9f3t/fXt8fHt9eXt6dHh6eXSAg4KAgIB/gIGAgHyBfn99f39+gn6Afn6BgoF+f358gXyBg4B+fX6BgXyAgIF/gIF+e36AfX6Bf4B5eHl9e3t5gYOCf4CAgIF9gHx/fIF8fYB9eXp4e31/enyBf4GAd3t+fnt6fX59fX16gHx8f397en58fIB9e4F5eHl1d3t9c36Af31+f3+AgX+DeoR9gX5/fH5/gYCAfn99gHx+gXp/fH+BgX58foR+e4J+f4KBfYN+gYN/f4F/gXl7fn97fXx9gICAgYF/f35+fXx9e3t8gn5+e35+g4F9e4KBgoN7en57en6CgH19fnl+gIJ/f398f318gH58gHx9f3t9fn95f4KCgYKCgH+Cf4F9g3x/gX6AgoGAgYF9fXyGioqMhn99fn5/gH5+gH99foGGgIGCfnx+f32AgoB/fHx9gXx8foCBf31+fn5+fXx6fXx7e4B+g4OCfIB/fX2Dmqqtq56OfXx5eHx+fHt6fXp8gXx+fX1/fnx9fn5+fX18eoB+fX1+goCCg3+AfoF9fXx+gH+Ae4B9e3qAf4GBlv///////62BfHl6enuAfXR8e4J9e4N/e3l7fn9+fYF/e39/gn5+fIB/gYF9fXx3eHx8e3x9gH95gn5/hYqNiKH9/////f2sfnp6fHh2enp3eHh8e3t/fX17eHl8fHp7e3p8enp6fH6CgoKCf39/gXx8fYCCfXx+fXuFhJ64ucDL/v//////rYSAfnp0dnx4e3l8f4CAfn19fHt7fX9/fnx9fHx5ent9gH9/f318fXt5enl6e3p8eoCBgI7D+f///P///v7//K+Denh6eXh2dXh5eXx8enl6dnZ7fHp7gH56eXh8eXp3gYGBgIGAfoB9e318fH18fn6AgIie+P3///////////+rg318enV5e3x5fnh9e3p8fXl4fX58e35/eXh4f31+fH5+f31+f3x+gHx8fH5/e3p7eX5/of7///7//v///vz+tYV4en14e3t5dH13fnx6f3t6eXp8fXx5fHl5eXt6e3x/gIKAgIB+gXt8gH99fX2Cf4B7haH///////3//////7eQh4aEgIeIg35/en9+foB9fX18foB/fH59fH59fXx+e32Cf35+fIGAfX18e318fn98hYCc/////v////7//P/CpaGgoqKmnZyVhn17fH5/fXt6e3x7enp6eXh9fH98fYB8foGDfn5/goF+fYB9gHyBgoGAk+b/////////////5PP5+fX0+fP11quBfH2AgXl/gX97fn+Af3x9fX97fHx5e4CAgX6AgX1+fHp6dnt6fn59f4WuwMLHx8jLx8bI4v///v7//f7///7Jg3t9foB4e3x6eHp7e357fHt+ent7e32AfoB/f3uCgH58fnx/fX54gX9/iIqQi4uFioiMltn9/v/7///+////4I1/fX98foJ7gXiCfX98ent6fXt8fHx8fXt/gIJ+fnt6eHx6fHp5fHp+f3mBfX+AfoOAg4vf/v///P/9/////+iLhH18gHx7e3d6enx6fHl6eXx6fHx7e358fn2AgXx8f3t8enx9fn6Afn6AfoB9fYKEgIKI2f/9/v///f////3fjX19gnp+gH1+fH9+fn99fXt+fH59fXt9foB8fH1+fYB8fXt8fXp/eoB9eX59fnt+fXyCjNv//////////v//v4SBf3t7e3l/dn52fXp9e3t4enh5d3x4enyBf399gX1/fH5/fX19en6AfoB9gIF+fn59govZ/v//////5uXf0pt9e3t8fn9/gH9+fX5/fn1+fH58e3l9fH58fnx+fn17f3p7ent+fXl6ent9fXmAf3p7en6H2//8///94pqPkIuDdn17eX17ent5eXh5eXh4enl7eXh1fXx/f4KDgYGCf4B6gHt+fH59f317fX1+fX99gICEjtn9///8/8+Og4ODf39+gn97f3x+fYB8fn57f317gXl5eXt8fIB+gn1+fH96fnp+eX2AfX16eXx6enp7ent6fonM//3//v/LiYB8fXl9fIF9fHt7fHx+fHx7eXx6eX94eXp9en97gX9/foB8g3qEd318fn19e3t9e3t5d3p4eXuFt///////qoF6fXl9eoJ+gH18fn5+fX59fX5+e3yAenp8e3t5fXuCfYB9fnqAe3t3fHd5fHp6enh6eHh8eHp7f5vj////4Jd9eHl4d3x8fXp7fH57e3h8fH19fHl7fnh4eX15f3uCgIF/gHx+fIJ7fn97fX58fn56e3p5fXd6e3mAkpielJeCenp6dXx5gnp/fX+AfHx5fn5/fXx5fn98e3x4eXl+fYJ7e4B8e3p/e3t8e3t5d3x+eXt8e3x6fX57eoCAgYeBfnV9eHh3fXt9enx8fHp6enx7e3p6eHx6enl4fnt/foODgoCDgX59fn17e3x9e3l9f3x/fXx8f4B/fH2CgIF/gn6Ben59fn6AfX19fnx8fH59fXx8fXp9eXt6eHt5eXp8gX+AgH9+en56e3p6fn97e3t4fnx8e4J/enh8g3d/fn9+fIB8fXt/fH57fH15enl9ent6eHp3enZ6e3h6fn1+fIF/fn19fn99fHx9fHx9e357fnp8fYB/fH+BfYCCfYB8fXx8f399foB9e35+f4B+fX17fXx8e3d8enl2e3t8fH19fX17e31+fXt7fHx6enl6e3x9fHx8e3h4eXd/fnh7enx8en59fHx+fHt8gH17eXt8en17e3p4fHt5d358fnyAfH9/fX1+f399fHx8eXx9fX96fX9/fn19fHt8gYJ+gYCBgH6Afn5/fn9+fIF9e3p8fnyAe3x7e3x9enp+fX5+gH+BgXx7fH19e3p6end7fXt+dXp7e3l5fHl4fHx/fn57enx8fXt9fXt9fXh7ent6enl3fHt9enx8fnp7en19fn2Af36Af35/f359fX97fX57f3l+fHx6e316eX1+gH58enl9fn59f399fn56fX1/fX16d3t6fHh7enx5ent/fn98gX9+fn18fX17e3t7eHt7e314e3p6eXp7eXl8e3t7e316fHl8e3x9fHx7eXt6enl7fXl6fHx5ent8eXt9fn5/f4GAgH59fX5+fXx9eXp8fH59fHp6eXt8e3t8fHp6fHyAfH15fX19fn58e3x7fHx6fYB+fn18e3p+fHt7e3p8e399f4B8e3x9fXx7fHp6enh7eX16e3p8fXl5e3p7e3t5end9fXp7enp7eHd7eXx+eXl7enp8eXp5fnp6eYGAgIGAfX2DgHuCe31+eXp4eH96fHx8eH19eX57enp8fnl8gHt7gXx8foCAfHp6en5+fHx8fH59eXx9fHt9e3l6f398fX9/gH98fHx6end5enp6fHh9eHd7e3p7enp5ent7e317eXp3eXl8e397end8fHx7ent8fnt7enp6e3t5foCBgIGAf4GBfX57gHZ9fHx3enp9f39+fXt/e3x9enuAgXt6fHt+gX58gH2DfX55enl9e3p9e39+fHt7fX19fHx9fn9/fXx+fX15fnp5enx6eXZ8d4B6e3t4f3d5e3d3enx5e318fn9/fX97fnp9fHl4fnt6fXl9e3l6e316ent5f4B9f4KBfn97gnqAe359fHmAeX99f3p8eoF5fH56enx8fH59fX98fn19fH1+gIF/e4B8fIB7f357fn6Ae319en19fH5/fn18fH18en15e3h6fHt5fnt4enl9eXp9e3p8e3p7eXp/fHp5d3p8fn18fnp7eHl8enx9enx6fXd6e4F+fYCCfn2Bfnx+fIB6fnt+e4B7fHt7d3t8fHx7fXx8en59f4B+fnx8e3x8f39+e35+fn19fn+AfXp9en55fHt7fHp6fX59fnt8d31+d316eXd3end8eXp5e3d6d3l4eHmAeXZ7eXd6eXh9eX15fXx3ent9fHt8e3l3e3l/ent4gH5/foF+f4F/fXt5gH59fXt7fHx9en93e3x8e3t8e3l8f3x8fXh+eX59f399fH19f4B/gHt9en19eHx8gYB6dw==",
+                            "Index": 0,
+                            "X": 1400,
+                            "Y": 1225
+                        },
+                        {
+                            "Image": "gIODiYOHg4WEhH+BfoSFgICDgYCDgoWBhIWFg4OEgoCBgYaEhISCgoSChISEhoaEhIOEgoWChISGh4OEh4eFhH19gYKFgIR/gYOHhIGEf4WDgYCCgYKCf3+AgH+AgYB+gH6CgYGBf4GBgoGDgIaCgoCAgoKEgoODhYJ/gISEhIR/goGFg4iHhoWFhX6Ag4CCgISBhoKGgoKChYOCg4SBf4CCgoGCgYGEgYSDhISHg4KDg4SGhYaFhoaJhYaHhoaGgoCBg4KAg4OGhIGBgoCBfISBfYSAhX+BgYWDgoOFgn+Ag4GAgYCBhH9/gX6Gg4WAhoCAg4GEg4WDh4OEhYSFh4KBgIiDiISFhIJ+h4KEhH1+gYKDgYaBhn+AgIV+gYGEhISDhIKCfYaAgoOBhIGDgoWDg4SChYSHh4OChoKEh4p/fn2Df4SChISDgoGAg3+CgIGCg3+BfYF/gYKEgH6Af4CAe32BgX2DhIKAgYOFhIOCg4SEg4OGhoWHgYiAhoGFg4SCiISIhoeIhoKFhIaEg4SGhISChIaFhIGAhn+EgIKAhYOFhYOGhoaEgYOChoKCgIaHhIWDhoOCh3+FgYqFhoCBgIWDhYOCgoOEgYWGfYKAgX1+foGFgH96fX2BfoR/gIGAhICBhYSDhYWGhYWChIWCgoKFhIWFhn+AhoaDg4R/gH+Eg4WFhISIgIqDg4R9hoKAgoGBg36AgH6EgIWDg4GFf4WBhoKChYKDg4WCg4OGhYKFhoiEhoqJhIKDhYuFf4B+gYCChIOEg4GFhISAgIKEgIB/gYB/f3+Af4R+hH2Ag4KFf4SAgIGBgYCEgoSAgIJ+gYGEfoGFgYCFfn+AgoOBgIGBgoSDhISAiIWHhoGChIB/foWBgn+BgIOCgoKAgn6EhH+Eg4aDhYSEhoaFgoKBgIKEhoWGiISBhYGEhoh+fX2AgYKFgoOEg4CAhIGEgICAgYGGfYJ+gICAgn6BfIB/hICCg4CBgoGAhIOEgYSGg4SCg4GEgH6DgH+Df4OAg4SChH+Bh4KGgYOEgoOHgoKFfoOBgYSAgoOAgISDg4SBhoKAhIaFgoGHgoODhIaEgYGEg4OGgoeEhYWEgYWDhIB/fH+Ag4aCiICFgYN9h31/gn+AgH+AgIF+goOAfoGFgoGCg4GDhISBgoKDg4eHgICBgICBg4GDgoOBfoN9goKAgoCDg4WGgoiHgYSDh4F/hICAf4F/foODgYKBgoODgoOBg4eDhoWJh4ODiH+NgoB/hoKBg4KCgIOEfYSEhICGgH1+gH1/hYSFgYaEgX+FgX99fX5/fn6AgYF/fX6BfnuAgX+EgoeBhIWEhoSEhoZ/goJ/f4F/g3+FgX6AhYCBgIB9gIB+gIWFhoSJhoOChYOAgn+EgoGEgYKChYV+foB/hISBhYOIgYOChH+GgYaDhoOGhIWEf4SAhYSDgIKCg4KBfn59foCAgIKEfoCBiXyAgYF9g4B/gnx9f3+DgICAfoOAgYSBhYOEgYOCgoeBh4OChISEgX5/fX+Bf398hH6Bf3+AfoCDhISGgIR/g4SFhIGAf4KBgIJ/foN8goWFhICGhYiKh4aGh4aEgYWBhoOCgYOCgoOFg4WEgoF/hoKEgX+BhIB8foKEgYGBgX+Gf4F8fX9/gH+Agn+CfoSAfIKEiYyMjIuFgICFgYGCfIaDgYSGhIKFiIGEgoV9gIOBfoN+f4KBhYGDgYOEg4CCiIeDg4GBhoOChYJ/g4KBgIF+jqavrbaljoGHg4KAhIaBhoaFhIOFhIaChISEgIKDhYGCfoB/foKDhYSDgYOEgYSCgYGBgH5+fX2Afn6BeH6Bg6bo/f//7quFfH6AhISAfod+hH99f4CDgYKBgYCDgIGAgn9+f4OEh4WGhYWEiX2IgYV/iH+DgH5/en9+eXt+gouy//////7AhH2DfYCIhoeBioeIhYWEhoSEhIGChYKDg4Z8fX2DgIN/g4ODhoCDf4WAf319fYKCfoF/hH+AgIKO0P/////+2o2Hf4d9g4N+hYGAhoOBgIKCg4WCfoGCg3+CgIaBgn2FgoeGhoSIg4WAhIV+fIWDgoeChYZ+iIKAldz//v7+/uOUi5CIiIWCjoOLhIWEgoOCg4SHhoGCg4SAgn9/fIB9g4CEg4WCg4KAf4GCgIOBf31/hIGBg36Hh5Da/v/8//z4rKSipI2AhYWEfoaDhIOFgoKChYOBgn+CgoOCfX2CgoaChISIgYZ/hYCHgYJ/g35/h4eIhYCAgYeV2P/8//v///////O6iYaJgoiCgYOChoSGhYiEgoSChIWHhYN/f36Dg4WDhISEg36ChYOAf4CAgoaHhYSCiX+Hktz///v////+////0paEhImFhIWEgYOBg4GEhH+BgYJ/gX9+gICAhIGFgYmEg4OBgoSCgoCBg4GDhoWIioeEhpHa//7////+/v7///KUiIeGhIeEhYiAg4GEgYOEhICAgoF+fYCAgISBhICAgYOEgoB/fX5/fH6DiYWHg4qJh4uN1//+/v/+/v//////k4OHhYWEg4N9gX6HgoGCgYB+gYN/g4CCg4OGg4WBf4KEg4F/foCEgYODipubl5yemZmdpNv/////////////9paIiYKFh4iDgYCFhoaDg4OEg4WFgoB/gIKBhIGCf32Bf31+fX2BgH6Fi7Xd7ezl5ujr5Orw/////////////8yIh4qFgoCFg4CCgIKChICBg4KDg4F8goKFhIaEhYSBg4KChIOAgoSFhZDk//////////v///z///////////a0i4eHg4aGhoKHgIeAh4iEgYGChoeDfH9+g4KFg4OEgYKBgYKCgIB/foSd//////////7///7Vsa+urayqqqujjISGiYCHg4aGgIeAhoKGgoCBgYODgIJ/fYODhYSDhYOCg4KBgYSEiIKIpf/9/////v7+//7/vpeSjoyMioqLjYmDhIiEioSJiIeGhYWFhoWFhoWEg4F/fHuCgYOBf4F+f4ODf3+DhIOGiab//v////z///3+/76OiIKChIWFhoKAgoiEgYOBg4SGg4OBhIaGg4KCg4J+f4J/h4WFhIKAf4WCgoSBgYCEgomc8f/////9//3///26jImKg4aAhYWEg4iFiIeDg4ODhYOGhYiJhIiIg4GGgX6AgIKFgoGBfXyCen57gH+CfoCDktr9///9//////39tImEf4GDhIKBgX+EgoSEg4OFhoOFgoWCg4GBgn+AgYGChYGGhoKIf4F8gYOBg3+EhoKGhYiqw8TH0v3//////7qHhIOEgn9/goB+hYaGhoaEh4eEh4WHg4OCf4GAg4CFgYGDgISDgoJ+fICAg4GCgYKCgoWGi5KQlab///////y6iICBf4R9fn2AfISGhYSGg4SChIKFg4SCgX9+gYJ/hIKEf4eChYeAgoZ9g3iGfoWAgn2DhYaJiY6f/v/////+uYmCg4GHf4KDhICFh4aFioiGhYeEh4SGhYWFgYWDhYeCgIKCgYaBg4CCfYB7fXuAgIOBh4WChISIkOH//v///amBf3+AfHp8gX18gYaHg4aDg4SChIGEg4WEg36BgIaGg4OChoKGh4GFgn6JgoN8goOAgoeEgIKAhYW+/f///+CTg356fH5+fXx8foGHioSGg4WFgoSDh4aIhYF/gISIhXyAg4CBgYN/g4N/goSAgn+AhIKBgYCEfYSEm9Xh2tyuhH56fXl/e4B/gIB/goeChoaIhIOAhISGhYB7fXyFhIB/hYCDgIGFgIOBg36EgH+AgoKDhISAfX1/hZeytrq4o4N9fXx+gH+BgYCAg4SGiIaIhoKChoOIhYSJgX+AhYWFgIJ/goGBg4CCfoB+gX99f4F/gIGBgoSDgYSHjo6MkIuEgoJ+fn5+gYCEg4WEg4WEhoSCg4WDhYWEg36Ce4SBhYGDgoOCgX9+f4KDhISEgISFfoKDgoKDhIOJh4aKio6HhoSHh4mIh4aDhISGhYWHhoiFhIaGhYWHhoqAg4CGfoSBf4B/gYGAgYF/f4F/gHx/f4CCg4F/f4CBfoSIiYaHg4WDg4KEhIKEhYOChIODg4CAgYGDgoSBhIGDhISBgIOEgoKCgIKDg4WFgoCDgIOAgYCEgYCBg4KCg4SCgX+FiIWBhoSChYSAg4aGhIWEhYaCgYOEg4KHg4WAgX1/iIaBf32BgH9/gIB/gIKAgoGDg4GAgH19f4B+gISEgYWBg4GDhYODgoaGgYKDgoCAgIKEgoKBhICAhYKDf4KBhIGEg4WAgX+EhISGg4aDgoODgoWAgIKChIWCgIOHh39/f4CDg4KFhYGBgoKGh4WDg4KCg4GBgYeBgoSDhoSGfn+Bg36Cf358hIKBgn2BgoKDg4CDfX+AgIGBgYCBgYB+gYN9hYWDgIOBgIGCg39/f4KCgoOAgX2GfoB/f4OFgH+Ah4OFhH58fYJ7hX+Eg4SCh3+DhoGHhoOEg4OGhIGChIB/foKBgoKDgoOCf4KDg4OFhYWFhYiDgYWCh4KHiIiDg4KHgIV+f3+AfIJ/f3+Eg4GBgYKBhIODg4CChICBgYKAg4B/fIGBg4GBgYCBf399f39/f3+DfoB/g4CDgYR+gYKBg4SHgX6CgX+CgYCDgoN+h4WChIKEgYWFgYSEgoOGg4ODhYB+f4GAgYOFh4OEgYKCgoKCh3+CgIWAhoKFg4SDhoWDhIJ+g4SBgoCChX5/fIOBfIF8fYGBgISDfYGBg4B/gIOBf4GBfn+BgYJ/gn6AgYKBgYWAfn+AgYCChIOCgISEgIKAgYODfoJ+f3+DgYR/gHyDf4R/g4WChISBg4KDhYR+gYqFg3+ChIKDgoJ/goSFhIKGhH+CgoZ/g4WFhoaCh4SHgYSDgXyDgH58f32GfYJ+goCDg4B+g4N/g3+Ag4ODfX+FgX58gYOAgoOAfoGCg4OBgoJ/gISEgH+Bg4KDgIaAg4KBgoB+goOBgoCAh4GHgoODhoCDhIOFhIOChYWAhISEgIODgoSDgIGCgoGCgYKEgYGDg4KGg4SCg4OAgIOGgIR/e4KAgX+BgIaGhIF+gXx+gn5+gYKEhICBhISEf4OBgoF/goKDgoCCgYOCg4CBhIKAgIGBfn+Bg4GEhYGAfoCDf4B+f4CBg4OGgn1/hH+EgYOBgoCEf4CEgYKDgYSEgIOBgoOBf4ODgoWEhoGFgYeBgIODhYGAg4KGhIZ/fomFhIOCgYJ/fX9+f4V8gYODfX2BfoB+gn1/goCBgnyCf4F+fHyChIODgYGEg4SChIGFgYF/f4OBgYSChIOCgYGDgIOAf4GEgH+Dg4SCf4aDg4GDhIGDgYWChIWEgYWDhYKDhIOCgoCAhIWDg4ODgoSCgoGCgoKEg4SFg4OCh4SChoCAfn9/gX5+gICAfYGCgX2BgH9+fn2Bf4GAf31/hH2BfYOBgIGAgH+AgYODgYKCg4CAgYODhIODhISEf4SAfoR8fA==",
+                            "Index": 1,
+                            "X": 1399,
+                            "Y": 6580
+                        }
+                    ],
+                    "use_COPResult": 1,
+                    "use_FOPResult": 1,
+                    "use_SGOrgResult": 1,
+                    "use_SGQuality": 100,
+                    "use_SGResult": 1
+                },
+                "InspectionDataSaver": {
+                    "BlockImageType": "bmp",
+                    "BlockSaveEnabled": false,
+                    "DefectImageHeight": 100,
+                    "DefectImageSaveEnabled": false,
+                    "DefectImageType": "grey",
+                    "DefectImageWidth": 500,
+                    "DefectInfoSaveEnabled": true,
+                    "SavePath": "D:\\Data\\InspectionResult_VP01"
+                },
+                "Light": [
+                    {
+                        "LightID": 0,
+                        "LightName": "Ch1",
+                        "ROI": [
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1534,
+                                    "ey": 5574,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1390,
+                                            "Y": 2235
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1389,
+                                            "Y": 5574
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1534,
+                                            "Y": 5574
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1534,
+                                            "Y": 2236
+                                        }
+                                    ],
+                                    "sx": 1389,
+                                    "sy": 2235
+                                },
+                                "InspectionParam": {
+                                    "InspDuplication": 1,
+                                    "InspType": "Cosmetic",
+                                    "M_T_Classification_MatchingID": 2,
+                                    "MergeDist": 10,
+                                    "MergeMode": 1,
+                                    "MinSize": 5,
+                                    "MinSizeMerge": 5,
+                                    "PitchType": "4_Dir_Thre",
+                                    "PitchX": 64,
+                                    "PitchY": 64,
+                                    "PositionID": 2,
+                                    "PositionName": "DIC_Crack",
+                                    "R_Bin_ThrH": 150,
+                                    "R_Bin_ThrL": 255,
+                                    "R_DilateErode_Cnt": 7,
+                                    "R_DilateErode_MorphMask": [
+                                        1,
+                                        5
+                                    ],
+                                    "R_FitType": "Binary",
+                                    "ThrH": 128,
+                                    "ThrL": 8
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1317,
+                                    "ey": 1402,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1316,
+                                            "Y": 1258
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1189,
+                                            "Y": 1258
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1189,
+                                            "Y": 1182
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1145,
+                                            "Y": 1181
+                                        },
+                                        {
+                                            "Index": 4,
+                                            "X": 1145,
+                                            "Y": 1401
+                                        },
+                                        {
+                                            "Index": 5,
+                                            "X": 1317,
+                                            "Y": 1402
+                                        }
+                                    ],
+                                    "sx": 1145,
+                                    "sy": 1181
+                                },
+                                "InspectionParam": {
+                                    "InspType": "Cosmetic",
+                                    "MergeDist": 5,
+                                    "MergeMode": 1,
+                                    "MinSize": 10,
+                                    "MinSizeMerge": 10,
+                                    "PitchType": "PitchMaxQ",
+                                    "PitchX": 0,
+                                    "PitchY": 10,
+                                    "PositionName": "SR_OverFlow",
+                                    "ThrH": 5,
+                                    "ThrL": 10
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1315,
+                                    "ey": 6623,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1316,
+                                            "Y": 6395
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1147,
+                                            "Y": 6394
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1148,
+                                            "Y": 6624
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1186,
+                                            "Y": 6624
+                                        },
+                                        {
+                                            "Index": 4,
+                                            "X": 1187,
+                                            "Y": 6540
+                                        },
+                                        {
+                                            "Index": 5,
+                                            "X": 1315,
+                                            "Y": 6540
+                                        }
+                                    ],
+                                    "sx": 1146,
+                                    "sy": 6393
+                                },
+                                "InspectionParam": {
+                                    "InspType": "Cosmetic",
+                                    "MergeDist": 5,
+                                    "MergeMode": 1,
+                                    "MinSize": 10,
+                                    "MinSizeMerge": 10,
+                                    "PitchType": "PitchMaxQ",
+                                    "PitchX": 0,
+                                    "PitchY": 10,
+                                    "PositionName": "SR_OverFlow",
+                                    "ThrH": 5,
+                                    "ThrL": 10
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 2465,
+                                    "ey": 1749,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 2466,
+                                            "Y": 1523
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 2218,
+                                            "Y": 1525
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 2219,
+                                            "Y": 1750
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 2466,
+                                            "Y": 1750
+                                        }
+                                    ],
+                                    "sx": 2217,
+                                    "sy": 1522
+                                },
+                                "InspectionParam": {
+                                    "Gain": 20,
+                                    "InspDuplication": 1,
+                                    "InspType": "Cosmetic",
+                                    "M_T_Classification_MatchingID": 1,
+                                    "MergeDist": 10,
+                                    "MergeMode": 1,
+                                    "MinSize": 15,
+                                    "MinSizeMerge": 10,
+                                    "PitchType": "StainH",
+                                    "PitchX": 20,
+                                    "PitchY": 0,
+                                    "PositionID": 1,
+                                    "PositionName": "MCL_Patten_Bubble",
+                                    "PostMedian": 5,
+                                    "PostUniformize": "V",
+                                    "ThrH": 128,
+                                    "ThrL": 10,
+                                    "bb_inner_thre": 133
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 2463,
+                                    "ey": 6283,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 2464,
+                                            "Y": 6282
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 2212,
+                                            "Y": 6283
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 2211,
+                                            "Y": 6053
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 2463,
+                                            "Y": 6053
+                                        }
+                                    ],
+                                    "sx": 2210,
+                                    "sy": 6053
+                                },
+                                "InspectionParam": {
+                                    "Gain": 20,
+                                    "InspDuplication": 1,
+                                    "InspType": "Cosmetic",
+                                    "M_T_Classification_MatchingID": 1,
+                                    "MergeDist": 10,
+                                    "MergeMode": 1,
+                                    "MinSize": 15,
+                                    "MinSizeMerge": 10,
+                                    "PitchType": "StainH",
+                                    "PitchX": 20,
+                                    "PitchY": 0,
+                                    "PositionID": 1,
+                                    "PositionName": "MCL_Patten_Bubble",
+                                    "PostMedian": 5,
+                                    "PostUniformize": "V",
+                                    "ThrH": 128,
+                                    "ThrL": 10,
+                                    "bb_inner_thre": 133
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 2464,
+                                    "ey": 1747,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 2465,
+                                            "Y": 1522
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 2217,
+                                            "Y": 1525
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 2218,
+                                            "Y": 1748
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 2465,
+                                            "Y": 1748
+                                        }
+                                    ],
+                                    "sx": 2216,
+                                    "sy": 1521
+                                },
+                                "InspectionParam": {
+                                    "Gain": 20,
+                                    "InspType": "Cosmetic",
+                                    "M_T_Classification_MatchingID": 1,
+                                    "MergeDist": 3,
+                                    "MergeMode": 1,
+                                    "MinSize": 15,
+                                    "MinSizeMerge": 3,
+                                    "PitchType": "Medain_Compare",
+                                    "PitchX": 51,
+                                    "PitchY": 0,
+                                    "PositionID": 1,
+                                    "PositionName": "MCL_Patten_Bubble",
+                                    "ThrH": 128,
+                                    "ThrL": 20,
+                                    "bb_inner_thre": 133
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 2462,
+                                    "ey": 6282,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 2463,
+                                            "Y": 6283
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 2211,
+                                            "Y": 6283
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 2211,
+                                            "Y": 6054
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 2463,
+                                            "Y": 6054
+                                        }
+                                    ],
+                                    "sx": 2210,
+                                    "sy": 6053
+                                },
+                                "InspectionParam": {
+                                    "Gain": 20,
+                                    "InspType": "Cosmetic",
+                                    "M_T_Classification_MatchingID": 1,
+                                    "MergeDist": 3,
+                                    "MergeMode": 1,
+                                    "MinSize": 15,
+                                    "MinSizeMerge": 3,
+                                    "PitchType": "Medain_Compare",
+                                    "PitchX": 51,
+                                    "PitchY": 0,
+                                    "PositionID": 1,
+                                    "PositionName": "MCL_Patten_Bubble",
+                                    "ThrH": 128,
+                                    "ThrL": 20,
+                                    "bb_inner_thre": 133
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 2442,
+                                    "ey": 3809,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 2351,
+                                            "Y": 2414
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 2349,
+                                            "Y": 3810
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 2441,
+                                            "Y": 3810
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 2443,
+                                            "Y": 2414
+                                        }
+                                    ],
+                                    "sx": 2349,
+                                    "sy": 2413
+                                },
+                                "InspectionParam": {
+                                    "EdgeShift": 64,
+                                    "Gain": 15,
+                                    "InspDuplication": 1,
+                                    "InspType": "Cosmetic",
+                                    "MergeDist": 3,
+                                    "MergeMode": 1,
+                                    "MinSize": 3,
+                                    "MinSizeMerge": 3,
+                                    "PitchType": "EdgeShift_Max",
+                                    "PitchX": 31,
+                                    "PitchY": 31,
+                                    "PositionName": "insp_var",
+                                    "ThrH": 128,
+                                    "ThrL": 128,
+                                    "ref_var_prc": 400,
+                                    "ref_var_src": 300
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 2443,
+                                    "ey": 5389,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 2348,
+                                            "Y": 3994
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 2350,
+                                            "Y": 5389
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 2441,
+                                            "Y": 5389
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 2443,
+                                            "Y": 3994
+                                        }
+                                    ],
+                                    "sx": 2348,
+                                    "sy": 3993
+                                },
+                                "InspectionParam": {
+                                    "EdgeShift": 64,
+                                    "Gain": 15,
+                                    "InspDuplication": 1,
+                                    "InspType": "Cosmetic",
+                                    "MergeDist": 3,
+                                    "MergeMode": 1,
+                                    "MinSize": 3,
+                                    "MinSizeMerge": 3,
+                                    "PitchType": "EdgeShift_Max",
+                                    "PitchX": 31,
+                                    "PitchY": 31,
+                                    "PositionName": "insp_var",
+                                    "ThrH": 128,
+                                    "ThrL": 128,
+                                    "ref_var_prc": 400,
+                                    "ref_var_src": 300
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 2463,
+                                    "ey": 6039,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 2464,
+                                            "Y": 1758
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 2318,
+                                            "Y": 1758
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 2315,
+                                            "Y": 6038
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 2461,
+                                            "Y": 6039
+                                        }
+                                    ],
+                                    "sx": 2315,
+                                    "sy": 1758
+                                },
+                                "InspectionParam": {
+                                    "Gain": 10,
+                                    "InspType": "Cosmetic",
+                                    "M_T_Classification_MatchingID": 1,
+                                    "MergeDist": 3,
+                                    "MergeMode": 1,
+                                    "MinSize": 15,
+                                    "MinSizeMerge": 8,
+                                    "PitchType": "StainH",
+                                    "PitchX": 50,
+                                    "PitchY": 1,
+                                    "PositionID": 1,
+                                    "PositionName": "MCL_AA_Bubble",
+                                    "PostMedian": 5,
+                                    "PostUniformize": 0,
+                                    "ThrH": 128,
+                                    "ThrL": 75
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1534,
+                                    "ey": 5571,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1391,
+                                            "Y": 2235
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1389,
+                                            "Y": 5571
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1532,
+                                            "Y": 5571
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1534,
+                                            "Y": 2235
+                                        }
+                                    ],
+                                    "sx": 1388,
+                                    "sy": 2234
+                                },
+                                "InspectionParam": {
+                                    "COP_DiffThre_Left": 50,
+                                    "COP_DiffThre_Right": -30,
+                                    "InspType": "CP_COP",
+                                    "MergeDist": 1,
+                                    "MergeMode": 1,
+                                    "MinSize": 10,
+                                    "MinSizeMerge": 1,
+                                    "PitchType": 5,
+                                    "PitchX": 0,
+                                    "PitchY": 64,
+                                    "PositionName": "Cop_Squeeze_Out",
+                                    "ThrH": 50,
+                                    "ThrL": 1
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1309,
+                                    "ey": 6611,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1170,
+                                            "Y": 1188
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1170,
+                                            "Y": 6611
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1309,
+                                            "Y": 6611
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1304,
+                                            "Y": 1186
+                                        }
+                                    ],
+                                    "sx": 1169,
+                                    "sy": 1186
+                                },
+                                "InspectionParam": {
+                                    "FopDiffThre": 70,
+                                    "FopRtOffset_O": 90,
+                                    "FopRtOffset_P": 90,
+                                    "FopYLimitOffset": 700,
+                                    "Fop_DetectCnt_O": 10,
+                                    "Fop_DetectCnt_P": 10,
+                                    "Fop_LGDAlgo": 1,
+                                    "Fop_LGD_eraseRangeH": 5,
+                                    "Fop_LGD_eraseRangeL": 0,
+                                    "Fop_LGD_minsize": 30,
+                                    "Fop_LGD_morphCnt": 1,
+                                    "Fop_LGD_thrPortion": 30,
+                                    "Fop_XRange_O": 150,
+                                    "Fop_XRange_P": 150,
+                                    "Fop_YRange_O": 75,
+                                    "Fop_YRange_P": 75,
+                                    "InspType": "CP_FOP",
+                                    "MergeDist": 1,
+                                    "MergeMode": 1,
+                                    "MinSize": 10,
+                                    "MinSizeMerge": 1,
+                                    "PitchType": 5,
+                                    "PitchX": 0,
+                                    "PitchY": 64,
+                                    "PositionName": "Fop_Squeeze_Out_Measure",
+                                    "ThrH": 70,
+                                    "ThrL": 1
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 2541,
+                                    "ey": 2399,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 2465,
+                                            "Y": 2115
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 2466,
+                                            "Y": 2398
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 2541,
+                                            "Y": 2399
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 2540,
+                                            "Y": 2115
+                                        }
+                                    ],
+                                    "sx": 2465,
+                                    "sy": 2115
+                                },
+                                "InspectionParam": {
+                                    "InspType": "CP_MCL_OF",
+                                    "MCLOverflowXYRatio": 10,
+                                    "MergeDist": 3,
+                                    "MergeMode": 1,
+                                    "MinSize": 15,
+                                    "MinSizeMerge": 5,
+                                    "OverflowBeforeDiff": 100,
+                                    "OverflowCurDiff": 200,
+                                    "OverflowDecreaseCnt": 1,
+                                    "OverflowF_Offset": 7,
+                                    "OverflowMinOption": 4,
+                                    "OverflowRangeDiff": 1000,
+                                    "PitchType": 0,
+                                    "PitchX": 20,
+                                    "PitchY": 0,
+                                    "PositionName": "MCL_OverFlow_SG",
+                                    "ResinWidthNo": 1,
+                                    "ThrH": 128,
+                                    "ThrL": 8,
+                                    "bright_diff_thre": 1000
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 2538,
+                                    "ey": 3166,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 2461,
+                                            "Y": 3018
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 2461,
+                                            "Y": 3166
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 2538,
+                                            "Y": 3166
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 2538,
+                                            "Y": 3018
+                                        }
+                                    ],
+                                    "sx": 2461,
+                                    "sy": 3018
+                                },
+                                "InspectionParam": {
+                                    "InspType": "CP_MCL_OF",
+                                    "MCLOverflowXYRatio": 10,
+                                    "MergeDist": 3,
+                                    "MergeMode": 1,
+                                    "MinSize": 15,
+                                    "MinSizeMerge": 5,
+                                    "OverflowBeforeDiff": 100,
+                                    "OverflowCurDiff": 200,
+                                    "OverflowDecreaseCnt": 1,
+                                    "OverflowF_Offset": 7,
+                                    "OverflowMinOption": 4,
+                                    "OverflowRangeDiff": 1000,
+                                    "PitchType": 0,
+                                    "PitchX": 20,
+                                    "PitchY": 0,
+                                    "PositionName": "MCL_OverFlow_SG",
+                                    "ResinWidthNo": 2,
+                                    "ThrH": 128,
+                                    "ThrL": 8,
+                                    "bright_diff_thre": 1000
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 2538,
+                                    "ey": 3983,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 2463,
+                                            "Y": 3825
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 2462,
+                                            "Y": 3983
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 2537,
+                                            "Y": 3982
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 2538,
+                                            "Y": 3825
+                                        }
+                                    ],
+                                    "sx": 2462,
+                                    "sy": 3825
+                                },
+                                "InspectionParam": {
+                                    "InspType": "CP_MCL_OF",
+                                    "MCLOverflowXYRatio": 10,
+                                    "MergeDist": 3,
+                                    "MergeMode": 1,
+                                    "MinSize": 15,
+                                    "MinSizeMerge": 5,
+                                    "OverflowBeforeDiff": 100,
+                                    "OverflowCurDiff": 200,
+                                    "OverflowDecreaseCnt": 1,
+                                    "OverflowF_Offset": 7,
+                                    "OverflowMinOption": 4,
+                                    "OverflowRangeDiff": 1000,
+                                    "PitchType": 0,
+                                    "PitchX": 20,
+                                    "PitchY": 0,
+                                    "PositionName": "MCL_OverFlow_SG",
+                                    "ResinWidthNo": 3,
+                                    "ThrH": 128,
+                                    "ThrL": 8,
+                                    "bright_diff_thre": 1000
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 2534,
+                                    "ey": 4741,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 2461,
+                                            "Y": 4593
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 2461,
+                                            "Y": 4741
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 2534,
+                                            "Y": 4741
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 2534,
+                                            "Y": 4593
+                                        }
+                                    ],
+                                    "sx": 2461,
+                                    "sy": 4593
+                                },
+                                "InspectionParam": {
+                                    "InspType": "CP_MCL_OF",
+                                    "MCLOverflowXYRatio": 10,
+                                    "MergeDist": 3,
+                                    "MergeMode": 1,
+                                    "MinSize": 15,
+                                    "MinSizeMerge": 5,
+                                    "OverflowBeforeDiff": 100,
+                                    "OverflowCurDiff": 200,
+                                    "OverflowDecreaseCnt": 1,
+                                    "OverflowF_Offset": 7,
+                                    "OverflowMinOption": 4,
+                                    "OverflowRangeDiff": 1000,
+                                    "PitchType": 0,
+                                    "PitchX": 20,
+                                    "PitchY": 0,
+                                    "PositionName": "MCL_OverFlow_SG",
+                                    "ResinWidthNo": 4,
+                                    "ThrH": 128,
+                                    "ThrL": 8,
+                                    "bright_diff_thre": 1000
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 2542,
+                                    "ey": 5693,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 2461,
+                                            "Y": 5407
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 2461,
+                                            "Y": 5693
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 2542,
+                                            "Y": 5693
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 2540,
+                                            "Y": 5407
+                                        }
+                                    ],
+                                    "sx": 2461,
+                                    "sy": 5407
+                                },
+                                "InspectionParam": {
+                                    "InspType": "CP_MCL_OF",
+                                    "MCLOverflowXYRatio": 10,
+                                    "MergeDist": 3,
+                                    "MergeMode": 1,
+                                    "MinSize": 15,
+                                    "MinSizeMerge": 5,
+                                    "OverflowBeforeDiff": 100,
+                                    "OverflowCurDiff": 200,
+                                    "OverflowDecreaseCnt": 1,
+                                    "OverflowF_Offset": 7,
+                                    "OverflowMinOption": 4,
+                                    "OverflowRangeDiff": 1000,
+                                    "PitchType": 0,
+                                    "PitchX": 20,
+                                    "PitchY": 0,
+                                    "PositionName": "MCL_OverFlow_SG",
+                                    "ResinWidthNo": 5,
+                                    "ThrH": 128,
+                                    "ThrL": 8,
+                                    "bright_diff_thre": 1000
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1509,
+                                    "ey": 5380,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1414,
+                                            "Y": 2337
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1420,
+                                            "Y": 5381
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1506,
+                                            "Y": 5381
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1510,
+                                            "Y": 2337
+                                        }
+                                    ],
+                                    "sx": 1414,
+                                    "sy": 2336
+                                },
+                                "InspectionParam": {
+                                    "InspType": "IQ",
+                                    "PositionName": "IQ_MCL_1"
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 1,
+                                    "ex": 2511,
+                                    "ey": 1510,
+                                    "sx": 2425,
+                                    "sy": 1111
+                                },
+                                "InspectionParam": {
+                                    "InspType": "CP_MCL_OF",
+                                    "MCLOverflowXYRatio": 10,
+                                    "MergeDist": 3,
+                                    "MergeMode": 1,
+                                    "MinSize": 15,
+                                    "MinSizeMerge": 5,
+                                    "OverflowBeforeDiff": 100,
+                                    "OverflowCurDiff": 200,
+                                    "OverflowDecreaseCnt": 1,
+                                    "OverflowF_Offset": 7,
+                                    "OverflowMinOption": 4,
+                                    "OverflowRangeDiff": 1000,
+                                    "PitchType": 0,
+                                    "PitchX": 20,
+                                    "PitchY": 0,
+                                    "PositionName": "MCL_OverFlow_SPL",
+                                    "ResinWidthNo": 1,
+                                    "ThrH": 128,
+                                    "ThrL": 8,
+                                    "bright_diff_thre": 1000
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 1,
+                                    "ex": 2505,
+                                    "ey": 6659,
+                                    "sx": 2413,
+                                    "sy": 6316
+                                },
+                                "InspectionParam": {
+                                    "InspType": "CP_MCL_OF",
+                                    "MCLOverflowXYRatio": 10,
+                                    "MergeDist": 3,
+                                    "MergeMode": 1,
+                                    "MinSize": 15,
+                                    "MinSizeMerge": 5,
+                                    "OverflowBeforeDiff": 100,
+                                    "OverflowCurDiff": 200,
+                                    "OverflowDecreaseCnt": 1,
+                                    "OverflowF_Offset": 7,
+                                    "OverflowMinOption": 4,
+                                    "OverflowRangeDiff": 1000,
+                                    "PitchType": 0,
+                                    "PitchX": 20,
+                                    "PitchY": 0,
+                                    "PositionName": "MCL_OverFlow_SPL",
+                                    "ResinWidthNo": 5,
+                                    "ThrH": 128,
+                                    "ThrL": 8,
+                                    "bright_diff_thre": 1000
+                                }
+                            }
+                        ],
+                        "SensorRoiID": 1
+                    },
+                    {
+                        "LightID": 1,
+                        "LightName": "Ch2",
+                        "ROI": [
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 2483,
+                                    "ey": 6391,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 2421,
+                                            "Y": 1431
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 2421,
+                                            "Y": 6391
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 2483,
+                                            "Y": 6391
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 2472,
+                                            "Y": 1430
+                                        }
+                                    ],
+                                    "sx": 2421,
+                                    "sy": 1430
+                                },
+                                "InspectionParam": {
+                                    "InspType": "CP_RESIN",
+                                    "MergeDist": 5,
+                                    "MergeMode": 1,
+                                    "MinSize": 5,
+                                    "MinSizeMerge": 5,
+                                    "PitchType": "PitchMaxQ",
+                                    "PitchX": 0,
+                                    "PitchY": 130,
+                                    "PositionName": "MCL_Resin_Open_Right",
+                                    "ResinRatio": 10,
+                                    "ThrH": 128,
+                                    "ThrH_Resin": 200,
+                                    "ThrL": 128,
+                                    "ThrL_Resin": 40
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 2303,
+                                    "ey": 6313,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 2210,
+                                            "Y": 1499
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 2218,
+                                            "Y": 6314
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 2302,
+                                            "Y": 6314
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 2303,
+                                            "Y": 1498
+                                        }
+                                    ],
+                                    "sx": 2210,
+                                    "sy": 1498
+                                },
+                                "InspectionParam": {
+                                    "InspType": "CP_RESIN",
+                                    "MergeDist": 5,
+                                    "MergeMode": 1,
+                                    "MinSize": 5,
+                                    "MinSizeMerge": 5,
+                                    "PitchX": 0,
+                                    "PitchY": 130,
+                                    "PositionName": "MCL_Resin_Open_Left",
+                                    "ResinRatio": 3,
+                                    "ThrH": 255,
+                                    "ThrH_Resin": 255,
+                                    "ThrL": 8,
+                                    "ThrL_Resin": 22
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 822,
+                                    "ey": 2563,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 696,
+                                            "Y": 2436
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 696,
+                                            "Y": 2563
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 822,
+                                            "Y": 2563
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 822,
+                                            "Y": 2436
+                                        }
+                                    ],
+                                    "sx": 696,
+                                    "sy": 2436
+                                },
+                                "InspectionParam": {
+                                    "InspType": "IQ",
+                                    "PositionName": "IQ_CHECK"
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 823,
+                                    "ey": 5374,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 695,
+                                            "Y": 5241
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 696,
+                                            "Y": 5374
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 823,
+                                            "Y": 5373
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 823,
+                                            "Y": 5241
+                                        }
+                                    ],
+                                    "sx": 695,
+                                    "sy": 5241
+                                },
+                                "InspectionParam": {
+                                    "InspType": "IQ",
+                                    "PositionName": "IQ_CHECK_2"
+                                }
+                            }
+                        ],
+                        "SensorRoiID": 2
+                    },
+                    {
+                        "LightID": 2,
+                        "LightName": "Ch3",
+                        "ROI": [
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 2464,
+                                    "ey": 6294,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 2234,
+                                            "Y": 1507
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 2231,
+                                            "Y": 6295
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 2463,
+                                            "Y": 6295
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 2464,
+                                            "Y": 1506
+                                        }
+                                    ],
+                                    "sx": 2231,
+                                    "sy": 1505
+                                },
+                                "InspectionParam": {
+                                    "Gain": 10,
+                                    "InspDuplication": 1,
+                                    "InspType": "Cosmetic",
+                                    "M_T_Classification_MatchingID": 3,
+                                    "MergeDist": 10,
+                                    "MergeMode": 1,
+                                    "MinSize": 15,
+                                    "MinSizeMerge": 10,
+                                    "PitchType": "StainH",
+                                    "PitchX": 30,
+                                    "PitchY": 0,
+                                    "PositionID": 3,
+                                    "PositionName": "MCL_Side_Mid_Bubble",
+                                    "PostMedian": 5,
+                                    "PostUniformize": 0,
+                                    "ThrH": 128,
+                                    "ThrL": 45
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 2466,
+                                    "ey": 6262,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 2466,
+                                            "Y": 1535
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 2349,
+                                            "Y": 1537
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 2340,
+                                            "Y": 6262
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 2465,
+                                            "Y": 6261
+                                        }
+                                    ],
+                                    "sx": 2340,
+                                    "sy": 1535
+                                },
+                                "InspectionParam": {
+                                    "InspType": "Cosmetic",
+                                    "MergeDist": 20,
+                                    "MergeMode": 1,
+                                    "MinSize": 35,
+                                    "MinSizeMerge": 5,
+                                    "PitchType": "4_Dir_Thre",
+                                    "PitchX": 32,
+                                    "PitchY": 32,
+                                    "PositionID": 3,
+                                    "PositionName": "MCL_Open_right",
+                                    "PostMedian": 3,
+                                    "ResinRatio": 10,
+                                    "ThrH": 60,
+                                    "ThrH_Resin": 100,
+                                    "ThrL": 15,
+                                    "ThrL_Resin": 30
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1426,
+                                    "ey": 1251,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1371,
+                                            "Y": 1200
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1371,
+                                            "Y": 1252
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1426,
+                                            "Y": 1252
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1426,
+                                            "Y": 1200
+                                        }
+                                    ],
+                                    "sx": 1371,
+                                    "sy": 1199
+                                },
+                                "InspectionParam": {
+                                    "InspType": "IQ",
+                                    "PositionName": "IQ_CHECK"
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1424,
+                                    "ey": 6602,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1370,
+                                            "Y": 6550
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1370,
+                                            "Y": 6602
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1425,
+                                            "Y": 6602
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1425,
+                                            "Y": 6550
+                                        }
+                                    ],
+                                    "sx": 1369,
+                                    "sy": 6550
+                                },
+                                "InspectionParam": {
+                                    "InspType": "IQ",
+                                    "PositionName": "IQ_CHECK_2"
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 2463,
+                                    "ey": 6251,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 2422,
+                                            "Y": 1537
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 2418,
+                                            "Y": 6251
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 2463,
+                                            "Y": 6251
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 2463,
+                                            "Y": 1537
+                                        }
+                                    ],
+                                    "sx": 2418,
+                                    "sy": 1537
+                                },
+                                "InspectionParam": {
+                                    "InspType": "Cosmetic",
+                                    "M_T_Classification_MatchingID": 3,
+                                    "MergeDist": 10,
+                                    "MergeMode": 1,
+                                    "MinSize": 5,
+                                    "MinSizeMerge": 1,
+                                    "PitchType": "4_Dir_Thre",
+                                    "PitchX": 40,
+                                    "PitchY": 80,
+                                    "PositionID": 3,
+                                    "PositionName": "MCL_Open_right",
+                                    "ThrH": 30,
+                                    "ThrL": 50
+                                }
+                            }
+                        ],
+                        "SensorRoiID": 3
+                    },
+                    {
+                        "LightID": 3,
+                        "LightName": "Ch4",
+                        "ROI": [
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 2482,
+                                    "ey": 6553,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 2361,
+                                            "Y": 1275
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 2360,
+                                            "Y": 6552
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 2478,
+                                            "Y": 6553
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 2482,
+                                            "Y": 1275
+                                        }
+                                    ],
+                                    "sx": 2359,
+                                    "sy": 1275
+                                },
+                                "InspectionParam": {
+                                    "InspType": "CP_MCL_OF",
+                                    "MergeDist": 3,
+                                    "MergeMode": 1,
+                                    "MinSize": 30,
+                                    "MinSizeMerge": 5,
+                                    "PitchType": 0,
+                                    "PitchX": 20,
+                                    "PitchY": 0,
+                                    "PositionName": "MCL_OverFlow2",
+                                    "ThrH": 128,
+                                    "ThrL": 128,
+                                    "bright_diff_thre": 1000,
+                                    "pol_line_diff1_thr": 40,
+                                    "pol_line_fall": 0,
+                                    "pol_line_max_thr": 140,
+                                    "pol_line_offset": 2,
+                                    "pol_line_range_y": 255,
+                                    "pol_line_thre": 7,
+                                    "pol_line_useProj": 2
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1318,
+                                    "ey": 6624,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1192,
+                                            "Y": 1184
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1193,
+                                            "Y": 6624
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1314,
+                                            "Y": 6624
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1318,
+                                            "Y": 1187
+                                        }
+                                    ],
+                                    "sx": 1192,
+                                    "sy": 1184
+                                },
+                                "InspectionParam": {
+                                    "FopBotPos": 3,
+                                    "FopDiffThr_O": 15,
+                                    "FopDiffThr_P": 15,
+                                    "FopLineDiffThre": 150,
+                                    "FopYLimitOffset": 700,
+                                    "Fop_UseProj": 1,
+                                    "InspType": "CP_FOP",
+                                    "MergeDist": 1,
+                                    "MergeMode": 1,
+                                    "MinSize": 10,
+                                    "MinSizeMerge": 1,
+                                    "PitchType": 5,
+                                    "PitchX": 0,
+                                    "PitchY": 64,
+                                    "PositionName": "Fop_Squeeze_Out_Line",
+                                    "ThrH": 65,
+                                    "ThrL": 1
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1433,
+                                    "ey": 1256,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1370,
+                                            "Y": 1193
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1370,
+                                            "Y": 1257
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1434,
+                                            "Y": 1257
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1434,
+                                            "Y": 1193
+                                        }
+                                    ],
+                                    "sx": 1369,
+                                    "sy": 1192
+                                },
+                                "InspectionParam": {
+                                    "InspType": "IQ",
+                                    "PositionName": "IQ_CHECK"
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1428,
+                                    "ey": 6615,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1366,
+                                            "Y": 6554
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1366,
+                                            "Y": 6616
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1428,
+                                            "Y": 6616
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1428,
+                                            "Y": 6554
+                                        }
+                                    ],
+                                    "sx": 1366,
+                                    "sy": 6553
+                                },
+                                "InspectionParam": {
+                                    "InspType": "IQ",
+                                    "PositionName": "IQ_CHECK_2"
+                                }
+                            }
+                        ],
+                        "SensorRoiID": 4
+                    }
+                ],
+                "OpticType": "MCL",
+                "eqp_sceneHeight": 7808,
+                "eqp_sceneWidth": 4096,
+                "eqp_showParameter": true,
+                "eqp_showRoiEditor": false
+            },
+            {
+                "Common": {
+                    "BaseGrayBlk": [
+                        128,
+                        128,
+                        128
+                    ],
+                    "BlkImgProcessing": "Flip_Vert_Horz",
+                    "CtqSRResinOffset": 0,
+                    "D_SaveLineFitting": 0,
+                    "D_SaveMavinImage": 0,
+                    "D_SaveRefImage": 0,
+                    "EmptyPanelSkip": 1,
+                    "GridOffset": [
+                        4712,
+                        213,
+                        665,
+                        213
+                    ],
+                    "LightOffsetX": [
+                        0,
+                        0,
+                        0
+                    ],
+                    "LightOffsetY": [
+                        0,
+                        682,
+                        560
+                    ],
+                    "M_Address_Inferencer": "192.168.200.132:8100",
+                    "M_Address_Local": "192.168.200.132:8101",
+                    "M_Segmentation": 2,
+                    "M_Segmentation_LoadIdx": 0,
+                    "M_Segmentation_Model1": "S_SR_Width_250609",
+                    "M_T_Classification": 2,
+                    "M_T_Classification_Model1": "CP_AOI_ToBo_250515_V1",
+                    "M_T_Classification_Model2": "Open_Cover_250507_V2",
+                    "M_T_Classification_Model3": "T_COP_Dent_D914_250814_v1",
+                    "M_T_Classification_PositionID1": [
+                        0,
+                        1
+                    ],
+                    "M_T_Classification_PositionID2": [
+                        0,
+                        2
+                    ],
+                    "M_T_Classification_PositionID3": [
+                        0,
+                        3
+                    ],
+                    "M_T_InferenceType": "Each",
+                    "M_T_SkipDefault": 1,
+                    "MaxDefectPerGlass": 2000,
+                    "MaxDefectPerLight": 1000,
+                    "MaxObjNum": 20000,
+                    "ROI_Height": 64,
+                    "R_FitType": "Match_2P",
+                    "R_Fit_MatchingOp": "EDGE_ENHANCED",
+                    "Ref_MinScore": 40,
+                    "Ref_OffsetX": 128,
+                    "Ref_OffsetY": 128,
+                    "Resolution": 94400,
+                    "SRMeasureYOffset": 21000,
+                    "SaveMapBlk": 0,
+                    "SaveOrgBlk": [
+                        1,
+                        2,
+                        3
+                    ],
+                    "SaveResultBlk": 0,
+                    "SeqLightOffsetY2": [
+                        0,
+                        0,
+                        0
+                    ],
+                    "SeqOffsetX": [
+                        157,
+                        75
+                    ],
+                    "SeqOffsetY": [
+                        36,
+                        32
+                    ],
+                    "T_DrawBox": 0,
+                    "Yellow_Coverlay": 1,
+                    "refPos": [
+                        {
+                            "Height": 64,
+                            "Width": 64
+                        },
+                        {
+                            "Image": "4eDb3N7d3c3Y0NbV3N3U4t7W3d7g4O3g497j29zV2tvd4+Tk6ePi2dPV3Nre3N3l4trg2eTk5uDk6uHm4urd6dvg39fY2dbZzNfQ1+LV39nZ29jq39fUzMvQ0Nbc2NfX3Nbe2ODl49/d19jc29Pa4dvk3+Hf4ejh3+Pm5Nvf4OLt5uDm4t3i397g4Ozq49zf6dvg59/d0szG0ODr7OTk6d7Y2NDa2+Hi5eLg5OLZ29no0OPd5+LV3dnf2OLa4+Di293e5+Pl4+rn2N/o7evq7OXg4Nve2eHV3ubo7e7q5OLf1tvX097Z4trg3tje493a1tja5N3h4+Dj3+Li7ebi4+3m3evh3efo3dvb4ufk9vLt6Ojm3+Dc3t/h3d/S1dza2uLe3+Hp6O/k6OXe4Ofk4+Le2t/j4djZ1tnc4t/e4+Lg4eDq5t3f5erc0dbT5erp6eTl4OPZ3Nfc2tTSz8bP1t7e3uLe6+bm5enj4+Dd297a4+Xf7eLo8vHs6eDe2ODfy9LV4Ofm9+zw3dnX0tTV2N3d3ePW3ejk2uLP3c3L2drc3eDj2NnV2dnd1dff49zf3uXg5u7x5fXs59/h2tXa48TNytPT4eDk4dvW2dXWz8jP3Nnj2t7i4O/m4ePd2tPi4d3i3uDX1c3S3OTi39DR2Nvd3uDi5tnSy9Ha4tXX3ePd29zQ0czMztDi2+Tc59PMyc7X2t/Y3uHc597j3ePQ09Xd1ePb4tXT0NPc6N2/n7vZ2dzXz8vRzMnT2+bp4OLb3OHh39nHusDQ3t7l4uHW0tDS3+Xg2tDPzsXN1dHU19TUzNPS2tvb2tTc0+PnyqOw0tnk29fS3+Hm2+fo5ezt8tTg2OTi4t7V39fY1NrV2tfY5Nna29rf283X2dzc3eTa3Nrf1djX4eHUzMfNydPKz8va0+Hn3+fe4+Hn5OLk6Ojb4d3e4Nzc1NHSzsfN1NTd5NzV1tXb4N7e3trd2OHa49vf1+Dj3dfg09PLztLPxtHj1d7U0M7V1dnVz9DOzcXM1trd3N7U0dfX39jV2d/c29bf3+3r4ePn3uTg3uHj3uLe5eDh4t7h3t3b4t7V3t/e2uLe3tXNx8jQztDXys2+wd7f19bU293o5OLd2uHh4t3a5efr3uLc2uDf4/Hd3uLg3N/i5dva2dbW19rh5eLb4Nvf49/g5N3e2eLa39fW29fY2dnc2NnV5NHX3Nrf4tnWy9HY0tvb1djf2uze3dnf4+jb4dvc3trZ29nZ2dHX2dPe1eHi5OXl5urv6Oje4eHd0dDU2dbVytTP3tPR2OHj4+Dfy9vT4N3Y29Xh3tze5efg3ebi5e7j4d/a3NjZ2+Dm5NnY2NTT293h2t/n193T1djr4ebj29nV3drcytXb4evj4OHo6ejZ3N3a3tnh2+Do4ejm8fPy8PHe2uTk4uLg3ujl5+Th3NzX1tvW2eDc0s7d3eLg3uTj4NLZ2drX3tDa3djb3N7f5NXb4uXk19ze3NPb3djf2NjX293h3ePf1tzm5ebm5+Xk3tfk4Nfd19jO2NLf3uPo6OHk1OHm597f2t/b2t3Y3efk3+Lm4d/X2tzV39rRyszG0tfd1Obb3uDi3+Pb6uDq6O7k4+Pd3eDl4NvW2dzY4Nrd3MvE1dHi3drY3d7d2OHh4uTi4u3j8ODr8+zr3eXa3trr5uHe3tbd2drU3Nja2Nvb2dTW4OLg1tzf3+Dd1tbO1NXFqsrY2OHe3tfT0Nfo9Pr6/f/9///9////+Pj/+Pb5/v796+DY3dze39jc2uHe3dvUztbd3t7e4Obd2OTg6N/c28LL18/V2ePf3uHg3eHi2dva3dzk4trCt7SwvsnV3+be5trr5OPq7uvm6PH27+3o5ujl5ufu593l4eTb4NXS3NbW4Njd2uPo6+bi3d/Y3trn29DY1NrEkl9OXGeg0drc2Nvc1tPe3+Xh5ujz7uLu5N7w7vHx7uvd7PLq5erZ4NLW0tzl4+Xp4ubl6uXk5uLj597d1NnYw4NAMTRLk87V2evi4eDc083R09TZy9fj5+ro4d7f0uHi4+Xs8Ozp5uno3d3g3N3k393a4uTq5erf5+zn3dDW2sOAPS0uRZHS0uLj7O/m8N3l1+bl4Nzb0t3e28na0cjD1eLY2djc3t/k4e7n7uXc3urt7uHn5Obo4NzR2tzY1tK/ezgqLUeW2+Df393b6eXo9fP/9/jw3dPD0dDX4era3N3m4NvU2+Le6e3t7d7g6eTg4d/e7PPz9+jgzt3f3tzYwXw4KSo9ea/CyMzS2d7j5+jq7/H6+vXq3Nvh6fL15ebo9vDm5OPn4+rg4d/g2ejj5+Hh3ung3eTi5t/w6+Xj48V/PCkmKkZgXml5n9fc7N7TzMbK3Or08u3k7e/z7fLy7Ovr7PDt9O7r8PDk5fLk3d/h69vh0dLS2+Lm9vfv6uTFfjomIyIqMzQ1SoDH5OXf39XQyczW3uji5uXs3t7q6+jd4ezv6+rg4uTl4+nd5e/r8vDq5und1dnb3eDj3d7cx387JSUkJyokMT9+utff5Ojg5eTU1N7c6Obn5ePl5+bi5uLp9PLp6eLh8fDy9e3t6Ojq7O3u6Obm3NTHzc/c3sqDQi4uLC4xLTE/eMLY5eXn8OTv9u3s5Onj7uPo8un4+enn5d/g6u3s7vD6///64dPM39/t4t/S1dTOxLvBx9HKj2BUSE5IR0dJWYfE4ubq9/j18Orq4+bs6O3s6uHi59no5Njb1uHm6+bq6/Xy9Ovn3ODl8OvJlX98d3V1fH2FlrCnn5eclJOVmJy+4fv0+urs5uHj2+jr8u/t7u7b08bL49zh3+Hk5OPo5dbEz9Li5+7z7uverWA9OjY2Njg3QWifv8vMz8fU09na2ej16OTcydjc5Obi1Nvg5ePk3t/Y0/Lp6urv5eXk6tvc0sTS297k6eXm0KBOLikkJSQlJjVYosPT19Pd4eXn8+3n2cvV4+br7unn8PHu4uPk5ufi6uPv8fn27u7q6/Lt6evs6u7p5d/j6NCeUjgvJiUkJCQwXq3Z3Ojk4ebu6Or08OnQ2Ofl7/Pl6vfu7+rr9fb87u7x/fjs6/Hy6+/17vbw7u788e7s8dzQpVhIQTs2KiYoM12t2+vz5u3r5+bm5eTp4ebm5e7o7fj8//T36/Lt7/Pz8fv99uLp9vPq6/Xs8u7r7ez/9PLw5ryVjImDaj8pJzFcrebt6Ont7urj4t7k5ebs5efl7fD1//j39Or7+ejq6vDk6ejp5vHr7PLu8fHo7ez17/P+9Ozn1NTTyZ1ZMyw0XLDa5+3w6Onr9PPz7vTx8uvy7fHp7+bw8vn6+/74+fH05uTp+/Ly8/Tu8Or99ezx8+vt6/D17+bo4NuxXzErMV6w4+vw6e7v6e3s8vX0/PH36/Tw8vTl7/T39ufw8+/49/T0+P39+ff/9vTv+Pbx9fTz9+/u8e7n5+jluWY2LzdfveXo5unw8+/v6urx+fr58/T28uv56/Lx9/X16/L29vng2t3f4+368/P49vf+/fz/9u317/Pn5OLl3rFlOzQ8abbW5fHz9Pb16ujk5fPv7vb49PPx5efm4Onq7+nw8vPx2NnLy9br9fXw+uz48/v38/X79fTr4NLP0Makc1xXXnKuzcvPy87P1tfX1OTv6PDs+Pju6vv38+Pf6+rx8u/v8env7O3x+v/y8+328/Pm6vn08Pr69u3t6eni1MK/v8TO1uTj5uDY2ubk6ufu8fTv+/r0/vv28/f46Pr6/fv99fTz8fLt8urr9Pf49Pz6/f/4/P/2/PT38fn38evl6uvy8fX//Pb/9vT4/f31//n9+//4//r+/fP4//v8///9//359vX67uTU3+nw+Pv+/v/+/frx9/3//v//+/fy6uvr8vn1///6/vT69/X69/r4//X6//v58//+/fn+8vDz9fL4////+P3/7ebx6Oz///jz8enz8/n9//////3+/vbz8fb/8/Dr9/v2+f38//7////37fb69fP08O7w7ung4/Pw9fD5+v77+Pn49evz8vDu7e318frz///++Pv5/v398/T3+v/97/Du9vL39/n5/vn2+O7x7PP7+/T89vrx9PHy9fLy8Ofw7uzs9PP0++/r8fX18/r78uns6e3p6e7t8/P6/P////r5+ffx9Pnx6/Hy+/7///3///72+vX///38+v/+//np8fjNvdL29fz39fHy+/328fzs39bo9e7s+f39/f/8+v///P/8+/D99O75+f///f/8/fz9/f/u9vf7/P3//v///Pr77MPg8/X6+v/+/P/4+fj8/v329Pz39fr///ju6uPw9Pb9+/3/+f399vT55vj6/v/9/v///Pzy/fj79fb6/f/9//z29v///vv///v+//79///8+fr8+fv3//357OHW5uz5//38+vP5+//////+/v///////f//9v3z9O7y+Pj6+Onx6/D+//35//v5+/n//v7+///////8//z+/P//9P76///9+/31///+/Pr///39+vr8///8/v/9+vv7+/j//vTy8ff39///9/r8+vLz+vn7/P///fn//P/w+/n///r/+Pr7+v30+f/9///5//v7/vz//P38/f7//f////31+/7///3v9/j7/Pv////+///9/f/8///8+v///fT3//////////7///3//fn5/fX5+fz7//3+///////+//7///7//f///P/+/ff////8//3///778f/+/P3////8//78/v7+9fv+//76+////P/7//v//v////7//v/9//3////w/P7+///+/v//+f//+f7/9////////P348/b///////3+//33+fv5///8//7///7//v7//v//////9+/j5+v9///9/PX4+vX0+f/+8tbV2vX+////////+urm+P////3+//7+///8///2/fv++f/+///////w//T38+zj2N/m5//6+//9/v3/9P/7//nw3Ov09v3++P///////P/9/////////////v/8//3//v/19vb/+P/06PH59+/z/f///v7PzszLycu8w8HIycC8uaucrMO9w8rS3NjPxb69vMbKysnKysvIycvNz9LOxsfGwbe9uMTDubq3sLi1tLa4vcDDu76/vrrDysrEx8TQw8fAwMPFu8GxrLq7vsTIzc3Ku8XFzMnTzdLU29bay9G+vb65urPBuru+usHHw8LI0dbf3MTFwryppra+zNTLxsXGyMjLz8/Mw8G1qrnExMXEyMXFwcbO1cvIzdXa3NTW0cfCxr3Hv8W/xcLBxsfDwMK/zs7Hzs7Oy8fFxsHNx8XEwb3AwsnIzdHJ0czOzs3KubjCxM7K0s7Uw77FvsjJy8zS1MnNyc/IyMjHz9HUz8a6o6q9zsfRwr7BxLjAwMHFz83OxdPHxsbKxMfFxcnIwcjByMbCxcfT2tnLvKijtb7Kz8/QzcrOy8vGx8rR18vKuKmrug==",
+                            "Index": 0,
+                            "X": 1401,
+                            "Y": 1225
+                        },
+                        {
+                            "Image": "+//67NjLwcHM2Nzm8+7e4eX29fn0+ff4/Pf2/P3y//389Pz7+/rw9vv9+Pn4/PH49f3+/Pzy7On8//7//v////X66NLFvr7U3Ov68O/68/f6+P/+///9/f3+/v/8/v/9//L5/vz4/f73/f76+Pv4+//6//f8+PX4/////P369PK/v8vR4trr9P/7//7++e/37/j9/Pb8//z4//79+f32//7///////76/P37+fr5+//5/P3+/fj48er0/vn/+Pnzur/M0uP2+Pr3+v/8+v3/9Pf28vnv8P/8//b8+P/+/P/2//7//f///v/6/v/3//fs8Pb8+v/9//3x+Pz4///7/9vW3+fn6+/v8P3+//v//P/+//7+//z9/v/9///9//7++/v3//Tq9PD9+vr7//3//fn//v////3//f/+///+//7s9fb3+fX8/P7///7+//z/+v7//P/+//3///79/P7/+/z9//7/9f31+fv+///+/v/6+fj7/v/8///9//////398fb+//74/P7//f/+//79//379vbv9f7//P/7//r/////9fz//v7++f////////7//v////v9+v/7/v778/f59v/+//z6+//6+vX0+ff+//3///r/9efx8fz//////////////Pr1//r7/v7+///9/f////bz6/L////+/PTu6vf9/v////31/e3u7vT29P/+/frz/////f/9//3//vn9//3///z//P//+u7u9O/8///08v7++fb3/fr9//75+Pz/yM/OzsTCv7+1uLHCvbzAvL7JyMrLw8bPxsnHw8HHw8vMx8XDwsXNycPBtrO6vr/Cwb+/u7m7uri5u8PDx7m4xNHSydHSx8PHv7/CxMbFyMfBw7y8w8PCw8TEyMHFxMPIztLNyMLKyMzLx8G+t7zFzb+1sLe9wcK/wr7CwMnGwrfTzbm7wcXKx8fKys7M0c3Pz9DKycrIu7a1w73Hy8nQy8fMxcbFwsXFw8zKxMDGvsXFzMLBw8bBu77Bx8PIxLutvcPAwcPGxsjAyMXGxcS+x9LRysvDys3Dy87GysXKzMfIzc3VyNTMy8nNx8XGwsHNydTP0s/NzMvKy8nDx8PHwrfCx8vGw9LHy8rIx87OxsDDxcy9uLvLzc7YysnT18/M1dDNzc3LyNDP0tLMzMfHy8vJzMbQzc/PzNrJzsTBxsLM0MzQ1s7OydPR0tTV19LNzc3Qzs/P1dLVy9PU3+Tg49PA1M/NxcnN19Xc083RyMfJzNXU1c3R19no5uLZ3NDK1dLT1s/Qx87Xzs/RyNDJx8nNzsvK1MzTwrq/yMDBzdbXyMDQyMnMzczN0NTMy8vQyb28xsjSzMzL1NzW29TU18jN0NDSytPTzdDLwcTJzM3V1MrJx8W6w87JxL68tLK0uMPY0uPPx8W6v8XSzc7Hy87GucLK0c/RybiurMTS1s/FuLfEzsvIxMPM0cvHxL7S1tTaxM+6wMLI0c3Kx7uuu8XKzNrS1svGwsPQ0tTV1tPM0tPVzs/P09XNubO+v8TExb+5u8fCxsLDycnHzsnOzN3b1s/Kz9jO1trW0dvPz83S09PMzdPM0crO0M/V1tPT1tnQzdTLzszM0MrO0dbRz9LP09HL1s7H0NDT0ca9xcbQzMrR19HZ3tXi4OPe4+bq1dPS0dDV09vR2tDS1MvIzdPT0szP1NPGv8fMzcbJ0tzR0dTR0tHc1dnX3N/h1c3QyMfQ1eXv5+Tk5PP19+/i4Obw8fHu9fbv6/Lp4NrTyMzPyc7IyMnX29fW1s3FwMnQxsvFzsnOz8/X1tLNz9TR1MnLzcrLyM7Pz827lZiWlqK6y8LM0NPT2NTXzsfN09fS1tjZ0c/QzdPVztXZzNLAyc/I0Nvc1dXTxsrEw8jO1tPT18PDyczM2dzanldFQk1+t8jNxcjI0tXY1NbNw8fLztHP1NHOy8GzvtTMzNTK0NHY2d/a2+Ha2szM1s3W2dPV1dPA0NHW19LOv4w/LSw7cL3P2dzY0dXU2c/P1NDSy8zMx8/Q0M7NxtTW3dXS19jQ1dLa2d3V5dnc3dTS2tLTztPN1MzY0NvfzraCOyoqNnLH08XM0NLS0Nfk2tjc2dPZ1s/Pz9bS09Td0dfN0crQ2NfW3dbf0c3Z2t3b2tff2tzT19vU19TPzNG8kT0nJDRwuNHd1MzUzNXQzNff0dXT1tLW2dTY1tba19PR18rL2tzQ2dLf3dzQ1NXQ2eDV1c7Nz8vT2tK9o62mn244JiU0aLvP2tzq39bQzcK9vtTW2djP2eLe29fU0N/j1ePW29rl19LLxcPK0dLMztjQ5Nfc19He0dbFh1hSTEo8JyMjN2m/z83My9DY19PPz8jIzdng19bX2NTQ49PV4+Hm5ubb3eTo1tjQx8bO2dzU1tHU2dXX2djWuXg6LiorKSAhJS9xu8vCurXEzdPU2NXa19vb3tva2N3V4Nzc1d3V2NvN0uni3NvZ2+LQ4Nvc09zV3NXY0eLb1rpzNi8jJCQkICU1b8TO19XO2dTY18/U2djb0djY49/d4uHj3Nfa19DZ1dfl39zg2+Hh5uHi283R3NTW1dvi39jGdzwzLi4sKCcpPHbI4err7e3j6eTf3dzk6t/j5uPp7/Hl4OzX3dnb39XMyNTi1uPg59/a19jX297j6eTU2dPUw4haU05KSklOSleFuMbKy8XEz8vN193p3uHYz8vH0uHi29/i5uHn4NXbzcnd2+DU2tfi2tTg1tXP1uLc09DY1M67pqinoaSho6Khk3JsZWFhZmVnbYi4z9LU3tvNysLLy9/i8/Dr6+ro5evl1una49zZ3OPY2+Xa4ODj393W29LY0sXCwL3Gx8rOv55TOjIzKiwwNDNQrdXZ1ePj3OHY3tnd7ev59efv7e3s49nk4djX6eDl4+Pm6OPd3eHe3d7b39vU09LQ0c/S1MufQzElIiUmIyEvR5vFy83W2+Tl5ebc3NTN0+Xi5uri2trb3urq8Ofm7+Xr38vOydbY49rh3t3d3dvZ29vZ2t3Op0cvJCQlKSctMk+v0t7e4eDh29jf4dfYxtTR0sfHy9jb2+Tm3t3g39XZ2uPa293l5Ovj2uPf3eXo6vb58ebc0aZALCQkKjQ8OUBcqtnl5OLd2+rh4OPl4+nn6ObZ1tnj5ODc3dfS2t3X4+Tq5+Tk6vLw6N7m4tbS2NTX4N/p6NeoSyojKkZ3iISElrzIzMrX1eTa3dzm7+Xezs7j5+nn4uni5ufq4eXl4t3q9Pfs593b4t/n6Ofg19HVz8bP2tbKpEcpJi1XpMXGv8HS0tbX4+Hj7ejw4uPg087O5d/i6Onu4tzp4OPg3ODm6Obo7/Xh3tvd5ejl4ujr4eLh1dzl055FKiY1XK3L1dLO09/m4ePw5ern4+La19HY5u3j5+Dy9+rm4uPZ1eDo4Nzj4d/l7/X35eXd4OLn6Oni29/d3NKpSS4tMmrA4uvi6+Hh5uTi3+Dl5OXl2+Ta4+X36ubr4vbm4ebp5e/d4eLm1NDW4efy9vzl4uPc4djY1cbI1djdp1A5MT50y+Dn4eXq7+nn5+Th4N7h5uni5uvs4+Df49zT7ejk6eXk5+7r7Orl4N/j0c3b5eDTw7m+urW5tbW/tZtkVVladKq5tLvF19vt7Ojm7ebo193k4+bv6O7s8O7c2ert3dzg7PD0//bu6vPp3dXU397g39jPydHV0tTT29LHt66vt7a6vcXSzNPO2d3p3/Xp5+Xo8Obl4+Hj4u/w7OPo6uvp7uDl4uLi5e3t6+nr7e7/+/D05fDz7ezn6+vt6+338ubk3uXw6eXo4uTl6N/c4ejq5Ozx7unm9OTq9u7z6Oz17+nt69nI0dXe3uLv7+rv7uro9//28u7q7uvt6Ofv+//49vHy9fDn7OXb6uLx5vLu9/b66uvj6uLu7OHk5O3q7O/57+Hg6+Du6e7y7Pz16+LY3uLj3Ont9O7v3uLg2+Lm6O7k6OHc2+Hk6urr7Ofy7e76//397e3x6vDz/uzu6+LX2efq5e70+fr///Xq4N3Y0NLa2Nnj6fHt8/Lo4NDAvdHb3uHZ4eDj8/Xz5ebg29Pd2OXt7+fv6Pb7////4+vo3t/n7+v07/f79uzg19bR3OPh6uLg2+bp6uft6Oro1s7a3+bc6Orn8ezv5/Hq6N7k3svK0eTr5+3t8u7p7+Xp6Orv7eTq3+DRxsDM09LZ4u/e5+jm5t3e2OTk6/Lu7e7u7vPk6OXp6ebh4OPf4+vt4eng1t3p7OXr4dnHvszu7vL7++fl6fft5tDEyd/k6uPs6Ojo4t/h5eLn5enn6e309e/x5+vt8Ozs6enm8ejv6/Dz9/f37+nt39fMzcXT2tvg6Ojf7d/g7Oji5tnx4+fp7/nx7ejw7O7t8/X65Ozp6eXm5ODk5vLr6fDo5erw+u7y9e7y7e/z8/Lf5+Dn6eHk2NTb3+fr6unu6vHn7err5OLu6vny/+/3+P///ejy3+Lf5OPo5+zv8PHm6uP59f/5/+/s7+319fPs8vHu9P7w8OLn8ufj6+Lr5Ofk5uPh4+bi1NDT5+nu7enp7eXq7u3p5ezo5eXk5+Hk8Ob28vLo9O7v7OPp5/bw7/Ls6uzo7PHs8Obs7efo4+3o6OLn5fPy8Ofl4uDk7+zv28zB3Ory6fPx7ezq6vLq6uTk6Onl18rX5d/c2tHa5evu6/Po8eju8e/v8PL2+fHu6e7y7Ofu8+zz8Ovt5fX4++3j1eDq4ebr8vDz6ejv5OXh4eXg6N7V3ubm5ere1N/h4uzn7fLf6+/q7v/z7+vs6ens5Orh5d3m49nh7e7o5O7n6e3j4d3k5en16PHl6fLp8Ozf5+Pa4unu8Ozx7eLj6enu4eblztrc5eLm7en07Pvu7/Lp7e7p3eDl7uvh6N3Q5Ozs5OPl5uPi8fDo9enr9fLy6vji7e7m5/P27/T15u3s6ufg4OPl5ezt6ez88fbq7+3i6u706/Ho6Obk3dHS1dzi5Ofq7O7x8fb0+/Tu7u3q7OT2+Pj2+O7p7+rp8u/y6/Pt8fDp6evf3OPg4eTi4eHo6+zp5+fl5OPi6+Td5+LZ3OHp5vDo7uTf4ury8ejl4tvn7Pv5/////O3s4ebz9efr9/jr3t/l39PY09HMzdTf6+Xt5uzq6Ors4uTt6O/34uXn5e3v8+Xo3trj9efm49/a1eba3t3g7ejr7/Ht7PHw5+Lf4Onn3eXb4OLh2d/b4uTo4+Xl7/X48+zq6+Xg5fDw7ubj3+jn5ePf2NvY3+Xl5O3o4dLFxczV3Ofs6u7s5ebbz+Di8O7q5uji4OHi5+jk3+Tk4+Td4uTn4tva5N7g7unu7Ofk8fLy6OHa4Ojk4e/u49vi3uHa3tvm2uTh6erk3eXi7PLw8eHv6OLk8vny9d/j4tbe49rZ4d/f5eXn4+Hn4OLn8PPq3tPd4+zv+PXt5+jv7e7t7ezj3+Tj6uns5OLm3g==",
+                            "Index": 1,
+                            "X": 1403,
+                            "Y": 6587
+                        }
+                    ],
+                    "use_SGOrgResult": 1,
+                    "use_SGQuality": 100,
+                    "use_SGResult": 1
+                },
+                "InspectionDataSaver": {
+                    "BlockImageType": "bmp",
+                    "BlockSaveEnabled": false,
+                    "DefectImageHeight": 100,
+                    "DefectImageSaveEnabled": false,
+                    "DefectImageType": "grey",
+                    "DefectImageWidth": 500,
+                    "DefectInfoSaveEnabled": true,
+                    "SavePath": "D:\\Data\\InspectionResult_VP02"
+                },
+                "Light": [
+                    {
+                        "LightID": 0,
+                        "LightName": "Ch1",
+                        "ROI": [
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1614,
+                                    "ey": 6622,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1486,
+                                            "Y": 1184
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1609,
+                                            "Y": 1185
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1614,
+                                            "Y": 6623
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1489,
+                                            "Y": 6622
+                                        }
+                                    ],
+                                    "sx": 1486,
+                                    "sy": 1183
+                                },
+                                "InspectionParam": {
+                                    "InspType": "Pass",
+                                    "PositionName": "Mark_Detection"
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1432,
+                                    "ey": 1252,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1370,
+                                            "Y": 1200
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1370,
+                                            "Y": 1252
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1432,
+                                            "Y": 1252
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1432,
+                                            "Y": 1199
+                                        }
+                                    ],
+                                    "sx": 1370,
+                                    "sy": 1199
+                                },
+                                "InspectionParam": {
+                                    "InspType": "IQ",
+                                    "PositionName": "IQ_CHECK"
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1431,
+                                    "ey": 6612,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1375,
+                                            "Y": 6558
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1374,
+                                            "Y": 6612
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1431,
+                                            "Y": 6612
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1431,
+                                            "Y": 6558
+                                        }
+                                    ],
+                                    "sx": 1374,
+                                    "sy": 6558
+                                },
+                                "InspectionParam": {
+                                    "InspType": "IQ",
+                                    "PositionName": "IQ_CHECK_2"
+                                }
+                            }
+                        ],
+                        "SensorRoiID": 1
+                    },
+                    {
+                        "LightID": 1,
+                        "LightName": "Ch2",
+                        "ROI": [
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1664,
+                                    "ey": 6564,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1611,
+                                            "Y": 1247
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1662,
+                                            "Y": 1247
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1665,
+                                            "Y": 6565
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1614,
+                                            "Y": 6564
+                                        }
+                                    ],
+                                    "sx": 1610,
+                                    "sy": 1246
+                                },
+                                "InspectionParam": {
+                                    "InspDuplication": 1,
+                                    "InspType": "Pass",
+                                    "M_T_Classification_MatchingID": 2,
+                                    "MergeDist": 5,
+                                    "MergeMode": 1,
+                                    "MinSize": 5,
+                                    "MinSizeMerge": 5,
+                                    "PitchType": "Vert_Thre",
+                                    "PitchX": 0,
+                                    "PitchY": 18,
+                                    "PositionID": 2,
+                                    "PositionName": "SR_Bubble",
+                                    "PostAverage": 5,
+                                    "ThrH": 128,
+                                    "ThrL": 30
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1428,
+                                    "ey": 1246,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1371,
+                                            "Y": 1201
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1371,
+                                            "Y": 1246
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1429,
+                                            "Y": 1246
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1429,
+                                            "Y": 1201
+                                        }
+                                    ],
+                                    "sx": 1370,
+                                    "sy": 1201
+                                },
+                                "InspectionParam": {
+                                    "InspType": "IQ",
+                                    "PositionName": "IQ_CHECK"
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1433,
+                                    "ey": 6608,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1376,
+                                            "Y": 6562
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1376,
+                                            "Y": 6609
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1434,
+                                            "Y": 6609
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1434,
+                                            "Y": 6562
+                                        }
+                                    ],
+                                    "sx": 1375,
+                                    "sy": 6561
+                                },
+                                "InspectionParam": {
+                                    "InspType": "IQ",
+                                    "PositionName": "IQ_CHECK_2"
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1283,
+                                    "ey": 2434,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1283,
+                                            "Y": 2428
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1283,
+                                            "Y": 2255
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1272,
+                                            "Y": 2261
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1272,
+                                            "Y": 2435
+                                        }
+                                    ],
+                                    "sx": 1272,
+                                    "sy": 2254
+                                },
+                                "InspectionParam": {
+                                    "InspType": "Cosmetic",
+                                    "MergeDist": 1,
+                                    "MergeMode": 1,
+                                    "MinSize": 8,
+                                    "MinSizeMerge": 8,
+                                    "PitchType": 60,
+                                    "PitchX": 0,
+                                    "PitchY": 16,
+                                    "PositionName": "SR_Bonding_Particle_Left",
+                                    "ThrH": 35,
+                                    "ThrL": 128
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1303,
+                                    "ey": 2427,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1303,
+                                            "Y": 2421
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1304,
+                                            "Y": 2247
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1292,
+                                            "Y": 2253
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1291,
+                                            "Y": 2428
+                                        }
+                                    ],
+                                    "sx": 1290,
+                                    "sy": 2246
+                                },
+                                "InspectionParam": {
+                                    "InspType": "Cosmetic",
+                                    "MergeDist": 1,
+                                    "MergeMode": 1,
+                                    "MinSize": 8,
+                                    "MinSizeMerge": 8,
+                                    "PitchType": 60,
+                                    "PitchX": 0,
+                                    "PitchY": 16,
+                                    "PositionName": "SR_Bonding_Particle_Left",
+                                    "ThrH": 35,
+                                    "ThrL": 128
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1322,
+                                    "ey": 2419,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1321,
+                                            "Y": 2412
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1322,
+                                            "Y": 2238
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1310,
+                                            "Y": 2244
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1309,
+                                            "Y": 2419
+                                        }
+                                    ],
+                                    "sx": 1309,
+                                    "sy": 2238
+                                },
+                                "InspectionParam": {
+                                    "InspType": "Cosmetic",
+                                    "MergeDist": 1,
+                                    "MergeMode": 1,
+                                    "MinSize": 8,
+                                    "MinSizeMerge": 8,
+                                    "PitchType": 60,
+                                    "PitchX": 0,
+                                    "PitchY": 16,
+                                    "PositionName": "SR_Bonding_Particle_Left",
+                                    "ThrH": 35,
+                                    "ThrL": 128
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1284,
+                                    "ey": 4054,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1283,
+                                            "Y": 4055
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1284,
+                                            "Y": 3754
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1272,
+                                            "Y": 3755
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1272,
+                                            "Y": 4055
+                                        }
+                                    ],
+                                    "sx": 1272,
+                                    "sy": 3753
+                                },
+                                "InspectionParam": {
+                                    "InspType": "Cosmetic",
+                                    "MergeDist": 1,
+                                    "MergeMode": 1,
+                                    "MinSize": 3,
+                                    "MinSizeMerge": 3,
+                                    "PitchType": 60,
+                                    "PitchX": 0,
+                                    "PitchY": 16,
+                                    "PositionName": "SR_Bonding_Particle_Center",
+                                    "ThrH": 35,
+                                    "ThrL": 128
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1303,
+                                    "ey": 4056,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1303,
+                                            "Y": 4056
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1304,
+                                            "Y": 3753
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1290,
+                                            "Y": 3753
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1291,
+                                            "Y": 4056
+                                        }
+                                    ],
+                                    "sx": 1289,
+                                    "sy": 3753
+                                },
+                                "InspectionParam": {
+                                    "InspType": "Cosmetic",
+                                    "MergeDist": 1,
+                                    "MergeMode": 1,
+                                    "MinSize": 3,
+                                    "MinSizeMerge": 3,
+                                    "PitchType": 60,
+                                    "PitchX": 0,
+                                    "PitchY": 16,
+                                    "PositionName": "SR_Bonding_Particle_Center",
+                                    "ThrH": 35,
+                                    "ThrL": 128
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1325,
+                                    "ey": 4054,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1325,
+                                            "Y": 3753
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1324,
+                                            "Y": 4054
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1312,
+                                            "Y": 4054
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1311,
+                                            "Y": 3754
+                                        }
+                                    ],
+                                    "sx": 1311,
+                                    "sy": 3753
+                                },
+                                "InspectionParam": {
+                                    "InspType": "Cosmetic",
+                                    "MergeDist": 1,
+                                    "MergeMode": 1,
+                                    "MinSize": 3,
+                                    "MinSizeMerge": 3,
+                                    "PitchType": 60,
+                                    "PitchX": 0,
+                                    "PitchY": 16,
+                                    "PositionName": "SR_Bonding_Particle_Center",
+                                    "ThrH": 35,
+                                    "ThrL": 128
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1282,
+                                    "ey": 5554,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1283,
+                                            "Y": 5554
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1283,
+                                            "Y": 5381
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1272,
+                                            "Y": 5374
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1271,
+                                            "Y": 5547
+                                        }
+                                    ],
+                                    "sx": 1270,
+                                    "sy": 5374
+                                },
+                                "InspectionParam": {
+                                    "InspType": "Cosmetic",
+                                    "MergeDist": 1,
+                                    "MergeMode": 1,
+                                    "MinSize": 8,
+                                    "MinSizeMerge": 8,
+                                    "PitchType": 60,
+                                    "PitchX": 0,
+                                    "PitchY": 16,
+                                    "PositionName": "SR_Bonding_Particle_Right",
+                                    "ThrH": 35,
+                                    "ThrL": 128
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1302,
+                                    "ey": 5561,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1303,
+                                            "Y": 5562
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1302,
+                                            "Y": 5389
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1291,
+                                            "Y": 5384
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1292,
+                                            "Y": 5556
+                                        }
+                                    ],
+                                    "sx": 1290,
+                                    "sy": 5383
+                                },
+                                "InspectionParam": {
+                                    "InspType": "Cosmetic",
+                                    "MergeDist": 1,
+                                    "MergeMode": 1,
+                                    "MinSize": 8,
+                                    "MinSizeMerge": 8,
+                                    "PitchType": 60,
+                                    "PitchX": 0,
+                                    "PitchY": 16,
+                                    "PositionName": "SR_Bonding_Particle_Right",
+                                    "ThrH": 35,
+                                    "ThrL": 128
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1326,
+                                    "ey": 5569,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1326,
+                                            "Y": 5394
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1325,
+                                            "Y": 5569
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1313,
+                                            "Y": 5563
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1313,
+                                            "Y": 5387
+                                        }
+                                    ],
+                                    "sx": 1313,
+                                    "sy": 5387
+                                },
+                                "InspectionParam": {
+                                    "InspType": "Cosmetic",
+                                    "MergeDist": 1,
+                                    "MergeMode": 1,
+                                    "MinSize": 8,
+                                    "MinSizeMerge": 8,
+                                    "PitchType": 60,
+                                    "PitchX": 0,
+                                    "PitchY": 16,
+                                    "PositionName": "SR_Bonding_Particle_Right",
+                                    "ThrH": 35,
+                                    "ThrL": 128
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1699,
+                                    "ey": 6573,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1593,
+                                            "Y": 1228
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1694,
+                                            "Y": 1228
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1699,
+                                            "Y": 6572
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1594,
+                                            "Y": 6573
+                                        }
+                                    ],
+                                    "sx": 1592,
+                                    "sy": 1228
+                                },
+                                "InspectionParam": {
+                                    "Calc_SR_Line": 2,
+                                    "Calc_SR_Line_MarkOffset": 211,
+                                    "Calc_SR_Range_minThr1": 110,
+                                    "Calc_SR_Range_minThr2": 80,
+                                    "Calc_SR_Range_offsetThr2": 10,
+                                    "Calc_SR_Range_projDiff": 35,
+                                    "Calc_SR_Range_projThr1": 160,
+                                    "Calc_SR_minGray": 80,
+                                    "Chk_SR_Depth": 1,
+                                    "InspType": 0,
+                                    "MergeDist": 3,
+                                    "MergeMode": 1,
+                                    "MinSize": 50,
+                                    "MinSizeMerge": 3,
+                                    "PitchType": 0,
+                                    "PitchX": 1,
+                                    "PitchY": 31,
+                                    "PositionName": "SR_No_Resin",
+                                    "ResinRatio": 25,
+                                    "Resin_MorphCnt": 3,
+                                    "ThrH": 80,
+                                    "ThrH_Resin": 255,
+                                    "ThrL": 70,
+                                    "ThrL_Resin": 130
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1653,
+                                    "ey": 1325,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1636,
+                                            "Y": 1239
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1635,
+                                            "Y": 1325
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1653,
+                                            "Y": 1325
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1654,
+                                            "Y": 1240
+                                        }
+                                    ],
+                                    "sx": 1634,
+                                    "sy": 1239
+                                },
+                                "InspectionParam": {
+                                    "InspType": "CP_OPEN",
+                                    "M_T_Classification_MatchingID": 1,
+                                    "MergeDist": 5,
+                                    "MergeMode": 1,
+                                    "MinSize": 5,
+                                    "MinSizeMerge": 15,
+                                    "PitchType": 0,
+                                    "PitchX": 0,
+                                    "PitchY": 32,
+                                    "PositionID": 1,
+                                    "PositionName": "SR_Open_Top",
+                                    "ThrH": 80,
+                                    "ThrL": 140
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1653,
+                                    "ey": 6564,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1635,
+                                            "Y": 6564
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1653,
+                                            "Y": 6564
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1653,
+                                            "Y": 6505
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1635,
+                                            "Y": 6506
+                                        }
+                                    ],
+                                    "sx": 1635,
+                                    "sy": 6505
+                                },
+                                "InspectionParam": {
+                                    "InspType": "CP_OPEN",
+                                    "M_T_Classification_MatchingID": 1,
+                                    "MergeDist": 5,
+                                    "MergeMode": 1,
+                                    "MinSize": 5,
+                                    "MinSizeMerge": 15,
+                                    "PitchType": 0,
+                                    "PitchX": 0,
+                                    "PitchY": 32,
+                                    "PositionID": 1,
+                                    "PositionName": "SR_Open_Bot",
+                                    "ThrH": 80,
+                                    "ThrL": 140
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1442,
+                                    "ey": 5621,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1223,
+                                            "Y": 5620
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1222,
+                                            "Y": 5354
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1328,
+                                            "Y": 5394
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1383,
+                                            "Y": 5395
+                                        },
+                                        {
+                                            "Index": 4,
+                                            "X": 1442,
+                                            "Y": 5378
+                                        },
+                                        {
+                                            "Index": 5,
+                                            "X": 1442,
+                                            "Y": 5621
+                                        }
+                                    ],
+                                    "sx": 1222,
+                                    "sy": 5353
+                                },
+                                "InspectionParam": {
+                                    "InspType": "Cosmetic",
+                                    "MergeDist": 10,
+                                    "MergeMode": 1,
+                                    "MinSize": 8,
+                                    "MinSizeMerge": 20,
+                                    "PitchType": "Vert",
+                                    "PitchX": 0,
+                                    "PitchY": 32,
+                                    "PositionID": 1,
+                                    "PositionName": "COP_Dent",
+                                    "PostMedian": 3,
+                                    "ThrH": 25,
+                                    "ThrL": 128
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1442,
+                                    "ey": 5391,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1223,
+                                            "Y": 5349
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1330,
+                                            "Y": 5390
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1382,
+                                            "Y": 5391
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1442,
+                                            "Y": 5373
+                                        },
+                                        {
+                                            "Index": 4,
+                                            "X": 1437,
+                                            "Y": 4078
+                                        },
+                                        {
+                                            "Index": 5,
+                                            "X": 1356,
+                                            "Y": 4060
+                                        },
+                                        {
+                                            "Index": 6,
+                                            "X": 1225,
+                                            "Y": 4058
+                                        }
+                                    ],
+                                    "sx": 1223,
+                                    "sy": 4058
+                                },
+                                "InspectionParam": {
+                                    "InspType": "Cosmetic",
+                                    "MergeDist": 10,
+                                    "MergeMode": 1,
+                                    "MinSize": 8,
+                                    "MinSizeMerge": 20,
+                                    "PitchType": "Vert",
+                                    "PitchX": 0,
+                                    "PitchY": 128,
+                                    "PositionID": 1,
+                                    "PositionName": "COP_Dent",
+                                    "PostMedian": 3,
+                                    "ThrH": 25,
+                                    "ThrL": 128
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1439,
+                                    "ey": 4073,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1224,
+                                            "Y": 4053
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1357,
+                                            "Y": 4055
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1437,
+                                            "Y": 4073
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1439,
+                                            "Y": 3727
+                                        },
+                                        {
+                                            "Index": 4,
+                                            "X": 1378,
+                                            "Y": 3748
+                                        },
+                                        {
+                                            "Index": 5,
+                                            "X": 1225,
+                                            "Y": 3755
+                                        }
+                                    ],
+                                    "sx": 1224,
+                                    "sy": 3727
+                                },
+                                "InspectionParam": {
+                                    "InspType": "Cosmetic",
+                                    "MergeDist": 10,
+                                    "MergeMode": 1,
+                                    "MinSize": 8,
+                                    "MinSizeMerge": 20,
+                                    "PitchType": "Vert",
+                                    "PitchX": 0,
+                                    "PitchY": 32,
+                                    "PositionID": 1,
+                                    "PositionName": "COP_Dent",
+                                    "PostMedian": 3,
+                                    "ThrH": 25,
+                                    "ThrL": 128
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1438,
+                                    "ey": 3751,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1225,
+                                            "Y": 3751
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1375,
+                                            "Y": 3743
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1438,
+                                            "Y": 3722
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1435,
+                                            "Y": 2436
+                                        },
+                                        {
+                                            "Index": 4,
+                                            "X": 1379,
+                                            "Y": 2416
+                                        },
+                                        {
+                                            "Index": 5,
+                                            "X": 1333,
+                                            "Y": 2414
+                                        },
+                                        {
+                                            "Index": 6,
+                                            "X": 1221,
+                                            "Y": 2454
+                                        }
+                                    ],
+                                    "sx": 1220,
+                                    "sy": 2414
+                                },
+                                "InspectionParam": {
+                                    "InspType": "Cosmetic",
+                                    "MergeDist": 10,
+                                    "MergeMode": 1,
+                                    "MinSize": 8,
+                                    "MinSizeMerge": 20,
+                                    "PitchType": "Vert",
+                                    "PitchX": 0,
+                                    "PitchY": 128,
+                                    "PositionID": 1,
+                                    "PositionName": "COP_Dent",
+                                    "PostMedian": 3,
+                                    "ThrH": 25,
+                                    "ThrL": 128
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1437,
+                                    "ey": 2451,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1220,
+                                            "Y": 2451
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1222,
+                                            "Y": 2198
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1438,
+                                            "Y": 2197
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1436,
+                                            "Y": 2432
+                                        },
+                                        {
+                                            "Index": 4,
+                                            "X": 1381,
+                                            "Y": 2412
+                                        },
+                                        {
+                                            "Index": 5,
+                                            "X": 1332,
+                                            "Y": 2410
+                                        }
+                                    ],
+                                    "sx": 1220,
+                                    "sy": 2197
+                                },
+                                "InspectionParam": {
+                                    "InspType": "Cosmetic",
+                                    "MergeDist": 10,
+                                    "MergeMode": 1,
+                                    "MinSize": 8,
+                                    "MinSizeMerge": 20,
+                                    "PitchType": "Vert",
+                                    "PitchX": 0,
+                                    "PitchY": 32,
+                                    "PositionID": 1,
+                                    "PositionName": "COP_Dent",
+                                    "PostMedian": 3,
+                                    "ThrH": 25,
+                                    "ThrL": 128
+                                }
+                            }
+                        ],
+                        "SensorRoiID": 2
+                    },
+                    {
+                        "LightID": 2,
+                        "LightName": "Ch3",
+                        "ROI": [
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1659,
+                                    "ey": 1302,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1641,
+                                            "Y": 1244
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1660,
+                                            "Y": 1244
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1659,
+                                            "Y": 1302
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1642,
+                                            "Y": 1303
+                                        }
+                                    ],
+                                    "sx": 1641,
+                                    "sy": 1243
+                                },
+                                "InspectionParam": {
+                                    "InspType": "CP_OPEN",
+                                    "MergeDist": 5,
+                                    "MergeMode": 1,
+                                    "MinSize": 5,
+                                    "MinSizeMerge": 15,
+                                    "PitchType": 0,
+                                    "PitchX": 0,
+                                    "PitchY": 10,
+                                    "PositionID": 1,
+                                    "PositionName": "SR_Open_Top",
+                                    "ThrH": 80,
+                                    "ThrL": 140
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1428,
+                                    "ey": 1246,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1371,
+                                            "Y": 1202
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1371,
+                                            "Y": 1247
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1429,
+                                            "Y": 1247
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1429,
+                                            "Y": 1202
+                                        }
+                                    ],
+                                    "sx": 1370,
+                                    "sy": 1201
+                                },
+                                "InspectionParam": {
+                                    "InspType": "IQ",
+                                    "PositionName": "IQ_CHECK_2"
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1432,
+                                    "ey": 6609,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1375,
+                                            "Y": 6562
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1375,
+                                            "Y": 6609
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1433,
+                                            "Y": 6609
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1433,
+                                            "Y": 6562
+                                        }
+                                    ],
+                                    "sx": 1374,
+                                    "sy": 6562
+                                },
+                                "InspectionParam": {
+                                    "InspType": "IQ",
+                                    "PositionName": "IQ_CHECK"
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1655,
+                                    "ey": 6566,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1637,
+                                            "Y": 6567
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1655,
+                                            "Y": 6567
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1655,
+                                            "Y": 6508
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1637,
+                                            "Y": 6509
+                                        }
+                                    ],
+                                    "sx": 1637,
+                                    "sy": 6507
+                                },
+                                "InspectionParam": {
+                                    "InspType": "CP_OPEN",
+                                    "MergeDist": 5,
+                                    "MergeMode": 1,
+                                    "MinSize": 5,
+                                    "MinSizeMerge": 15,
+                                    "PitchType": 0,
+                                    "PitchX": 0,
+                                    "PitchY": 10,
+                                    "PositionID": 1,
+                                    "PositionName": "SR_Open_Bot",
+                                    "ThrH": 80,
+                                    "ThrL": 140
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 1,
+                                    "ex": 1682,
+                                    "ey": 6556,
+                                    "sx": 1614,
+                                    "sy": 1255
+                                },
+                                "InspectionParam": {
+                                    "Calc_SR_Line_MarkOffset": 213,
+                                    "DL_Img_Save": 0,
+                                    "Diff_Thr": 5,
+                                    "InspType": "CP_OPEN",
+                                    "MergeDist": 3,
+                                    "MergeMode": 1,
+                                    "MinSize": 5,
+                                    "MinSizeMerge": 5,
+                                    "ModelName": "S_SR_Width_250609",
+                                    "PitchType": 0,
+                                    "PitchX": 0,
+                                    "PitchY": 32,
+                                    "PositionID": 2,
+                                    "PositionName": "SR_Open_Cover",
+                                    "Resin_MorphCnt": 3,
+                                    "Resin_MorphIteration": 0,
+                                    "Resin_MorphMask": [
+                                        1,
+                                        3
+                                    ],
+                                    "Seg_Height": 640,
+                                    "Seg_Width": 128,
+                                    "ThrH": 80,
+                                    "ThrL": 255,
+                                    "UseSegmentation": 1
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1710,
+                                    "ey": 6547,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1594,
+                                            "Y": 1203
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1711,
+                                            "Y": 1200
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1702,
+                                            "Y": 6548
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1591,
+                                            "Y": 6547
+                                        }
+                                    ],
+                                    "sx": 1590,
+                                    "sy": 1199
+                                },
+                                "InspectionParam": {
+                                    "Calc_SR_Line": 2,
+                                    "Calc_SR_Line_MarkOffset": 213,
+                                    "Calc_SR_minGray": 80,
+                                    "Chk_SR_Depth": 1,
+                                    "DL_Img_Save": 0,
+                                    "InspType": "CP_RESIN",
+                                    "MergeDist": 3,
+                                    "MergeMode": 1,
+                                    "MinSize": 200,
+                                    "MinSizeMerge": 3,
+                                    "ModelName": "S_SR_Width_250609",
+                                    "PitchType": 0,
+                                    "PitchX": 1,
+                                    "PitchY": 31,
+                                    "PositionName": "SR_No_Resin",
+                                    "ResinRatio": 5,
+                                    "Seg_Height": 640,
+                                    "Seg_Width": 128,
+                                    "ThrH": 255,
+                                    "ThrH_Resin": 255,
+                                    "ThrL": 255,
+                                    "ThrL_Resin": 0,
+                                    "UseSegmentation": 1
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 1,
+                                    "ex": 1667,
+                                    "ey": 1384,
+                                    "sx": 1653,
+                                    "sy": 1369
+                                },
+                                "InspectionParam": {
+                                    "InspType": "IQ",
+                                    "PositionName": "IQ_SR_3_1"
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 1,
+                                    "ex": 1665,
+                                    "ey": 3509,
+                                    "sx": 1655,
+                                    "sy": 3497
+                                },
+                                "InspectionParam": {
+                                    "InspType": "IQ",
+                                    "PositionName": "IQ_SR_3_2"
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 1,
+                                    "ex": 1667,
+                                    "ey": 5609,
+                                    "sx": 1654,
+                                    "sy": 5593
+                                },
+                                "InspectionParam": {
+                                    "InspType": "IQ",
+                                    "PositionName": "IQ_SR_3_3"
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 1,
+                                    "ex": 1705,
+                                    "ey": 1377,
+                                    "sx": 1686,
+                                    "sy": 1224
+                                },
+                                "InspectionParam": {
+                                    "InspType": "IQ",
+                                    "PositionName": "IQ_SR_3_4"
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 1,
+                                    "ex": 1709,
+                                    "ey": 3538,
+                                    "sx": 1685,
+                                    "sy": 3394
+                                },
+                                "InspectionParam": {
+                                    "InspType": "IQ",
+                                    "PositionName": "IQ_SR_3_5"
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 1,
+                                    "ex": 1710,
+                                    "ey": 5609,
+                                    "sx": 1686,
+                                    "sy": 5526
+                                },
+                                "InspectionParam": {
+                                    "InspType": "IQ",
+                                    "PositionName": "IQ_SR_3_6"
+                                }
+                            }
+                        ],
+                        "SensorRoiID": 3
+                    }
+                ],
+                "OpticType": "SR",
+                "eqp_sceneHeight": 7744,
+                "eqp_sceneWidth": 4096,
+                "eqp_showParameter": true,
+                "eqp_showRoiEditor": false
+            }
+        ],
+        "GLOBAL": {
+            "PanelInfo": {
+                "EqpName": "Mobile_CP_AOI",
+                "GlassCount": 2,
+                "GridX": 7,
+                "GridY": 12,
+                "ModelName": "D992",
+                "x": 68000,
+                "y": 144000
+            }
+        }
+    }
+}

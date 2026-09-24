@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package autoverify.engine.v1;
+
+option csharp_namespace = "AutoVerify.Contracts.Engine.V1";
+
+service AnomalyEngine {
+  rpc AnalyzeBatch(AnalyzeBatchRequest) returns (AnalyzeBatchResponse);
+  rpc GetEngineInfo(EngineInfoRequest) returns (EngineInfoResponse);
+}
+
+message EngineInfoRequest {}
+
+message EngineInfoResponse {
+  string service_name = 1;
+  string service_version = 2;
+  repeated string algorithm_versions = 3;
+}
+
+message AnalyzeBatchRequest {
+  string execution_id = 1;
+  string algorithm_version = 2;
+  repeated FeatureRecord records = 3;
+}
+
+message FeatureRecord {
+  string entity_id = 1;
+  map<string, double> numeric_features = 2;
+  map<string, string> categorical_features = 3;
+}
+
+message AnalyzeBatchResponse {
+  string algorithm_version = 1;
+  repeated AnomalyScore scores = 2;
+}
+
+message AnomalyScore {
+  string entity_id = 1;
+  double score = 2;
+  string classification = 3;
+  repeated string contributing_features = 4;
+  string evidence = 5;
+}

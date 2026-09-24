@@ -1,0 +1,772 @@
+{
+    "Inspection": {
+        "Camera": [
+            {
+                "Light": [
+                ],
+                "OpticType": "Dummy 1",
+                "eqp_sceneHeight": 1080,
+                "eqp_sceneWidth": 1920
+            },
+            {
+                "Common": {
+                    "AlignThetaRagne": 0,
+                    "AlignXRange": 0,
+                    "AlignYRange": 0,
+                    "BlkImgProcessing": 12,
+                    "BlkImgProcessingFlip": -1,
+                    "CtqSRResinOffset": 0,
+                    "D_SaveMavinImage": 1,
+                    "LightOffset1": 0,
+                    "LightOffset2": 120,
+                    "LightOffset3": 242,
+                    "MCLGridOffset1": 0,
+                    "MCLGridOffset2": 0,
+                    "MCLGridOffset3": 0,
+                    "MCLGridOffset4": 0,
+                    "M_Address_Inferencer": "192.168.200.232:8001",
+                    "M_Address_Local": "192.168.200.232:8102",
+                    "M_Classification": 1,
+                    "M_T_Classification_Model1": "CP_AOI_WH_Bubble_230802",
+                    "MaxDefectPerGlass": 2000,
+                    "MaxDefectPerLight": 1000,
+                    "MaxObjNum": 20000,
+                    "ROI_Height": 64,
+                    "R_FitType": 14,
+                    "Ref_OffsetX": 32,
+                    "Ref_OffsetY": 32,
+                    "Resolution": 944,
+                    "SRMeasureYOffset1": 21000,
+                    "SaveOrgBlk": [
+                        0,
+                        1,
+                        2,
+                        3
+                    ],
+                    "Seq1_Offset": -12,
+                    "Seq1_XOffset": -22,
+                    "Seq2_Offset": 12,
+                    "Seq2_XOffset": -109,
+                    "SkipInspPass": 1,
+                    "T_CamImg": 1,
+                    "refPos": [
+                        {
+                            "Height": 64,
+                            "Width": 64
+                        },
+                        {
+                            "Image": "zNPb2trV2NPV1NbW19PMyc7Qys3P1tjSys/K1drO0NDU0NLJ1d7V0M7R09PVzNDZ1tvU1dLP09fTz9LY0cbExcrT0NLU0MjQ0tPP0s7Gxs/PzdDO09PV1c/OytPXyc/R1MrV1drW0dXT0tXV2dTP1djX1tPV0trR0snDzMTN1dPE0M7KxsnLydHN1snN0NbP1tDV1M7V0Nje29jYyczQ0dXO0c3S1tbV2dbQydbY2NbX0NDQ2NDX1MzMzNPR0dDPzM3SwsTHxsLJx83O09PT1tPSx8/RzdLT1tLP0dbY0s/Py8jJzNPXytjPyMnS19TKz8/QzM3RztLAwcjR2NDP1tXQ2cfNy9PW1NTX0s3Lz9DW08zJ1NHQ1NXN0NvM1cvS18bIysvQ0s3Q0NbFycnPzsvN1MzQz9DOztfT2NbX1tXgz8HDxMrJ0MnU18/P0s/R0s/Qz8zQ0NHN0NPO1c7T0M3TzdDP2M3L1dDJyNHQ0NbM083LzdPS2dPY0NXV0NHZy8/JurvBysbM09HEy9TO1NjZ28nBwdXT1s/Q2NTa2dTY19bWzdHQxLzH08vMz87b2drX19jV3NXP0NTPy8/MzNfR0NPP0s/b1dLO0c/XydLU08avtMTQzdbQ0NDN0tPP0tDQ1tLJwrq2vsDP0MbI0NjT2NTa1t3R2s3azs7OztjQ19PW0dvT2NPS2N3TzsvM08m9wtnZ1dXX0tDT0NLMz8rJ0s/OvbzQ0MrHycfR0NDY1dnY3dvZ0tzY08/N0tnb1dbZz9Pc1dTU0dfX2c7ayNPO1dje0NDKzdLWzNjRyMnS0dLJx8HJ1dPS1tfZ1dTa2NXQ1dLW2dLS2dHMytbSz9PRzs/Jz9jS3tbNz9nV3dTX2uHY2c/JvMjN3tTWzbvH0czM0dXX29bZ2tvQ0M/W1NnR3tTW0dDW1c/WzcbU09fT09XHy9TV2trd19DJ0NLP0dTW09PZ0NXY09jPzsfFx9HMz9PU1tna1dfOzc/O08/Q29bZ0tLP0NLRzNPZ2tDY0dvT1tDT09fR0tXV1dPOxc7V08/U09Xa0dLY0dLKz9PRyNTT1trS0s/Q1tLW2dDSz9DRz9bEv8HN1dbe3NzV3NnU1dbT0tHVy9LT09PWvbrDzs3EzMrTz87V1NDKz83T09jU1dPUzNPN08nQ19LY0dLNzc/Nt6u7zdTT0NHUz9LW1tXZ1dLS0s7U1tHS0s7Cyc/Vx8HP09XXz9PW1M/N1M7NzdrX1dvLzdDL1NjZ09LK1tbSycXPzdjX2NHb0c7A09XT1dfVy83W087SyNLb2drY2NPc1tjW1tXYz9PU0s7P0tXZ1tXKysfP19PT0tnU3tnV0sjW3N/W0M7M1dPS0dDX0tDX3djV19XOzM7X3NzZ2NbW29nT2NnZ3djSzcbR0tfJ1dPN0NrW1tnU0snZ2drV1NDZ2dPU0tba2d3d2djTy83O1tXW1tPRzcnP09XR1dja2NfWztPX0tDOwr/Fy9DS0NLRztPa0NDO0NHQ0dfZ3NXa1NnU1szP09bU1trYzdvV08/P0dbXzL+1ztXSy9Tc2NbQ0tPV2dXPx87Gzc/S09nV0d/Y2dPQzMrS08zP2NvZz9DUzsTDzdTX0tXV29bHw8G1vsLI08/Oz9PRztLQ1dnTz8zQ0dTHycTP0srMy9DNzs3OysfQ0s/JydXU1tXV1djY2NXV19DQ1tXQ1tTa0s/Nzc7S397n2tnf39ve4t/b3N7Y29nRzL7E0tDWyrSwq6q0ztTb0NDZ3Nnd297f5ePf5+jf39fe4N3f3t7l5tna0tTa3tzj4N7g5ejc49/i3tre1tjd2dTRzNTX06lhSkVLcL7U0szR0N/m3dji4uTe3+Hh4Nng5efl4uPl3OTh39nW3tve4uLl3drj5dvg29/g3OLj2NfU2Nve1dCiTjYuN2S1z9Pi4Nvf3uLh3+Tm4eHY0Nrk4OLf5+Xc3uPg4uLa3N/e3d3c5eHh4Njd3N7m3N3f3NnSwtDc19LJqUYuKzBeu9LZ4eLc2d7l4ere2+Pi3+Lk29HO2djf5t/f4t/n5eHZ29vh4uTh4efj4efg4ufn2d3W0NTa5d/a0alJMCsxWrjW2Nre4ePe3tjV0Nzf3eXn4N/O1t/V3+He4Obf6OTc2N/g29nb2N7a3uLg4+fl4tbc09PX2tri3tqmQisnLFGpwcTEytXY39zTycne3d3e3ubr3+LX397c4ePZ2tbZ5N/g2dDQ2eDm5OLe4trh5tza09jl4OLc2N3SpUArKCc3VmFfZXi01d/e3+Xf5NDQ39vf4u3f3OPi3+Hk1dLd3tXd29jV1N3d5OLc3t3f29fW1NPW2tPW2dfTzqVBKyclKC0tLzVMoNPi297i5drc4+Hg3tvo4+ni5OPn4tnZ2dzk4dzg2uDf3Nvd2+Ti1dja39zl2t3b3NPU1sqkSComJSgqKSkvRanT2eHg3N7Hx9Lb4ujf5OPn5ePh5ejd2dnd4d/l3uXh3+Xe0Njg2dTg4dzW4NbZ2tXc2tbPpUUrJScmJygsLkWs3N/e4NfWw8vb3t7h6N/Y1Njd4OLn4trf39rh5OTh5NnU3ufi393f3dnZ0s7Nz9DSzsnFuphLPDQ0Njk6OTxSseHh4uPc3t7b5Nzi2d7MvL7Q1+Lj4OHZ3t7f2tza4uDb0dvi3tjX1uTYz6CFgYJ/gH98gHiGgoR9ioGDhI2KksbY29XZ4OHh3uLf4tzYxcPP1dnZ3Nfc4N/c2tXX1dnT09jf3tzb4eHh28RwPzg2NjQ0Mzk9d8PNy8zXzsrPzc3cz9jX397h4t/l5OLj497j5+PY2drc3dnb4+zOy9DZ29bf5Nzl5+Ll4drGaDQrKikoKSktNn3Dz9fX3NzZ0dPP2N/c2d/n5d7d4Nzj3tzf5Nva4NjQ0t3c3Nzh2MPT3Nbc3N7g2+Hi3+HZxGk1LCopKCgnKTh/yNDW3N3b18jP1Nnh4+rh6+Lk3eXn4uHi297l2+Hf4d7Y29rV0dHX19Tg2dzU19bY3N3e3s9tOjEvLCooKCo1e8TS2d7Z19XU2uPe1dvf3t/i2tnm4+Di39vb2tfe3+DZ3Nrb0dTc4N3Y3ODb0uPi3uDe2t/OkW9raWJHLygoNHbA2dvY4OPa3Onc49/j5uTh4urb39/k2s/J0NLL197k6Nvf2dTU2dPK1N7b4+Li3trk3t7W18W7t7aocjIqKTN7y9Hc2NnW3Nbn2+Hm3Nvk4trd3eDd5d3V3dXT2crY2d/b3tLPysHC2trn3eDX29TZ2tzd2drU19fUx4E4Kyk3gcvh2t7h4tzd39/f4N/f4NPW39rm4ufc39/V1d/Z6Ofp4t/YzcTAyNjg49Lc1NnU297d3+Lh4c/X1cmENigqNXnH1dnZ2Nfc2Njc4eXf29vV3dnh5evZ3ejg2+Hh3OPc59be3d7W3+Hf29rV2uHf39Xi5d3c3tjW3NDGhTsvLjqAydbY2tXV2t/Y1t3c2enb3eLh5t/e5N/g3+Tk4+He3drZ3Nrh493Z3Nnh1tje5ODV1t3b2+DV1dHNx41SSEhRiMHR0NTP0szX09bb2N/j4eHf4d3g3eDc4t/S3d7c2dbW297e4eTb19Ta3uLY19zg1t3b09vi29vb2M/IvLSrtcPS2M3V2Nnd0MvO2d3l5dvf2NvZ5uji5NXW3d3i3tja3N/j3Nfe0c/V1t/b2NzP2N/d1trb3N/l49rY2NvZz9bW297X19zd1+HZ4eLf3dnU19XR1trh4Nrc3d/c5eHc1tzZ1djZ0svO297l4tjS297i4djc3N/h2tvf3NfU39jf3NTT3NjZ6eXg6eDf2eHl39zX2eTi4+Hh2t/Y2Nzc4d/h1NnX1dfX29rc3d3N1OHf19jc3tre5N3Y2NnIws7d29bUy9Lc2OXh4uLe3dfY29rk4uTd5Nnc4eDb4dnd49/l3N3i3t3e4+Dh3t3g3N3d1tbW297n29ng3uHc0tfb4ePR0tTS1eLi5Nvn3uDi4ePi5Nvb4dff29rU3tvh5d/k4N/M2N7X3+Li4NvT0+Dd1c7Z4t7g39fg2N7d4d/e4Nvb3djh4Nzb1trY4efc4+Lc2d7e3+Pd3uTZ4d/b3dnh2NDY3Nnb3uLf2tzd3d3c3uDZ3t7e4ePg39/d3N7h39nY3ePk2N7X2djb393X59nc5d7g4uLi3Nve5N3d4dvc0c3P3tfe39nd4dzY3ODa3uHb3dnV1NPP0tPc29nb19vd2uLg1tzV3tLU29rZ2tXa3+Li3uPi3N3Z4eLb29/W1dnU4dvW197e2NzY097V0NHW393X0MrO1NLX4djb2NzT2Nfd29LT3d3j497T2dbX1trg4dzk29/a2N/g39zh29jZ4eTZ5N/g2M/U2d7MxM3W3dXe2eDY09PQ4d7k1dfSzNPW4djZ3uPi1uDV59je2tPU1tPQ4OLb4N3c4uHi2+De3ODW0t7d3drW2NzY0s3c4drh39vf29jk5uHZ3d7b09Pb6OLf3+Lf39Xf5OXo3tze19fV2Nvb3d3h3OLY1dje4t7f4NvZ3trf3uHb4dvi4uDe4t3Y5d7c3t/f2Nbe1Mvb4d7e3tvc1dDZ39/e3d7g2NnY29rf3uTh5N3SzMzW297f3d/l2dzb3+Df2t7f4ePb3OPb5d/k29be3+LfzLnA1tzn4ebg4tvc2dnf2Nnb4t7g3d3c1t7c3eHU2d7e4Nje3drf4dfV19zg2dPO4+Pc2dXh4d7h1tzS09fbzryxw87N1uDf4uHn5tzX2tbV1Nnd4dzY2dnX3dXb1dXZ39zL1tPg39vb1drd29/d3dvl4tzZ5Nvd1tva2N/i29bb2d3g4dza493f4dzg2NzU2d7m4Nne4d7h4ePj4+HY1N7h4eHh39/h29jU2uHa4eHj4d3T5N7V1eTi3N3c19jY39zc39rb3tXR3djZ2NvX2djc3d3b3tvV2t7e4eDU2+bg3dbe2d7e3t3W29DS0tna1t/Z2uHg3N7h297U3N3d3+Xk3trW19va2Nzc19bQ2NbW39vh4tjSzdXc4dnb0+Dk39fZ2+Dd4OLb1trUzNLRz9TZ1tvZ19zd29vg39zV3dzW2t/b3dzd2dXW2tbZ1dnf2tXZ19PTzdHZ3N7V29ni3dvX3NzY3uXh3trY2dLd2dfW2tjZ29bW3N7e4Nrd3t3e4uTY4N3X1tPW1NjW1tvZ4djYztjP1dvd3trV2NzS3Nvb2dzi4OHd3tnY3uPe3t/W1NDR29vW2dvh39jZ2NrW0NDW2NLb29XH3NPd3t7U1N/bzb7H29jX3dza3dzd2t3b3Nne2tvX2Nfd2NPY2dbdz8/M1uPi397W2N3Y3NXW1dzc2tza1dzh4N/f3NfZ39ve09XX39/i4uPe4t7a49re2t/U19zW1dXV1tHX1dbW39Pb3Nne3uHj5NzZ0Njb3N/Z2dza1tLW397T2tra3tze39zc5uLb4NvY1NTd2Nfe3NXc2dfZzcrN1A==",
+                            "Index": 0,
+                            "X": 1401,
+                            "Y": 960
+                        },
+                        {
+                            "Image": "zNPb2trV2NPV1NbW19PMyc7Qys3P1tjSys/K1drO0NDU0NLJ1d7V0M7R09PVzNDZ1tvU1dLP09fTz9LY0cbExcrT0NLU0MjQ0tPP0s7Gxs/PzdDO09PV1c/OytPXyc/R1MrV1drW0dXT0tXV2dTP1djX1tPV0trR0snDzMTN1dPE0M7KxsnLydHN1snN0NbP1tDV1M7V0Nje29jYyczQ0dXO0c3S1tbV2dbQydbY2NbX0NDQ2NDX1MzMzNPR0dDPzM3SwsTHxsLJx83O09PT1tPSx8/RzdLT1tLP0dbY0s/Py8jJzNPXytjPyMnS19TKz8/QzM3RztLAwcjR2NDP1tXQ2cfNy9PW1NTX0s3Lz9DW08zJ1NHQ1NXN0NvM1cvS18bIysvQ0s3Q0NbFycnPzsvN1MzQz9DOztfT2NbX1tXgz8HDxMrJ0MnU18/P0s/R0s/Qz8zQ0NHN0NPO1c7T0M3TzdDP2M3L1dDJyNHQ0NbM083LzdPS2dPY0NXV0NHZy8/JurvBysbM09HEy9TO1NjZ28nBwdXT1s/Q2NTa2dTY19bWzdHQxLzH08vMz87b2drX19jV3NXP0NTPy8/MzNfR0NPP0s/b1dLO0c/XydLU08avtMTQzdbQ0NDN0tPP0tDQ1tLJwrq2vsDP0MbI0NjT2NTa1t3R2s3azs7OztjQ19PW0dvT2NPS2N3TzsvM08m9wtnZ1dXX0tDT0NLMz8rJ0s/OvbzQ0MrHycfR0NDY1dnY3dvZ0tzY08/N0tnb1dbZz9Pc1dTU0dfX2c7ayNPO1dje0NDKzdLWzNjRyMnS0dLJx8HJ1dPS1tfZ1dTa2NXQ1dLW2dLS2dHMytbSz9PRzs/Jz9jS3tbNz9nV3dTX2uHY2c/JvMjN3tTWzbvH0czM0dXX29bZ2tvQ0M/W1NnR3tTW0dDW1c/WzcbU09fT09XHy9TV2trd19DJ0NLP0dTW09PZ0NXY09jPzsfFx9HMz9PU1tna1dfOzc/O08/Q29bZ0tLP0NLRzNPZ2tDY0dvT1tDT09fR0tXV1dPOxc7V08/U09Xa0dLY0dLKz9PRyNTT1trS0s/Q1tLW2dDSz9DRz9bEv8HN1dbe3NzV3NnU1dbT0tHVy9LT09PWvbrDzs3EzMrTz87V1NDKz83T09jU1dPUzNPN08nQ19LY0dLNzc/Nt6u7zdTT0NHUz9LW1tXZ1dLS0s7U1tHS0s7Cyc/Vx8HP09XXz9PW1M/N1M7NzdrX1dvLzdDL1NjZ09LK1tbSycXPzdjX2NHb0c7A09XT1dfVy83W087SyNLb2drY2NPc1tjW1tXYz9PU0s7P0tXZ1tXKysfP19PT0tnU3tnV0sjW3N/W0M7M1dPS0dDX0tDX3djV19XOzM7X3NzZ2NbW29nT2NnZ3djSzcbR0tfJ1dPN0NrW1tnU0snZ2drV1NDZ2dPU0tba2d3d2djTy83O1tXW1tPRzcnP09XR1dja2NfWztPX0tDOwr/Fy9DS0NLRztPa0NDO0NHQ0dfZ3NXa1NnU1szP09bU1trYzdvV08/P0dbXzL+1ztXSy9Tc2NbQ0tPV2dXPx87Gzc/S09nV0d/Y2dPQzMrS08zP2NvZz9DUzsTDzdTX0tXV29bHw8G1vsLI08/Oz9PRztLQ1dnTz8zQ0dTHycTP0srMy9DNzs3OysfQ0s/JydXU1tXV1djY2NXV19DQ1tXQ1tTa0s/Nzc7S397n2tnf39ve4t/b3N7Y29nRzL7E0tDWyrSwq6q0ztTb0NDZ3Nnd297f5ePf5+jf39fe4N3f3t7l5tna0tTa3tzj4N7g5ejc49/i3tre1tjd2dTRzNTX06lhSkVLcL7U0szR0N/m3dji4uTe3+Hh4Nng5efl4uPl3OTh39nW3tve4uLl3drj5dvg29/g3OLj2NfU2Nve1dCiTjYuN2S1z9Pi4Nvf3uLh3+Tm4eHY0Nrk4OLf5+Xc3uPg4uLa3N/e3d3c5eHh4Njd3N7m3N3f3NnSwtDc19LJqUYuKzBeu9LZ4eLc2d7l4ere2+Pi3+Lk29HO2djf5t/f4t/n5eHZ29vh4uTh4efj4efg4ufn2d3W0NTa5d/a0alJMCsxWrjW2Nre4ePe3tjV0Nzf3eXn4N/O1t/V3+He4Obf6OTc2N/g29nb2N7a3uLg4+fl4tbc09PX2tri3tqmQisnLFGpwcTEytXY39zTycne3d3e3ubr3+LX397c4ePZ2tbZ5N/g2dDQ2eDm5OLe4trh5tza09jl4OLc2N3SpUArKCc3VmFfZXi01d/e3+Xf5NDQ39vf4u3f3OPi3+Hk1dLd3tXd29jV1N3d5OLc3t3f29fW1NPW2tPW2dfTzqVBKyclKC0tLzVMoNPi297i5drc4+Hg3tvo4+ni5OPn4tnZ2dzk4dzg2uDf3Nvd2+Ti1dja39zl2t3b3NPU1sqkSComJSgqKSkvRanT2eHg3N7Hx9Lb4ujf5OPn5ePh5ejd2dnd4d/l3uXh3+Xe0Njg2dTg4dzW4NbZ2tXc2tbPpUUrJScmJygsLkWs3N/e4NfWw8vb3t7h6N/Y1Njd4OLn4trf39rh5OTh5NnU3ufi393f3dnZ0s7Nz9DSzsnFuphLPDQ0Njk6OTxSseHh4uPc3t7b5Nzi2d7MvL7Q1+Lj4OHZ3t7f2tza4uDb0dvi3tjX1uTYz6CFgYJ/gH98gHiGgoR9ioGDhI2KksbY29XZ4OHh3uLf4tzYxcPP1dnZ3Nfc4N/c2tXX1dnT09jf3tzb4eHh28RwPzg2NjQ0Mzk9d8PNy8zXzsrPzc3cz9jX397h4t/l5OLj497j5+PY2drc3dnb4+zOy9DZ29bf5Nzl5+Ll4drGaDQrKikoKSktNn3Dz9fX3NzZ0dPP2N/c2d/n5d7d4Nzj3tzf5Nva4NjQ0t3c3Nzh2MPT3Nbc3N7g2+Hi3+HZxGk1LCopKCgnKTh/yNDW3N3b18jP1Nnh4+rh6+Lk3eXn4uHi297l2+Hf4d7Y29rV0dHX19Tg2dzU19bY3N3e3s9tOjEvLCooKCo1e8TS2d7Z19XU2uPe1dvf3t/i2tnm4+Di39vb2tfe3+DZ3Nrb0dTc4N3Y3ODb0uPi3uDe2t/OkW9raWJHLygoNHbA2dvY4OPa3Onc49/j5uTh4urb39/k2s/J0NLL197k6Nvf2dTU2dPK1N7b4+Li3trk3t7W18W7t7aocjIqKTN7y9Hc2NnW3Nbn2+Hm3Nvk4trd3eDd5d3V3dXT2crY2d/b3tLPysHC2trn3eDX29TZ2tzd2drU19fUx4E4Kyk3gcvh2t7h4tzd39/f4N/f4NPW39rm4ufc39/V1d/Z6Ofp4t/YzcTAyNjg49Lc1NnU297d3+Lh4c/X1cmENigqNXnH1dnZ2Nfc2Njc4eXf29vV3dnh5evZ3ejg2+Hh3OPc59be3d7W3+Hf29rV2uHf39Xi5d3c3tjW3NDGhTsvLjqAydbY2tXV2t/Y1t3c2enb3eLh5t/e5N/g3+Tk4+He3drZ3Nrh493Z3Nnh1tje5ODV1t3b2+DV1dHNx41SSEhRiMHR0NTP0szX09bb2N/j4eHf4d3g3eDc4t/S3d7c2dbW297e4eTb19Ta3uLY19zg1t3b09vi29vb2M/IvLSrtcPS2M3V2Nnd0MvO2d3l5dvf2NvZ5uji5NXW3d3i3tja3N/j3Nfe0c/V1t/b2NzP2N/d1trb3N/l49rY2NvZz9bW297X19zd1+HZ4eLf3dnU19XR1trh4Nrc3d/c5eHc1tzZ1djZ0svO297l4tjS297i4djc3N/h2tvf3NfU39jf3NTT3NjZ6eXg6eDf2eHl39zX2eTi4+Hh2t/Y2Nzc4d/h1NnX1dfX29rc3d3N1OHf19jc3tre5N3Y2NnIws7d29bUy9Lc2OXh4uLe3dfY29rk4uTd5Nnc4eDb4dnd49/l3N3i3t3e4+Dh3t3g3N3d1tbW297n29ng3uHc0tfb4ePR0tTS1eLi5Nvn3uDi4ePi5Nvb4dff29rU3tvh5d/k4N/M2N7X3+Li4NvT0+Dd1c7Z4t7g39fg2N7d4d/e4Nvb3djh4Nzb1trY4efc4+Lc2d7e3+Pd3uTZ4d/b3dnh2NDY3Nnb3uLf2tzd3d3c3uDZ3t7e4ePg39/d3N7h39nY3ePk2N7X2djb393X59nc5d7g4uLi3Nve5N3d4dvc0c3P3tfe39nd4dzY3ODa3uHb3dnV1NPP0tPc29nb19vd2uLg1tzV3tLU29rZ2tXa3+Li3uPi3N3Z4eLb29/W1dnU4dvW197e2NzY097V0NHW393X0MrO1NLX4djb2NzT2Nfd29LT3d3j497T2dbX1trg4dzk29/a2N/g39zh29jZ4eTZ5N/g2M/U2d7MxM3W3dXe2eDY09PQ4d7k1dfSzNPW4djZ3uPi1uDV59je2tPU1tPQ4OLb4N3c4uHi2+De3ODW0t7d3drW2NzY0s3c4drh39vf29jk5uHZ3d7b09Pb6OLf3+Lf39Xf5OXo3tze19fV2Nvb3d3h3OLY1dje4t7f4NvZ3trf3uHb4dvi4uDe4t3Y5d7c3t/f2Nbe1Mvb4d7e3tvc1dDZ39/e3d7g2NnY29rf3uTh5N3SzMzW297f3d/l2dzb3+Df2t7f4ePb3OPb5d/k29be3+LfzLnA1tzn4ebg4tvc2dnf2Nnb4t7g3d3c1t7c3eHU2d7e4Nje3drf4dfV19zg2dPO4+Pc2dXh4d7h1tzS09fbzryxw87N1uDf4uHn5tzX2tbV1Nnd4dzY2dnX3dXb1dXZ39zL1tPg39vb1drd29/d3dvl4tzZ5Nvd1tva2N/i29bb2d3g4dza493f4dzg2NzU2d7m4Nne4d7h4ePj4+HY1N7h4eHh39/h29jU2uHa4eHj4d3T5N7V1eTi3N3c19jY39zc39rb3tXR3djZ2NvX2djc3d3b3tvV2t7e4eDU2+bg3dbe2d7e3t3W29DS0tna1t/Z2uHg3N7h297U3N3d3+Xk3trW19va2Nzc19bQ2NbW39vh4tjSzdXc4dnb0+Dk39fZ2+Dd4OLb1trUzNLRz9TZ1tvZ19zd29vg39zV3dzW2t/b3dzd2dXW2tbZ1dnf2tXZ19PTzdHZ3N7V29ni3dvX3NzY3uXh3trY2dLd2dfW2tjZ29bW3N7e4Nrd3t3e4uTY4N3X1tPW1NjW1tvZ4djYztjP1dvd3trV2NzS3Nvb2dzi4OHd3tnY3uPe3t/W1NDR29vW2dvh39jZ2NrW0NDW2NLb29XH3NPd3t7U1N/bzb7H29jX3dza3dzd2t3b3Nne2tvX2Nfd2NPY2dbdz8/M1uPi397W2N3Y3NXW1dzc2tza1dzh4N/f3NfZ39ve09XX39/i4uPe4t7a49re2t/U19zW1dXV1tHX1dbW39Pb3Nne3uHj5NzZ0Njb3N/Z2dza1tLW397T2tra3tze39zc5uLb4NvY1NTd2Nfe3NXc2dfZzcrN1A==",
+                            "Index": 1,
+                            "X": 1401,
+                            "Y": 960
+                        },
+                        {
+                            "Image": "38+4nZeryNnW1tbY2trZ2tzi29zX4t7W2Nzf4Nzh08rM1tfc09vY3s3D2NTb1dzh3t/X3Nze3ODb4Nvc19zc2MbAvLjK2NXZ2drP1+Pa2d/f2NbW3Njb2uDc4dfZ19DO1djY08rV2tLSz97b09XY5NjY2NPb3+Hb3NDMxsbS2NzQ2OPb3Nnc1NbR0dnX3d7Y0MjP09zV09bV0NXW2dfc3OXc3N/a2drb0tvf1MvU2Nzb2tPW2djZ1djR0crQ1eHa1dzZ19bNxr/J0Nnb3tjf3NjY2Nnc3t7X3drV29/c4d7c29/Z39TW3t3c297c3tjT1tnX2dTV2d7d29LY3d/c2uTb3dnS0si+0tvh3Nvc1tni5tfZ2dXW4dPT1tvb1d/V1dja29nV0t7e4NnZ1dfI0djc09HS19zZ3tze3uDV2tvT29bd2MzV19jk3NzZ2d3W1NjY1tbL09LQ1dzh2dnd3NjW2dbT3NjW1dvd2dvY4t7W3N/c3dTa2eDf39vY297e19HU29Xd0tjd3Nvb1tbV1dna1MrKxNTKys7T1tjU2s7T09XR2OHVy9bf1trT19za3OLe2tnd1NXc2dXYzdnb39ja4N/W1czW1tjW3NLW2djTxsbW2NfNz+Hc19jn2NnY09XX0tvP2Nre29vY1dHT0trY29zW4dza2tnX1dzc2dna193W2d3S29XV0tvS2NnUydfa1dnW3Nzc1t/W2NbU3NbW2NbW29bW3trY0MTO1djb3NvY1Nzh29XX19nZ2djbzNbY39ja2tPY2NPj09bV2dnU0crQ0NXezM/U29zc3NbY2tnW3NjN1dTe2NXd1c3S1NbV2t3c2c/Q1dnd0N7W39jW1srY29nS0tfb1tbS0NbP1c3CwsfOzMvKzdzT0tvd397Y1M/Y0tXR1tbYz9LHzdLQ2drT2NjU2Nrb3tne1Nbb28/T2NnV1tPQ2Njb1s/N1NPV1dHR1tXG2dLK1NfV0tDT2M/N39XX1NfQ2trX2NfT0djW0Nbc19fh2t7f2tjZ2c/c19bIzNbX19PS1dnJytPW2uHi29fa2s7E09HNzdbY0tbe4N/XytDNzMvQ09XVzM/U0sXO093Y3uLg29rb0tbW2NLW2s7a1dLM187V3dvaz9fe2tjb09rQ09zb4NjX2s/T3dnYytXd39jH3NHV1MbT0dfT0M3V0tXb2trh1dfP0NXQ1tjY0d7Z1trT1djXzM3T0MfS19XW1tXZ1dTk2dDN0NjW2tva2NnU0tjXy8bc2tPbz93U2tTT1tnT2tPV1tbV2tva2tnf2dva0tjX2N7X0s/U3OPY2Nvb2NnY29TV1c/Ry9ja2tXY3tnV1NXc2dPWztba1dLe2NjZ1dvS1tvU2c3V3szW3NrWzdbP1NDTzdDN19bfy8jQ0djRzM7O1M/M19PM0NPW1NjZ1NXZ1c/ZztDUztXY1tPV1drU1dji2s/L3OHe4Nze1N3T2eXh2tfY39zb3tTf4Nzo3uTl5t/f4d7b1uLh3uLe4uPe39ve3OHi3+bm4d/b3t/i4Ofd39nc1N7d4N3e2dzZ39jf4t3Z1uLc3OHX2N7h4d7j5NjU2tnj4Nve4t7g3Njc3uHi3ufd5OHh5+ni5eLk6OTk4Off2s/S5ODf5+Hg3uXZ3dXO3eXe3+Hf3eTh5Ofb497I0Nzn4uTl4eHf2ufi5OTo5uXe4ufT2urc4Oni3d3r5Obg29zZ3ufg4eLn6N7d4NvY1uPl5eLd3tfe39HV1tbS0tne29/Y197i3trc3t7h4d/c393c4N7m5ufi4eDm3N/S3uHh4+Le5uXb4tje4eHf4N/c4uHh39ra08zAlImHhIW3zNfUzs7P4dXa2ePk5N3f2OLi5efh5OTh4eLg3uLc3+Pf4tjZ3Nrj4N/b5+Pd693S2d3f39vX2NnXyFk5NzhLrtfb29XY1eTi59rf3tve3N7f3uLe4eHg4+fk2eTl5eLj3tXd2Nnk3trh4N7j397k3Nzr4OXX1tba2clZMiswRazX2NzZ4+ja3d/b4NXe3OPb1crV09nj3uHn5+Di3uPl5trZ3eDh3dbW1uHg293d4OHj5eHh4N7b0dbEUS0oKz+ZwNbU3dbY39ng2N/i397c19jZ2M7d2eXf5ujh5OHS1t/f5NvZ1eLe3Obg397V2eDl3uzl3tjX2NjPvVIuJypBotTi39vQ3t/e3OHg3+La09vl4OPq4ujq4uHl6eTh29vY2+Ha2dnq2+Xg4dze3N7b3Nfg4N7Ms6mroplCJyUpPa3S2N3Z4+Xb293j4eHm5dvd5ODj5uHc2N/d1N7e3+Hg5eDb2N7l6OPg4efe1OLd1tfe3uLYslZDQD46KyUlKj+029jd1dTd3t3e4eXi5Oji5efn59vVyNPe087R2dvk5N7f39vm3tPd3eHd3N3e4N7c3uDf1K9BLisqKCUlJSg+rtfb3tPP09vZ3t/Z2tzj3Nje297Z2NfY2uHf3uXi4eDg5eLl6uHc5eHb1tzc49re2dnb3ta0RC4qKCcmJSQpQa7P3d3Q0N/k3Nzh4Nzc2d3XvcXM4N/g39TC197k4Nza2dze39vh5eHk4OHn4t7c2Nzi3dfUsEItKyorJyYoLEGv0NXR2djU1uHb4M/E1NvfzMDT2d/j2tbIuMjXz9nX1uPb4ODg3uXn2d3i4+Dd4OLh3+Lb4LpYR0VFREhDRUhSnsC7vbu5vcLDxcjVyd7i4uHf4+Hk4d/d3NnZ3+Hb4uTo3tfb3tLc3uHdz93l3eLj4OHc2NbNtrKqtbOtsrawp4peVVRVWVZRWlqG1dXd4uLk4+Hd3N/d5OTo5dff1tzh3Nzl19XY5Nzczb7Q3eXh39bg4uTn3t3V1NfV0tXW1cp4OC4vLSwtLi42a8bc5N/f3+ja3tno4ebe4+ff2tzh2dXg5Nzg2+HX1crY3t7f4N/i5OPc2tvb2djX09LV2d7PeDMrKCcqJysqL2TK3Nzd3t/b3eTi4N3Y1d3h49/k1tLg4N3c4ePf2Nnj5uXe3t3l3+Lg1trb2tXV19ri2NvTxXU1KSknKSosLDVmy9ng5OHZ2djf2OLZ3tnX0+Df3d3j4djc4uTe4uLb3+Hb3N/f3d7f39vb3dba2eDi2NXS0sV1MSkkJy00NDU8bsHR5N7c3dzc4N/h5uPe4t7h5+Dd5ODZ3Nrb2ODn3dPZ3eHg4eDg1dfi3t7b3tDe3tbVztPLczMoKC5hjpiVl7LT4dvi5ebp0tDe4+Xn6dvh6Obg4tnV3tzf3tvf4d/S2eTc4+Th3NnZ39/Z4dbT19jd29jWyG4vKCYxhcjKycrT1dXZ4+LV3uLf4d/i4+Tl39rY297d3t7g4dbT2tjd4t7Z1tjf4uXj4N3a1tDZ1t7Z3trY3NB1NCgrM4fGxcTN0tnO3OLh2N3Y493f1t7k29za0Njh4d7b3d/a1t7e3dvb4t/a3dnc2eXb1M/R0dXazdTZ3tXQdDApKjWFxsDG3+He0tne2uHg3Nbf49Tf4OHY3tfi5+Lk497k3uHf5uLl3+Tk2tzh3t3e4dnV0NXV1+HZ297ayn46MjI9iLvc3dvj39/X4+Xg3drf4eLc3N3l4NfV3OXl2+Pk3uHe29jW3+Hk4OTi4uHW1dnf1tDWx9DV2tzW1tGZcW1pc6TO0NPV1dzb4N/i19vf3t7h2OTj4Njb29/c293c2+Lk497i2dba3dzb3NzVzNfh1+Lb3dnc4eLe3Nbg2M3QydPZ29jU0dPd4Nzk3uTl2d3h5eXY287Y3drh4MbW4tnk49vh3Nvc1dzg4NvZ29je5ODh3t/e4Obd39bZ3Nve2t7S1eDa29PU5Nzm5drc4dbh39rh1czT2t3l1ta+4d3f3OXa4t/Y3+Lj4+Pd2Nza4+Le5OLk3t/Z0uHf3t3n3ODT1Nfk6OHf39zi393j3+Pj3tng2Nzl2+Dl4t7h1tHa4d3h29vg3ePf2Nbd2NXZ49/e4t3e3Nzd1trZ397e3t7Y3tzf2OLj4+Tf2uLd4ODc29/Z2Nbn2tbf7OHe3dvc4tve29/f6ODb5OPd1dbg2d/j3+Pj5dXg2dve3uDd3uTl4+Dh4eni59zY2dbd2N7d2N/g4eHj5eTj2tvf3eDl4d7j4+Pd4t3j3ODm3Nnh4+De4dzY5t7f3OLY2NnT2ODl6t/c4eHb1c/Tyb3J2NDXztLV3Nzb5Nnk2crN3tvm1d3c2+Dj4ODh4OHi3evm3uji3+Lb2+Dj2+Pl3uDb2N/l3N7k5eXhz9XSwMnK09XV1dXd3d3d3ODl5N3S0OPj3NXR09Xj2Nrf5t3f4Ojg4t/j09/e3dPP2NrZ29jZ1d/g3tze0Nfi1tjb2drf3uHe2dzW19vi4uXc29ze28/l1d/k3t7i2dzc3+Td1t7g3trSxbzP4dLFytzd29ba393n5N3Z397d293c3tzd2+Hf4ODd1uTf4OTd5Nzh5uPf4eLg5tvZ4Nzf29jX3NXa1dLcyqq50NrR3d3eyrTCzNjh2trX1tnf4eDb4d3X3Nze2d3f4tzf3tnc39/e39nS3d7j1d7V4d7g2ODd4djb1Nnd3M3Q1trY3trd3tXV3dzb5OHk4tvk3uXa0djl2tbY2+Pd4+La4ODb497g3NzY2d/h3t/c4OPh3tjl4ODg4uXd3N/b2tnf3N/g1t7c4t/g3N3S397f39rd2drl3d7g2NDW1uDe49bb4uHe29/h6ODX4dva2trZ4NXX093f2+Hk3N3a4OLX3N/f2tnW2tvT2uXRwMzf2tjY0Nfg3N3n3+Tf19/k3+fg2OHX2+Lk2tbU59/k3t/T1NXc3Nbc3uHd4+LZ5trg4d7ay8nS29XW2dfP1dTe3N/Y1tfa393b2N7f4t/k2dre3Nbb4dvazM/W0dne49zez9La393c2+Dh3d/Z3Nve5Njh29PZ2eDh193j4d7m39/h2eji3tnY2tjb5eLf3Nnf0uDe4tvP287Q1dff5+Lb4dnh29jSz9DX4N/c4Njb4N7b3eLl4tfe1uHf3d7c2tni49/k3dra4tzc5dzZ08/UzM3Y4eHZ1tHY2Nri29/f39Xd4OHX0NLX1ODe4d3e5OXZ4dvc5Nze39rc5OLezsTG19rb29Xa3uXm6Nra1c3VxLrO393e2t/c4ODZ39He39/f4dnW1Nra09LZ29vX1+Lb2N7b3trb3N/b1Nzd39PKytXc1sXF2OTf3NLFxsbP3MO50Nfd2drf2tzb4N7V2d7k3eLQxNLc1drS3NjW2uDf1tjX2ePg3N/j3uDj5OTc1eLi287S2Obl3dvGvsnK0cLM2drb3+Ld3djf4ODd3OLm5NrWyr3P2tzf1dre3tzf29zY2Nrc29/f5OHb4N/Zz9zd3Nzb2OLg3d7b1tfW19XQ2+HY1tLg2c3e3uDg39/c4N3c29zY3Nzf2dzh3Nvf3t3c4tzc597h4djd29zh3tvf19rP1dre39zc2t/c2Nrd4tzn1dvZ19ra3OHb2d7a2uTe2w==",
+                            "Index": 2,
+                            "X": 1399,
+                            "Y": 6147
+                        },
+                        {
+                            "Image": "38+4nZeryNnW1tbY2trZ2tzi29zX4t7W2Nzf4Nzh08rM1tfc09vY3s3D2NTb1dzh3t/X3Nze3ODb4Nvc19zc2MbAvLjK2NXZ2drP1+Pa2d/f2NbW3Njb2uDc4dfZ19DO1djY08rV2tLSz97b09XY5NjY2NPb3+Hb3NDMxsbS2NzQ2OPb3Nnc1NbR0dnX3d7Y0MjP09zV09bV0NXW2dfc3OXc3N/a2drb0tvf1MvU2Nzb2tPW2djZ1djR0crQ1eHa1dzZ19bNxr/J0Nnb3tjf3NjY2Nnc3t7X3drV29/c4d7c29/Z39TW3t3c297c3tjT1tnX2dTV2d7d29LY3d/c2uTb3dnS0si+0tvh3Nvc1tni5tfZ2dXW4dPT1tvb1d/V1dja29nV0t7e4NnZ1dfI0djc09HS19zZ3tze3uDV2tvT29bd2MzV19jk3NzZ2d3W1NjY1tbL09LQ1dzh2dnd3NjW2dbT3NjW1dvd2dvY4t7W3N/c3dTa2eDf39vY297e19HU29Xd0tjd3Nvb1tbV1dna1MrKxNTKys7T1tjU2s7T09XR2OHVy9bf1trT19za3OLe2tnd1NXc2dXYzdnb39ja4N/W1czW1tjW3NLW2djTxsbW2NfNz+Hc19jn2NnY09XX0tvP2Nre29vY1dHT0trY29zW4dza2tnX1dzc2dna193W2d3S29XV0tvS2NnUydfa1dnW3Nzc1t/W2NbU3NbW2NbW29bW3trY0MTO1djb3NvY1Nzh29XX19nZ2djbzNbY39ja2tPY2NPj09bV2dnU0crQ0NXezM/U29zc3NbY2tnW3NjN1dTe2NXd1c3S1NbV2t3c2c/Q1dnd0N7W39jW1srY29nS0tfb1tbS0NbP1c3CwsfOzMvKzdzT0tvd397Y1M/Y0tXR1tbYz9LHzdLQ2drT2NjU2Nrb3tne1Nbb28/T2NnV1tPQ2Njb1s/N1NPV1dHR1tXG2dLK1NfV0tDT2M/N39XX1NfQ2trX2NfT0djW0Nbc19fh2t7f2tjZ2c/c19bIzNbX19PS1dnJytPW2uHi29fa2s7E09HNzdbY0tbe4N/XytDNzMvQ09XVzM/U0sXO093Y3uLg29rb0tbW2NLW2s7a1dLM187V3dvaz9fe2tjb09rQ09zb4NjX2s/T3dnYytXd39jH3NHV1MbT0dfT0M3V0tXb2trh1dfP0NXQ1tjY0d7Z1trT1djXzM3T0MfS19XW1tXZ1dTk2dDN0NjW2tva2NnU0tjXy8bc2tPbz93U2tTT1tnT2tPV1tbV2tva2tnf2dva0tjX2N7X0s/U3OPY2Nvb2NnY29TV1c/Ry9ja2tXY3tnV1NXc2dPWztba1dLe2NjZ1dvS1tvU2c3V3szW3NrWzdbP1NDTzdDN19bfy8jQ0djRzM7O1M/M19PM0NPW1NjZ1NXZ1c/ZztDUztXY1tPV1drU1dji2s/L3OHe4Nze1N3T2eXh2tfY39zb3tTf4Nzo3uTl5t/f4d7b1uLh3uLe4uPe39ve3OHi3+bm4d/b3t/i4Ofd39nc1N7d4N3e2dzZ39jf4t3Z1uLc3OHX2N7h4d7j5NjU2tnj4Nve4t7g3Njc3uHi3ufd5OHh5+ni5eLk6OTk4Off2s/S5ODf5+Hg3uXZ3dXO3eXe3+Hf3eTh5Ofb497I0Nzn4uTl4eHf2ufi5OTo5uXe4ufT2urc4Oni3d3r5Obg29zZ3ufg4eLn6N7d4NvY1uPl5eLd3tfe39HV1tbS0tne29/Y197i3trc3t7h4d/c393c4N7m5ufi4eDm3N/S3uHh4+Le5uXb4tje4eHf4N/c4uHh39ra08zAlImHhIW3zNfUzs7P4dXa2ePk5N3f2OLi5efh5OTh4eLg3uLc3+Pf4tjZ3Nrj4N/b5+Pd693S2d3f39vX2NnXyFk5NzhLrtfb29XY1eTi59rf3tve3N7f3uLe4eHg4+fk2eTl5eLj3tXd2Nnk3trh4N7j397k3Nzr4OXX1tba2clZMiswRazX2NzZ4+ja3d/b4NXe3OPb1crV09nj3uHn5+Di3uPl5trZ3eDh3dbW1uHg293d4OHj5eHh4N7b0dbEUS0oKz+ZwNbU3dbY39ng2N/i397c19jZ2M7d2eXf5ujh5OHS1t/f5NvZ1eLe3Obg397V2eDl3uzl3tjX2NjPvVIuJypBotTi39vQ3t/e3OHg3+La09vl4OPq4ujq4uHl6eTh29vY2+Ha2dnq2+Xg4dze3N7b3Nfg4N7Ms6mroplCJyUpPa3S2N3Z4+Xb293j4eHm5dvd5ODj5uHc2N/d1N7e3+Hg5eDb2N7l6OPg4efe1OLd1tfe3uLYslZDQD46KyUlKj+029jd1dTd3t3e4eXi5Oji5efn59vVyNPe087R2dvk5N7f39vm3tPd3eHd3N3e4N7c3uDf1K9BLisqKCUlJSg+rtfb3tPP09vZ3t/Z2tzj3Nje297Z2NfY2uHf3uXi4eDg5eLl6uHc5eHb1tzc49re2dnb3ta0RC4qKCcmJSQpQa7P3d3Q0N/k3Nzh4Nzc2d3XvcXM4N/g39TC197k4Nza2dze39vh5eHk4OHn4t7c2Nzi3dfUsEItKyorJyYoLEGv0NXR2djU1uHb4M/E1NvfzMDT2d/j2tbIuMjXz9nX1uPb4ODg3uXn2d3i4+Dd4OLh3+Lb4LpYR0VFREhDRUhSnsC7vbu5vcLDxcjVyd7i4uHf4+Hk4d/d3NnZ3+Hb4uTo3tfb3tLc3uHdz93l3eLj4OHc2NbNtrKqtbOtsrawp4peVVRVWVZRWlqG1dXd4uLk4+Hd3N/d5OTo5dff1tzh3Nzl19XY5Nzczb7Q3eXh39bg4uTn3t3V1NfV0tXW1cp4OC4vLSwtLi42a8bc5N/f3+ja3tno4ebe4+ff2tzh2dXg5Nzg2+HX1crY3t7f4N/i5OPc2tvb2djX09LV2d7PeDMrKCcqJysqL2TK3Nzd3t/b3eTi4N3Y1d3h49/k1tLg4N3c4ePf2Nnj5uXe3t3l3+Lg1trb2tXV19ri2NvTxXU1KSknKSosLDVmy9ng5OHZ2djf2OLZ3tnX0+Df3d3j4djc4uTe4uLb3+Hb3N/f3d7f39vb3dba2eDi2NXS0sV1MSkkJy00NDU8bsHR5N7c3dzc4N/h5uPe4t7h5+Dd5ODZ3Nrb2ODn3dPZ3eHg4eDg1dfi3t7b3tDe3tbVztPLczMoKC5hjpiVl7LT4dvi5ebp0tDe4+Xn6dvh6Obg4tnV3tzf3tvf4d/S2eTc4+Th3NnZ39/Z4dbT19jd29jWyG4vKCYxhcjKycrT1dXZ4+LV3uLf4d/i4+Tl39rY297d3t7g4dbT2tjd4t7Z1tjf4uXj4N3a1tDZ1t7Z3trY3NB1NCgrM4fGxcTN0tnO3OLh2N3Y493f1t7k29za0Njh4d7b3d/a1t7e3dvb4t/a3dnc2eXb1M/R0dXazdTZ3tXQdDApKjWFxsDG3+He0tne2uHg3Nbf49Tf4OHY3tfi5+Lk497k3uHf5uLl3+Tk2tzh3t3e4dnV0NXV1+HZ297ayn46MjI9iLvc3dvj39/X4+Xg3drf4eLc3N3l4NfV3OXl2+Pk3uHe29jW3+Hk4OTi4uHW1dnf1tDWx9DV2tzW1tGZcW1pc6TO0NPV1dzb4N/i19vf3t7h2OTj4Njb29/c293c2+Lk497i2dba3dzb3NzVzNfh1+Lb3dnc4eLe3Nbg2M3QydPZ29jU0dPd4Nzk3uTl2d3h5eXY287Y3drh4MbW4tnk49vh3Nvc1dzg4NvZ29je5ODh3t/e4Obd39bZ3Nve2t7S1eDa29PU5Nzm5drc4dbh39rh1czT2t3l1ta+4d3f3OXa4t/Y3+Lj4+Pd2Nza4+Le5OLk3t/Z0uHf3t3n3ODT1Nfk6OHf39zi393j3+Pj3tng2Nzl2+Dl4t7h1tHa4d3h29vg3ePf2Nbd2NXZ49/e4t3e3Nzd1trZ397e3t7Y3tzf2OLj4+Tf2uLd4ODc29/Z2Nbn2tbf7OHe3dvc4tve29/f6ODb5OPd1dbg2d/j3+Pj5dXg2dve3uDd3uTl4+Dh4eni59zY2dbd2N7d2N/g4eHj5eTj2tvf3eDl4d7j4+Pd4t3j3ODm3Nnh4+De4dzY5t7f3OLY2NnT2ODl6t/c4eHb1c/Tyb3J2NDXztLV3Nzb5Nnk2crN3tvm1d3c2+Dj4ODh4OHi3evm3uji3+Lb2+Dj2+Pl3uDb2N/l3N7k5eXhz9XSwMnK09XV1dXd3d3d3ODl5N3S0OPj3NXR09Xj2Nrf5t3f4Ojg4t/j09/e3dPP2NrZ29jZ1d/g3tze0Nfi1tjb2drf3uHe2dzW19vi4uXc29ze28/l1d/k3t7i2dzc3+Td1t7g3trSxbzP4dLFytzd29ba393n5N3Z397d293c3tzd2+Hf4ODd1uTf4OTd5Nzh5uPf4eLg5tvZ4Nzf29jX3NXa1dLcyqq50NrR3d3eyrTCzNjh2trX1tnf4eDb4d3X3Nze2d3f4tzf3tnc39/e39nS3d7j1d7V4d7g2ODd4djb1Nnd3M3Q1trY3trd3tXV3dzb5OHk4tvk3uXa0djl2tbY2+Pd4+La4ODb497g3NzY2d/h3t/c4OPh3tjl4ODg4uXd3N/b2tnf3N/g1t7c4t/g3N3S397f39rd2drl3d7g2NDW1uDe49bb4uHe29/h6ODX4dva2trZ4NXX093f2+Hk3N3a4OLX3N/f2tnW2tvT2uXRwMzf2tjY0Nfg3N3n3+Tf19/k3+fg2OHX2+Lk2tbU59/k3t/T1NXc3Nbc3uHd4+LZ5trg4d7ay8nS29XW2dfP1dTe3N/Y1tfa393b2N7f4t/k2dre3Nbb4dvazM/W0dne49zez9La393c2+Dh3d/Z3Nve5Njh29PZ2eDh193j4d7m39/h2eji3tnY2tjb5eLf3Nnf0uDe4tvP287Q1dff5+Lb4dnh29jSz9DX4N/c4Njb4N7b3eLl4tfe1uHf3d7c2tni49/k3dra4tzc5dzZ08/UzM3Y4eHZ1tHY2Nri29/f39Xd4OHX0NLX1ODe4d3e5OXZ4dvc5Nze39rc5OLezsTG19rb29Xa3uXm6Nra1c3VxLrO393e2t/c4ODZ39He39/f4dnW1Nra09LZ29vX1+Lb2N7b3trb3N/b1Nzd39PKytXc1sXF2OTf3NLFxsbP3MO50Nfd2drf2tzb4N7V2d7k3eLQxNLc1drS3NjW2uDf1tjX2ePg3N/j3uDj5OTc1eLi287S2Obl3dvGvsnK0cLM2drb3+Ld3djf4ODd3OLm5NrWyr3P2tzf1dre3tzf29zY2Nrc29/f5OHb4N/Zz9zd3Nzb2OLg3d7b1tfW19XQ2+HY1tLg2c3e3uDg39/c4N3c29zY3Nzf2dzh3Nvf3t3c4tzc597h4djd29zh3tvf19rP1dre39zc2t/c2Nrd4tzn1dvZ19ra3OHb2d7a2uTe2w==",
+                            "Index": 3,
+                            "X": 1399,
+                            "Y": 6147
+                        }
+                    ],
+                    "usePositionROI": 1
+                },
+                "Light": [
+                    {
+                        "LightID": 0,
+                        "LightName": "Ch1",
+                        "ROI": [
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1633,
+                                    "ey": 6612,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1531,
+                                            "Y": 1005
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1631,
+                                            "Y": 1003
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1628,
+                                            "Y": 6108
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1528,
+                                            "Y": 6107
+                                        }
+                                    ],
+                                    "sx": 1507,
+                                    "sy": 1190
+                                },
+                                "InspectionParam": {
+                                    "InspType": 103,
+                                    "PositionName": "Mark_Detection"
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1426,
+                                    "ey": 1185,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1365,
+                                            "Y": 934
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1365,
+                                            "Y": 986
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1427,
+                                            "Y": 986
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1427,
+                                            "Y": 933
+                                        }
+                                    ],
+                                    "sx": 1364,
+                                    "sy": 1132
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "InspType": 6000,
+                                    "PositionName": "IQ_CHECK"
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1426,
+                                    "ey": 6672,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1370,
+                                            "Y": 6122
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1369,
+                                            "Y": 6176
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1426,
+                                            "Y": 6176
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1426,
+                                            "Y": 6122
+                                        }
+                                    ],
+                                    "sx": 1369,
+                                    "sy": 6618
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "InspType": 6000,
+                                    "PositionName": "IQ_CHECK_2"
+                                }
+                            }
+                        ],
+                        "SensorRoiID": 1
+                    },
+                    {
+                        "LightID": 1,
+                        "LightName": "Ch2",
+                        "ROI": [
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1649,
+                                    "ey": 1268,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1639,
+                                            "Y": 927
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1639,
+                                            "Y": 1267
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1649,
+                                            "Y": 1268
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1649,
+                                            "Y": 927
+                                        }
+                                    ],
+                                    "sx": 1639,
+                                    "sy": 927
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "InspType": 4003,
+                                    "MergeDist": 5,
+                                    "MergeMode": 1,
+                                    "MinSize": 5,
+                                    "MinSizeMerge": 5,
+                                    "PitchType": 0,
+                                    "PitchX": 0,
+                                    "PitchY": 10,
+                                    "PositionName": "SR_Open_Top",
+                                    "ThrH": 20,
+                                    "ThrL": 10
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1648,
+                                    "ey": 6180,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1639,
+                                            "Y": 5848
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1639,
+                                            "Y": 6180
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1649,
+                                            "Y": 6180
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1649,
+                                            "Y": 5848
+                                        }
+                                    ],
+                                    "sx": 1638,
+                                    "sy": 5848
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "InspType": 4003,
+                                    "MergeDist": 5,
+                                    "MergeMode": 1,
+                                    "MinSize": 5,
+                                    "MinSizeMerge": 5,
+                                    "PitchType": 0,
+                                    "PitchX": 0,
+                                    "PitchY": 10,
+                                    "PositionName": "SR_Open_Bot",
+                                    "ThrH": 20,
+                                    "ThrL": 10
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1681,
+                                    "ey": 6669,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1644,
+                                            "Y": 932
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1683,
+                                            "Y": 932
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1682,
+                                            "Y": 6163
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1644,
+                                            "Y": 6163
+                                        }
+                                    ],
+                                    "sx": 1639,
+                                    "sy": 1141
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "InspType": 103,
+                                    "MergeDist": 5,
+                                    "MergeMode": 1,
+                                    "MinSize": 15,
+                                    "MinSizeMerge": 5,
+                                    "PitchType": 103,
+                                    "PitchX": 0,
+                                    "PitchY": 10,
+                                    "PositionName": "SR_Bubble",
+                                    "ThrH": 30,
+                                    "ThrL": 15,
+                                    "dbGain": 0,
+                                    "dbMask": 0
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1676,
+                                    "ey": 6557,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1644,
+                                            "Y": 955
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1674,
+                                            "Y": 955
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1669,
+                                            "Y": 6151
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1640,
+                                            "Y": 6152
+                                        }
+                                    ],
+                                    "sx": 1639,
+                                    "sy": 1243
+                                },
+                                "InspectionParam": {
+                                    "AvgFilter": 5,
+                                    "BaseGray": 128,
+                                    "InspType": 1000,
+                                    "M_T_Classification_MatchingID": 1,
+                                    "MergeDist": 5,
+                                    "MergeMode": 1,
+                                    "MinSize": 100,
+                                    "MinSizeMerge": 5,
+                                    "PitchType": 31,
+                                    "PitchX": 0,
+                                    "PitchY": 18,
+                                    "PositionName": "SR_Bubble",
+                                    "ThrH": 128,
+                                    "ThrL": 10
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1517,
+                                    "ey": 1206,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1463,
+                                            "Y": 967
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1463,
+                                            "Y": 1012
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1521,
+                                            "Y": 1012
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1521,
+                                            "Y": 967
+                                        }
+                                    ],
+                                    "sx": 1459,
+                                    "sy": 1161
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "InspType": 6000,
+                                    "PositionName": "IQ_CHECK"
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1515,
+                                    "ey": 6651,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1460,
+                                            "Y": 6097
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1460,
+                                            "Y": 6144
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1518,
+                                            "Y": 6144
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1518,
+                                            "Y": 6097
+                                        }
+                                    ],
+                                    "sx": 1457,
+                                    "sy": 6604
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "InspType": 6000,
+                                    "PositionName": "IQ_CHECK_2"
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1319,
+                                    "ey": 2137,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1319,
+                                            "Y": 2121
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1320,
+                                            "Y": 1899
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1266,
+                                            "Y": 1921
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1268,
+                                            "Y": 2138
+                                        }
+                                    ],
+                                    "sx": 1265,
+                                    "sy": 1898
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "InspType": 1000,
+                                    "MergeDist": 1,
+                                    "MergeMode": 1,
+                                    "MinSize": 8,
+                                    "MinSizeMerge": 8,
+                                    "PitchType": 60,
+                                    "PitchX": 0,
+                                    "PitchY": 16,
+                                    "PositionName": "SR_Bonding_Particle",
+                                    "ThrH": 40,
+                                    "ThrL": 128
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1321,
+                                    "ey": 3703,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1322,
+                                            "Y": 3703
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1322,
+                                            "Y": 3403
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1268,
+                                            "Y": 3403
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1269,
+                                            "Y": 3703
+                                        }
+                                    ],
+                                    "sx": 1267,
+                                    "sy": 3402
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "InspType": 1000,
+                                    "MergeDist": 1,
+                                    "MergeMode": 1,
+                                    "MinSize": 8,
+                                    "MinSizeMerge": 8,
+                                    "PitchType": 60,
+                                    "PitchX": 0,
+                                    "PitchY": 16,
+                                    "PositionName": "SR_Bonding_Particle",
+                                    "ThrH": 40,
+                                    "ThrL": 128
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1321,
+                                    "ey": 5209,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1319,
+                                            "Y": 4979
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1321,
+                                            "Y": 5209
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1272,
+                                            "Y": 5190
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1269,
+                                            "Y": 4969
+                                        }
+                                    ],
+                                    "sx": 1269,
+                                    "sy": 4969
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "InspType": 1000,
+                                    "MergeDist": 1,
+                                    "MergeMode": 1,
+                                    "MinSize": 8,
+                                    "MinSizeMerge": 8,
+                                    "PitchType": 60,
+                                    "PitchX": 0,
+                                    "PitchY": 16,
+                                    "PositionName": "SR_Bonding_Particle",
+                                    "ThrH": 30,
+                                    "ThrL": 128
+                                }
+                            }
+                        ],
+                        "SensorRoiID": 2
+                    },
+                    {
+                        "LightID": 2,
+                        "LightName": "Ch3",
+                        "ROI": [
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1707,
+                                    "ey": 6176,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1616,
+                                            "Y": 929
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1707,
+                                            "Y": 928
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1707,
+                                            "Y": 6176
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1620,
+                                            "Y": 6176
+                                        }
+                                    ],
+                                    "sx": 1616,
+                                    "sy": 928
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "Calc_SR_Line": 1,
+                                    "Calc_SR_minGray": 75,
+                                    "Chk_SR_Depth": 1,
+                                    "InspType": 4000,
+                                    "MergeDist": 3,
+                                    "MergeMode": 1,
+                                    "MinSize": 50,
+                                    "MinSizeMerge": 3,
+                                    "PitchType": 0,
+                                    "PitchX": 1,
+                                    "PitchY": 31,
+                                    "PositionName": "SR_No_Resin",
+                                    "ResinRatio": 10,
+                                    "ThrH": 80,
+                                    "ThrH_Resin": 42,
+                                    "ThrL": 70,
+                                    "ThrL_Resin": 0
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1520,
+                                    "ey": 1204,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1464,
+                                            "Y": 966
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1464,
+                                            "Y": 1011
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1522,
+                                            "Y": 1011
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1522,
+                                            "Y": 966
+                                        }
+                                    ],
+                                    "sx": 1462,
+                                    "sy": 1159
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "InspType": 6000,
+                                    "PositionName": "IQ_CHECK"
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1513,
+                                    "ey": 6650,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1464,
+                                            "Y": 6096
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1464,
+                                            "Y": 6143
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1522,
+                                            "Y": 6143
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1522,
+                                            "Y": 6096
+                                        }
+                                    ],
+                                    "sx": 1455,
+                                    "sy": 6603
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "InspType": 6000,
+                                    "PositionName": "IQ_CHECK_2"
+                                }
+                            }
+                        ],
+                        "SensorRoiID": 3
+                    }
+                ],
+                "OpticType": "SR",
+                "eqp_sceneHeight": 7104,
+                "eqp_sceneWidth": 4096,
+                "eqp_showParameter": false,
+                "eqp_showRoiEditor": true
+            }
+        ],
+        "GLOBAL": {
+            "CropInfo": {
+                "OrgImgThumbnail": 1,
+                "SingleHeight": 100,
+                "SingleWidth": 100
+            },
+            "DisplayOption": {
+                "BoxExt": 5,
+                "ClassifyDrawBox": 1,
+                "DrawBox": 0,
+                "DrawText": 0,
+                "numGridX": 14,
+                "numGridY": 20
+            },
+            "ImageSaverOption": {
+                "quality": 90,
+                "resize": 100,
+                "use_SGOrgResult": 1,
+                "use_SGQuality": 50,
+                "use_SGResult": 1,
+                "use_markresult": 0
+            },
+            "MavinInfo": {
+                "AssignedGPU": 0,
+                "BatchSize": 8,
+                "BitsPerPixel": 8,
+                "CamEnable": 1,
+                "MavinDir": "D:\\Mavin\\",
+                "NumChannel": 1
+            },
+            "PanelInfo": {
+                "ModelName": "D963",
+                "x": 68,
+                "y": 144
+            }
+        }
+    }
+}

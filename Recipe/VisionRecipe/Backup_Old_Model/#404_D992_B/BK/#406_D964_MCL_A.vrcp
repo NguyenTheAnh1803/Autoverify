@@ -1,0 +1,2439 @@
+{
+    "Inspection": {
+        "Camera": [
+            {
+                "Common": {
+                    "AlignThetaRagne": 0,
+                    "AlignXRange": 0,
+                    "AlignYRange": 0,
+                    "BlkImgProcessing": 12,
+                    "BlkImgProcessingFlip": -1,
+                    "CtqCopSqOutOffset": 0,
+                    "CtqFopSqOutOffset": 10,
+                    "CtqMCLOverflowOffset": 0,
+                    "CtqMCLResinOffset": 0,
+                    "D_SaveMavinImage": 1,
+                    "LightOffset1": 0,
+                    "LightOffset2": -174,
+                    "LightOffset3": -65,
+                    "LightOffset4": -244,
+                    "MCLGridOffset1": 4712,
+                    "MCLGridOffset2": 340,
+                    "MCLGridOffset3": 340,
+                    "MCLGridOffset4": 340,
+                    "MCLMeasureXWidth1": 2530,
+                    "MCLMeasureXWidth2": 1300,
+                    "MCLMeasureXWidth3": 1517,
+                    "MCLMeasureXWidth4": 1300,
+                    "MCLMeasureXWidth5": 2530,
+                    "MCLMeasureYOffset1": 16102,
+                    "MCLMeasureYOffset2": 8000,
+                    "MCLMeasureYOffset3": 0,
+                    "MCLMeasureYOffset4": 8000,
+                    "MCLMeasureYOffset5": 16107,
+                    "M_Address_Inferencer": "192.168.200.131:8001",
+                    "M_Address_Local": "192.168.200.131:8101",
+                    "M_Classification": 3,
+                    "M_T_Classification_Model1": "CP_AOI_AA_Bubble_230529",
+                    "M_T_Classification_Model2": "DIC_Crack_240812",
+                    "M_T_Classification_Model3": "MCL_Open_240716",
+                    "MaxDefectPerGlass": 2000,
+                    "MaxDefectPerLight": 1000,
+                    "MaxObjNum": 20000,
+                    "PolLineXOffset": 5780,
+                    "ROI_Height": 64,
+                    "R_FitType": 14,
+                    "Ref_OffsetX": 32,
+                    "Ref_OffsetY": 32,
+                    "Resolution": 944,
+                    "SGLineXOffset": 4855,
+                    "SaveOrgBlk": [
+                        0,
+                        1,
+                        2,
+                        3,
+                        4
+                    ],
+                    "Seq1_Offset": 73,
+                    "Seq1_XOffset": 114,
+                    "Seq2_LightOffset1": 0,
+                    "Seq2_LightOffset2": -14,
+                    "Seq2_LightOffset3": -5,
+                    "Seq2_LightOffset4": -15,
+                    "Seq2_Offset": 94,
+                    "Seq2_XOffset": 118,
+                    "SkipInspPass": 1,
+                    "T_CamImg": 1,
+                    "refPos": [
+                        {
+                            "Height": 64,
+                            "Width": 64
+                        },
+                        {
+                            "Image": "j4+QkI+PkJGMkpGNjY2KiYqLioyPjYmLi4eHjIyJio6LiomIhoWHi4yKhYuGiYSHh4iGhYiHhYeIh4mEg4iFhoyLiouLi4uKi4+Ni4yLiIiIiYmKjYuJi4uIh4qMioqMjIqKi4uKjI+Mi4eLhoiDhomKh4aIh4WHiIaIg4OHhIaPjYuMjY6MioyMioqNi4iJhoiIiYuJh4uJiIeIiouKiYeFhYaGhYSFhYaFiYWGg4WEhYGAgoKBg4WChIB/g4GDi4mIiImJiIeMioeKjouHioeKiYmLiIeLhoeHhoeJiIaIhoWHiIaEg4KEhoeFhIKDg4SCgYWFhIaDgYN/f4J/go+Pj4+Ojo6Oi4mGiI2Kh4qKjIqKjImHi4aIiYiHiIiHh4aHioyKiIeHiIqHhoODg4GEgoOGhoOFhYKFgoKEgYSJiouKiYmJiouLiYqNjIqMjI2Li42Kh4mJiYqKiomJiYaGh4qKiIaFhYWIhIeFh4WBg4KChYOAgYWChYODhIGEjo6NjY2NjIyKjYuJjIyLjIyMiYuOjIeHjIiHi42LiIiKiouNjIiGhoOChYCGhYmHhYeGhYiHhIWDgISEhIR/go+Ni4uMjIqIhYuJhYeJiIiLioiKjoyHho6Gg4mOi4eFhIWIiomGhoeKh4iAhoSIhIOFg4KFhYOFhICFhYWFgIOUj4+Qjo+OiYeMjoyJiYqKjYyMi4uLi4qLjI2KhoaJjYiJhoSHiIiMjIqHhoeHhoWHhoaHh4WFhoeGiIqKiIaGj4qKjIuMjIeHioyKh4iKiouKiYiIiImIioqKiYiHiImFh4SDh4eIi4yGgYOJi4aBhoSEhISCgoOFhIWHiIaFhpCMjI6Njo6KiYuMiomKjI2Qj46NjY2NjpCOjY2Pj42Lh4mHhoiHhoiGhoeHiIiHhoqIiImIh4eIhIOEhYaFhYaLiIiJiImJhYqLjIyLjI2NioqKiomJiYmLiIaHioqIhoaJh4aJh4WHgoaJiYaEhYeDgoOFhYSEhYWEg4SFhIWGkI2OkI6Pj4yJiouMjIuKioqMjY2Mi4uMjIqJiYqLi4qChYSEh4eGiISCgoOGhoN/hISGiImHh4eGhIODg4KDhYqIioyLjI2LjIuMjo6MiomEhoiIh4eHiIeHhoaGhoeIhoiGhYeGhYeFhISFhYSDgoKBgoSEgoGBhYOBgoGAgYONi42PjpCRj5COjY+QjYqJiImLi4qLjY+Mi4uLjI2MjIyNiYaIh4WIhoiKiIWEhomIh4eIiIaGh4SCgYGBgIGDjIqMjYuMjoyRjoyOjouIiIWGh4aGh4uOiIeHiYuLiYeJioeFiIiJjIuIhIWIioiGhoSDhISEhYeEgoKCgoKDhYuLjY+Pjo6PjI2Oj46Oj4+Ji4mIi4qIioiQhY6Pi5CKiYiMioqNiIqIiIiGhYaIioiKi4mIh4eGgoKDhYSDg4SKiYuOj46PkIqJiYqKiomIi4yIhoiJiY2Mf5KOhI+Nj4uJjIqKjIeIhoaGhYWFhYaEhYWDgoOEhISEhIWEgoKEjo2Njo2MjI2Qjo2Nj46MiYmKh4WIiImMi4yMkpyZl4+Oi42LjI2IiYqKiYqLjIuKh4iIhYWHiImEg4ODg4GBg5GPjo6OjIyNjYyLi4yLiIaEiIiIiomHiYiInqGoo6CYiYSFhIWHgoOFg4KEh4iIhoSFhIKChIWFhIODhISDhIaPjY2PkJCQkY+QkI+OjYyLg4iJioyKiIqJh8P6//3/w5SMi4mKjIeJioeFhYmLi4mIiYmIiImJh4aFhYaGhYaJjoyMj5GRkJGKi4uKiIeHh4iLi4qMi4yPlYz///n///2Wi4eEhYaBg4eEgYKEhoWEhIWGhYaHhYOFhISFhIOEho6Li46Pj42NkI+OjYyLi4uKjIuJi4uNk5Ob//z+/vv/nZCKhoeIg4aIh4WGiImJiIiJiYmKjIqIgoKDhIOCgoOJh4iMj4+OjpCNiomJioiGiIuKiYuLjZKZmP/+///9/Z2PiISGh4OGgICAgoSFhYWDhISEhoiHhYKCg4WFhISGjIuMj5CPj5GPjoyJiImLjouFi5KPlZ6ko6v//////f+kjIeGjYiHiIWChIaLhI2HiIeHiYmGhIWEhYmJg4KGhoiIiYyNjIyNi4uKiYeHiImHi4mKkMvW1+Pf//3++//8pI2Jh4uFg4SHiIOEioWDhIiHh4mJhoWGgoGEhICBg4KLi42PkI+PkI2NjIqJiImJi5OLi5f9//////////z/+6eSj4uOiIaGhYeCgYqKgYmIiIiJiYeHiImGhoeFhoiGiImKjI2NjI2RkI6MioqLjImKh42b//7/+v/9///+//+jj4yIjImHhYaFiIOMi4aJiYmIiYiIiIiFgoODgIKEgo6PkJCRkpKSkI+OjIyLioqOi5GYqP/9//z///38/v3/p5SRjZOSkI2LhY6IjYeJgYmJiYiHh4eGh4aHh4ODh4aJioqJioyNjY2Njo+PjYmHiImQj6H+/f/////8/f/8/6qZmJOZmZeTlZCLh4uGi4CIiYmHh4eGhIOChIN/f4KCjI2Mi4uOkJCOjo6Ojo2LiYmPjo2e/////fz//v////3TyMvGycnJxsPBkYmKiYiIhoeIh4aHhoOIhoeHhYWHhIuMi4iJjI+OkI2LioqLjIuEioSLm////f//////+//6//z//v///////qWRi4uBioSGh4aGh4WDhoKChIOEg3+RkI6PkJGRkI+OjIyMjIyMio+Lk5e8xM/Pys7CztHI7v////7///7+//y9k4qQjYaGiYiHiIeEhYSGg4GFhoOBjo2MjI2Ojo6Qj4+Ojo2MioeNjI2LnZiZn5qblJugpuf////9/vv////8x5OJjYyOhoiHhYaFg4WFh4SBhYaDg5GQjo+QkZGRjo6PkI+Oi4mGiY2Ji5aTkpWSkpSXl57z/vv////9/////8qVi4uGiYiKh4WHhoWIhYeDgYWFg4OMi4qKjI2NjIyMjY2OjYyLi4mOhYuQk5KQjouTlpOU7P/////9/f/7//+5kYyQi4qJioeGiYiGiYSFg4KFhIKDkpGPkJGSkpGOjYyLjI2NjYqHj4WMi4uJkI6JjZGUmPD///3//f/////9po6EiouIh4eFhomHhIeDhYSEh4SBg46Ni4uMjY2MkI+NjI2NjY2Lh42Hjo2OjomLi4qMkJru/P7////35uHY2JaPhYWIhoiHhIaKh4WIhIaFhYeFgoSSkI6Oj4+Pjo2Ojo+Pjo2LkYqLhYeJiY2Jh4+LjY2Z5f/9////yqmhnpyIi42Li42Jh4SGioiGioSFg4SFg4GFkI6MjIyMjIuJio2QkY+Mio2IioiIioiLj4OIhIqJmN//+f/5/7SVk5WGioWNh4OHiYaBg4iGhImEhIGBgoCAhZSQj4iNjJCMkI2LjpOVkIyPjYyNjImJi4uLiYqMjpja/////P+slJGPjImIioqHhImKiIeHhYSJhIWFg4SGhoWPi4yIjYuNi4mIiYuOj42LioiIiIaDhIaHhIKEhoiNwPz7///6oYiKh4SCgYOEhYWEhoODg4GBhYODgoKCg4OEj4qMi5CKjIyMjpCRkJCQkIyMjIuIhoeJiYODhYaIiKbu8fPv2pWBg4aGhoaGiIqMiImHh4mHhoqHhYSGhoWFiJCKjY2RiYuMi42OjoyLi4uIiYmIhIKDhYZ/gICChIOQmqSmppuHhoaCg4SGhoaGhoWGhISGhIOHhIB/g4N/gISPiYuLkIiLjZGRkpKRkI+PjY6PjIqJiYqMh4mHiIuNkJWYkpGLjYyJiIiIiYuLiYiJiYeHioiGiYmFhYiIhYWJjoqMi5CKj5CNjIyNjo6NjIqLi4iHiIiHhoWHgoaGi4uRioOMi4qDhIaEgoKEhoaGhIWCgoWCgIKEgYGDgoCBhI2Lj4uQjZGQkI+QkJGRkJCOjo2LjI2NioeKi4aNiIyMkoyIjo+LgoeIh4aFhoiKi4qJh4aJhoKEhoWEhISEhIWLi4+KjouPjIuMjYyLi4uLiYmHhoiKiYaEiYmEjYaIhoeKh4SFhYCHgoSFhYODhYeIiISEhoN/gIKDgoCAgoKBkZCNi46Uko2UkI6QkZGRkY6NiIaLjIuNiIyNioqMi4iIioqKi4iHi4uJh4aHiYmJhoaHiIeFhYeGh4iHhoWFho6QkI2Mjo+PkY6Nj5CPjY2Pj4qIioqIioaGhoWHiIaEhIaFhYaDgoaFhISFh4iHhoSDg4SDgYGCgIKDhIODg4SOjY2OjYyNkI6NjZCRkI6Ni4yKiIqKiYuNiYeJjIyKiIiKiYmKiIaKiYeHh4mKioqKh4aHh4aFhYCBg4SEhISEkImHjJCOjY6NjY6QkZGPjoiLiomLiomMi4aEh4mHhoaFh4WGiIaEiImGgoGChIWGhoOBgoSDg4KDhIaHh4aFhJGJh4yQjoyNjI2NjY6Pjo2Ljo2LjIqHio2KiYuLiYmLiYqIiYyKiYyPjIiGh4iKioiFhIaJiYmJg4SFhoeGhYSPjI2PjoqKjo+Qj46Njo6NjI+NjI6NioyHhoaHhoSEhoWFg4SHhoSIhoWEhIWGhYSEgoGEhoaGh4ODhIaHh4aFjo2Oj46LjI6OkJCPjpCQj4qMiouOjouMi4yLiouLioiLioeIi4qIioeGhoeJiYmIiYiIioqJiYqEhISFh4eGhY6LioyQko+NioyOjY2PkI+MjImIjIuHh4mKiYeJjImDiYmFhYiGhIeHhYODhIaHh4aGh4iGhISFhYSEhIWFg4KSjI+PlIuPko2QjY+OjJGQjIuJi5CPjI2Li4uLi4uLi4iIiImKiomJiIeGhoiKiYeGhoeJiYiIiYeHh4mJh4SDjouNjpGNj5GOko+RkI2Qj4uLiYqNi4iLiIiHh4aGhYWHh4iIiYiHh4iGhISFhoaEhIOEhYWEhIaFhIWHh4WDgomLi46NkI+Qj5KQkpGNj4yLjYuLjYqIjI2NjIuLiomJiYqKiomIiIiKiIaFhoaGhouJiImJiImKhoWFh4eFg4KJjYuPi5KPj46RjpGQjI6LjY6MjI6MiYyJiYmIiIiIh4iKi4qJiYmIioiHiImIiIiIhoWGhoWFh4iHhoiHhYODi5GNj4uSj46PkY2Qj42PjI+OiouPjIiJjIyMjIuLi4uFiImHh4iIhoaEhYiJiIeIi4mJi4yLioqHhYWGhoWEhI6Rj46MkI+Oj5GOkJGOkY6Rj4uMkI2JiYiIh4eGhoWFh4mJh4iKiYaFhIWIiYeHiYeFhYeJh4aFh4WFh4eHh4ePjo6LjYyOjo+RjpGSj5GNkI+MjZCOi4yMjIyLi4uLioqLioiKjYuGiYeHiYmGh4qNiomKjIuJiYmHhoiIiIiJjouNiY6Jjo6NkI2Rko6PioqLiouOjIuOiIiIiYmKioqLi4mHio2KhIyIh4iHhIWJioeFhoeGhYWKh4aGhoWEhQ==",
+                            "Index": 0,
+                            "X": 1400,
+                            "Y": 1160
+                        },
+                        {
+                            "Image": "j4+QkI+PkJGMkpGNjY2KiYqLioyPjYmLi4eHjIyJio6LiomIhoWHi4yKhYuGiYSHh4iGhYiHhYeIh4mEg4iFhoyLiouLi4uKi4+Ni4yLiIiIiYmKjYuJi4uIh4qMioqMjIqKi4uKjI+Mi4eLhoiDhomKh4aIh4WHiIaIg4OHhIaPjYuMjY6MioyMioqNi4iJhoiIiYuJh4uJiIeIiouKiYeFhYaGhYSFhYaFiYWGg4WEhYGAgoKBg4WChIB/g4GDi4mIiImJiIeMioeKjouHioeKiYmLiIeLhoeHhoeJiIaIhoWHiIaEg4KEhoeFhIKDg4SCgYWFhIaDgYN/f4J/go+Pj4+Ojo6Oi4mGiI2Kh4qKjIqKjImHi4aIiYiHiIiHh4aHioyKiIeHiIqHhoODg4GEgoOGhoOFhYKFgoKEgYSJiouKiYmJiouLiYqNjIqMjI2Li42Kh4mJiYqKiomJiYaGh4qKiIaFhYWIhIeFh4WBg4KChYOAgYWChYODhIGEjo6NjY2NjIyKjYuJjIyLjIyMiYuOjIeHjIiHi42LiIiKiouNjIiGhoOChYCGhYmHhYeGhYiHhIWDgISEhIR/go+Ni4uMjIqIhYuJhYeJiIiLioiKjoyHho6Gg4mOi4eFhIWIiomGhoeKh4iAhoSIhIOFg4KFhYOFhICFhYWFgIOUj4+Qjo+OiYeMjoyJiYqKjYyMi4uLi4qLjI2KhoaJjYiJhoSHiIiMjIqHhoeHhoWHhoaHh4WFhoeGiIqKiIaGj4qKjIuMjIeHioyKh4iKiouKiYiIiImIioqKiYiHiImFh4SDh4eIi4yGgYOJi4aBhoSEhISCgoOFhIWHiIaFhpCMjI6Njo6KiYuMiomKjI2Qj46NjY2NjpCOjY2Pj42Lh4mHhoiHhoiGhoeHiIiHhoqIiImIh4eIhIOEhYaFhYaLiIiJiImJhYqLjIyLjI2NioqKiomJiYmLiIaHioqIhoaJh4aJh4WHgoaJiYaEhYeDgoOFhYSEhYWEg4SFhIWGkI2OkI6Pj4yJiouMjIuKioqMjY2Mi4uMjIqJiYqLi4qChYSEh4eGiISCgoOGhoN/hISGiImHh4eGhIODg4KDhYqIioyLjI2LjIuMjo6MiomEhoiIh4eHiIeHhoaGhoeIhoiGhYeGhYeFhISFhYSDgoKBgoSEgoGBhYOBgoGAgYONi42PjpCRj5COjY+QjYqJiImLi4qLjY+Mi4uLjI2MjIyNiYaIh4WIhoiKiIWEhomIh4eIiIaGh4SCgYGBgIGDjIqMjYuMjoyRjoyOjouIiIWGh4aGh4uOiIeHiYuLiYeJioeFiIiJjIuIhIWIioiGhoSDhISEhYeEgoKCgoKDhYuLjY+Pjo6PjI2Oj46Oj4+Ji4mIi4qIioiQhY6Pi5CKiYiMioqNiIqIiIiGhYaIioiKi4mIh4eGgoKDhYSDg4SKiYuOj46PkIqJiYqKiomIi4yIhoiJiY2Mf5KOhI+Nj4uJjIqKjIeIhoaGhYWFhYaEhYWDgoOEhISEhIWEgoKEjo2Njo2MjI2Qjo2Nj46MiYmKh4WIiImMi4yMkpyZl4+Oi42LjI2IiYqKiYqLjIuKh4iIhYWHiImEg4ODg4GBg5GPjo6OjIyNjYyLi4yLiIaEiIiIiomHiYiInqGoo6CYiYSFhIWHgoOFg4KEh4iIhoSFhIKChIWFhIODhISDhIaPjY2PkJCQkY+QkI+OjYyLg4iJioyKiIqJh8P6//3/w5SMi4mKjIeJioeFhYmLi4mIiYmIiImJh4aFhYaGhYaJjoyMj5GRkJGKi4uKiIeHh4iLi4qMi4yPlYz///n///2Wi4eEhYaBg4eEgYKEhoWEhIWGhYaHhYOFhISFhIOEho6Li46Pj42NkI+OjYyLi4uKjIuJi4uNk5Ob//z+/vv/nZCKhoeIg4aIh4WGiImJiIiJiYmKjIqIgoKDhIOCgoOJh4iMj4+OjpCNiomJioiGiIuKiYuLjZKZmP/+///9/Z2PiISGh4OGgICAgoSFhYWDhISEhoiHhYKCg4WFhISGjIuMj5CPj5GPjoyJiImLjouFi5KPlZ6ko6v//////f+kjIeGjYiHiIWChIaLhI2HiIeHiYmGhIWEhYmJg4KGhoiIiYyNjIyNi4uKiYeHiImHi4mKkMvW1+Pf//3++//8pI2Jh4uFg4SHiIOEioWDhIiHh4mJhoWGgoGEhICBg4KLi42PkI+PkI2NjIqJiImJi5OLi5f9//////////z/+6eSj4uOiIaGhYeCgYqKgYmIiIiJiYeHiImGhoeFhoiGiImKjI2NjI2RkI6MioqLjImKh42b//7/+v/9///+//+jj4yIjImHhYaFiIOMi4aJiYmIiYiIiIiFgoODgIKEgo6PkJCRkpKSkI+OjIyLioqOi5GYqP/9//z///38/v3/p5SRjZOSkI2LhY6IjYeJgYmJiYiHh4eGh4aHh4ODh4aJioqJioyNjY2Njo+PjYmHiImQj6H+/f/////8/f/8/6qZmJOZmZeTlZCLh4uGi4CIiYmHh4eGhIOChIN/f4KCjI2Mi4uOkJCOjo6Ojo2LiYmPjo2e/////fz//v////3TyMvGycnJxsPBkYmKiYiIhoeIh4aHhoOIhoeHhYWHhIuMi4iJjI+OkI2LioqLjIuEioSLm////f//////+//6//z//v///////qWRi4uBioSGh4aGh4WDhoKChIOEg3+RkI6PkJGRkI+OjIyMjIyMio+Lk5e8xM/Pys7CztHI7v////7///7+//y9k4qQjYaGiYiHiIeEhYSGg4GFhoOBjo2MjI2Ojo6Qj4+Ojo2MioeNjI2LnZiZn5qblJugpuf////9/vv////8x5OJjYyOhoiHhYaFg4WFh4SBhYaDg5GQjo+QkZGRjo6PkI+Oi4mGiY2Ji5aTkpWSkpSXl57z/vv////9/////8qVi4uGiYiKh4WHhoWIhYeDgYWFg4OMi4qKjI2NjIyMjY2OjYyLi4mOhYuQk5KQjouTlpOU7P/////9/f/7//+5kYyQi4qJioeGiYiGiYSFg4KFhIKDkpGPkJGSkpGOjYyLjI2NjYqHj4WMi4uJkI6JjZGUmPD///3//f/////9po6EiouIh4eFhomHhIeDhYSEh4SBg46Ni4uMjY2MkI+NjI2NjY2Lh42Hjo2OjomLi4qMkJru/P7////35uHY2JaPhYWIhoiHhIaKh4WIhIaFhYeFgoSSkI6Oj4+Pjo2Ojo+Pjo2LkYqLhYeJiY2Jh4+LjY2Z5f/9////yqmhnpyIi42Li42Jh4SGioiGioSFg4SFg4GFkI6MjIyMjIuJio2QkY+Mio2IioiIioiLj4OIhIqJmN//+f/5/7SVk5WGioWNh4OHiYaBg4iGhImEhIGBgoCAhZSQj4iNjJCMkI2LjpOVkIyPjYyNjImJi4uLiYqMjpja/////P+slJGPjImIioqHhImKiIeHhYSJhIWFg4SGhoWPi4yIjYuNi4mIiYuOj42LioiIiIaDhIaHhIKEhoiNwPz7///6oYiKh4SCgYOEhYWEhoODg4GBhYODgoKCg4OEj4qMi5CKjIyMjpCRkJCQkIyMjIuIhoeJiYODhYaIiKbu8fPv2pWBg4aGhoaGiIqMiImHh4mHhoqHhYSGhoWFiJCKjY2RiYuMi42OjoyLi4uIiYmIhIKDhYZ/gICChIOQmqSmppuHhoaCg4SGhoaGhoWGhISGhIOHhIB/g4N/gISPiYuLkIiLjZGRkpKRkI+PjY6PjIqJiYqMh4mHiIuNkJWYkpGLjYyJiIiIiYuLiYiJiYeHioiGiYmFhYiIhYWJjoqMi5CKj5CNjIyNjo6NjIqLi4iHiIiHhoWHgoaGi4uRioOMi4qDhIaEgoKEhoaGhIWCgoWCgIKEgYGDgoCBhI2Lj4uQjZGQkI+QkJGRkJCOjo2LjI2NioeKi4aNiIyMkoyIjo+LgoeIh4aFhoiKi4qJh4aJhoKEhoWEhISEhIWLi4+KjouPjIuMjYyLi4uLiYmHhoiKiYaEiYmEjYaIhoeKh4SFhYCHgoSFhYODhYeIiISEhoN/gIKDgoCAgoKBkZCNi46Uko2UkI6QkZGRkY6NiIaLjIuNiIyNioqMi4iIioqKi4iHi4uJh4aHiYmJhoaHiIeFhYeGh4iHhoWFho6QkI2Mjo+PkY6Nj5CPjY2Pj4qIioqIioaGhoWHiIaEhIaFhYaDgoaFhISFh4iHhoSDg4SDgYGCgIKDhIODg4SOjY2OjYyNkI6NjZCRkI6Ni4yKiIqKiYuNiYeJjIyKiIiKiYmKiIaKiYeHh4mKioqKh4aHh4aFhYCBg4SEhISEkImHjJCOjY6NjY6QkZGPjoiLiomLiomMi4aEh4mHhoaFh4WGiIaEiImGgoGChIWGhoOBgoSDg4KDhIaHh4aFhJGJh4yQjoyNjI2NjY6Pjo2Ljo2LjIqHio2KiYuLiYmLiYqIiYyKiYyPjIiGh4iKioiFhIaJiYmJg4SFhoeGhYSPjI2PjoqKjo+Qj46Njo6NjI+NjI6NioyHhoaHhoSEhoWFg4SHhoSIhoWEhIWGhYSEgoGEhoaGh4ODhIaHh4aFjo2Oj46LjI6OkJCPjpCQj4qMiouOjouMi4yLiouLioiLioeIi4qIioeGhoeJiYmIiYiIioqJiYqEhISFh4eGhY6LioyQko+NioyOjY2PkI+MjImIjIuHh4mKiYeJjImDiYmFhYiGhIeHhYODhIaHh4aGh4iGhISFhYSEhIWFg4KSjI+PlIuPko2QjY+OjJGQjIuJi5CPjI2Li4uLi4uLi4iIiImKiomJiIeGhoiKiYeGhoeJiYiIiYeHh4mJh4SDjouNjpGNj5GOko+RkI2Qj4uLiYqNi4iLiIiHh4aGhYWHh4iIiYiHh4iGhISFhoaEhIOEhYWEhIaFhIWHh4WDgomLi46NkI+Qj5KQkpGNj4yLjYuLjYqIjI2NjIuLiomJiYqKiomIiIiKiIaFhoaGhouJiImJiImKhoWFh4eFg4KJjYuPi5KPj46RjpGQjI6LjY6MjI6MiYyJiYmIiIiIh4iKi4qJiYmIioiHiImIiIiIhoWGhoWFh4iHhoiHhYODi5GNj4uSj46PkY2Qj42PjI+OiouPjIiJjIyMjIuLi4uFiImHh4iIhoaEhYiJiIeIi4mJi4yLioqHhYWGhoWEhI6Rj46MkI+Oj5GOkJGOkY6Rj4uMkI2JiYiIh4eGhoWFh4mJh4iKiYaFhIWIiYeHiYeFhYeJh4aFh4WFh4eHh4ePjo6LjYyOjo+RjpGSj5GNkI+MjZCOi4yMjIyLi4uLioqLioiKjYuGiYeHiYmGh4qNiomKjIuJiYmHhoiIiIiJjouNiY6Jjo6NkI2Rko6PioqLiouOjIuOiIiIiYmKioqLi4mHio2KhIyIh4iHhIWJioeFhoeGhYWKh4aGhoWEhQ==",
+                            "Index": 1,
+                            "X": 1400,
+                            "Y": 1160
+                        },
+                        {
+                            "Image": "ent2eHl5enx8enp5eniAent7gn99foCBf32AgIB/f4CCg3t+f36AhIN+hIKAf4CBgoGEhIKGhIWEh4GChYiIhnl7fH18fH6BgX9+fX99hX9/gIF/fn+AgYB+gH9+f3+AgICEhIODhIWEgYKChIeJiIWChIOEg4SBhYeGh4mLioh3eHp5d3d6fn59enp+fIN8fH56e31+f358en5+f4CBgX57g358f4GAgIOCgYGDhYaFhIWChoKFgIaIhoWGhoSCe3l7eXx5en58f318e3x+gH56foGAf4KAfX98gYJ8g36AhoKBgYGCgoKChIGEgYaDhoODhIaGhIKFioWHiYuLind2enh7eHh7en58fHx7fH5+fH1+e3p8e3p9en1+eYB7fIB9fXx9fn+AgIB9gHyBfoKAgIGCg4F/gISAgYSFhoZ6eHp3end2eXh8foCAf36AgYKBgoB+gIB/goCBgn6FgIGCgYGBgoOEhYWEg4WAhIKHh4WFhoeHhYWHhIWHh4iJdXR6d3l3d3l4fXl7e3l5e3x8en18fH9+fH1+fH97gn5/fYB/f3+AgYGBgYCDfoJ+hISDgYGDhISEhoODg4ODhHt7e3d6eXl7en9+f39/gIGBf3x/f4CDg4GDg3+CgIWChICHhoWEhYWEhISDh4OGg4eHiYaFhoiIiYuIiIiHh4h7fHx3e3t7fHuBent7e31/fnt6fHp6fX5+gX96f31/fYF8g4KBgYGBgIB/foJ/g3+CgYeEg4ODg4OFg4SEhISEf4B8d3t8fHx6gH1/gH9/gYGBfoB+fYCBgYSCfYKBgoCGgYWEg4OEhYWEhYOFgoeEh4aJiIeIh4WFhoeIiIiIiHh4fHd8fHx7eH56fX58enx/gHl8e3x+fXt9fnh/fX18g35+fn1+gIGBgYWBgn6EgoaEgoKDhIOBgIKEhYWFhIJ5e3t6ent9f39/hIF/gIKDf3t9gH9/gYF/gYGAgIGCgoGAgYODg4SHh4WAgIN+hYOIhIWEhYaEg4OFioaDhIWFdnd6eXl6fH18fHp9f357eXp7e318e359fH58fX6AgoKAfnt+f3+AgYB9fn99fX+DgX+CgYGCgYCBg4OCgoWFhHl7eXh4eXt8e3l7f4OCfnt9f3x9e3p9fHt+fH1+gIKCgoF/goODgoOCgYCBe4KBioWEhISGiIeGhYeCg4SGhoR2eHd3eHl7fHt6enp6fH18end9f318fn58fn9+fn6AgoOEfn9/fn5/gIF9fnt/f4WCgn5/g4aGhIGBh4eGhYSEe354eHl6fH18en99fX+Cgn56fH99fX9+fH5+fn5+f4CCg4ODhISEhIWGiIaIhYeDhoWDg4WIiYeGhoeHhoSDhHZ4e3p6e3x8e3l5e3x9fHt6en1/fn6Af31/fX6AgYKDhISBgIGDhIKBgIKAhX+DfIGChIGAgYKCg4WFhYWFhod5e3t6eXp7e3p5fX+BgX99fn99f318f39+gX5/gIGDhYmLjYqHiImHhYSBgIKDhYOFh4qGhIWGh4iKhISEhYeJeHp5eHd4ent7ent7e3t7e3p4e3x5d3p7fIB/fn18foSMkZSMhYOEhIOEgYB8g4CEgYSFg4KEhYWEhISDgYCDhnp4f316e31+fHt/goGAgH17fX9+fX19fXx6fHt7h3+EvLu5u7qPiIl8g4iCgoaDgoeEh4OBg4aGh4iEhYaGhYV2dXh2dXd6fXx7gIKBf4F+fH17e3x9f399fIB7gH+ImfD7///2pYeEhIeDgH+CgoOFgIWCgIGCgYGBgoOEg4KCfHp8e3t8f4GAfn+Bf32Afnt8fn5/goSEg4GCf4N/iaX8/////7aViId+hISCgIKGhICGhISFh4eGhoiIiIeGhnl3eXh4enx9fHp8f317fXt5fHt7e31/f359foB+iI+7/P3/+f3GnYiIhYeIiIKChoSEgoGAgYOEhISDg4KBgYF7eHp6e32AgYGAe359e3t6en6CgYCBg4SEg4CAfIeQxv//////3qaNi5KJhImFgoWDhomIh4WFhoeGh4aFhISFd3R3d3h5ent7e3x/fnt8e3uAfXx7fH6BgYGEgYSAjr3//f3//+2/r6Kdl4OIiYWHhIeFhYOBgYOEhISDgoKCg3x7fXx8fHx9fX1/f3t6fn59f39+foCChISEgX+GhZLD/////v//+v///bqMhomFiISFhoeHhYaIioqIh4aHiIl3eHV1dnd4ent8gH54eH6AfX18fHx9f4GAf4GBf4mOyf3///v////8//7ZloOFgIWCgYSGhoOChISCg4KCg4WFfXt4enx8fHt9f4F/fn5/f316gXx8e4KCgoKDhISHkL/8//////7+/////5iGjoWDhoqFh4aHiYeFiIaFiIWDhXl3dXd5eXl6fH5+fX1+gIGAf3l8g4GLhoqJjIuIiZPC+/////////////udio2HhISGhIaFhYeEg4eGhIaDgYR8end5ent7fH6AfXx7e3x9fHp8f4OJnJegnpmbnaKt1f3//v////7+/v/imIeGhYOAgoSFhISEgoGFhIKEgICDdnVzdHV1dXZ3eXx7enl5eXh3dHiAstfi6+zt6urr6fn///////////77vIyCfoKCf4KDhIOCg4GAhYJ/goCAhHp4eXl6e3t8fX58e3t7e3x8fHuBi+T///////v9////+Pn6+Pf5+/nz7aCHhX+DgoGDg4SCgoSCgYWAfoKBgoZ3dXR1dnh5ent7fXx8e3t7fHx1fIn4///9/v/8/////M7Dvbu6vL+9trCSh4mBg4GBgYODgYKFhIKFgH6DgoSHenh2d3l7fX19fXt7enl5eXl6foGR///9///9/v////y0l5GQkJGSkY2KiYKHgIGAg4CFg4CBh4aCgoOAg4KDhnRyc3R2eHl5eHd2d3d4eHp8fnp7kP//+//6/v//+v//s4uCg4SEhIODg4J9g36AgoiDhoN/gYeGgYCFgYSBgoV5eXd4eXt8fHx8e3p+e396fXyAfpP3///7//3//P7//K6PhYB/goWDg4WFgoWEgIWKhIaFhYSDhIaIgYKJiomHdnZ0dXd4eXl5eHh2end7dnp5fXmH2fX////////8/vqwhYN+fH5/fXx+fn2Bgn6DhoCCgYGBgYKDg4B/g4CAg3h4eHl6fHx8e3t8e396fnp+fH2Ahq7Ax87Q//j/////toaDf31+fnx7fICBhIOBhYiEhISEhYWGhYWGhIWBgol0c3R2d3l5eXh4eHh7dnp3enhwfHyIi4yWov/4/v/+/amDgn99f39+fn9+gIB+fICCgYCBgoKBgYKDgICDf4CHenl5enx+f39+fnp7f3l9e357d394gYSJi5f3//7///+mi358e3x9fX5/gYaGhISFhoWFiImIhYSHioWEiIWGinV1cnR2eXp6eXh0dnp1eXd6d3l8dXl7fXqE1P///f/6nIF8e3p6enp7fHZ/goCCgn9/gIKEgoB/goWEgYSCgoR3d3V3eXt8fHt6dnh+eX18fnp6e355fnp/h8X6//z83ZF8fXx8enl6ent5g4WDhoWCg4SFhYWFhIWFiISHhoaGdHR0dnh6e3p4d3B0eXR5eHp2eXR8b3x3gIClztrZ3K+CgHx9fHp5enp7fIWDf4KCgISEg4KDhYaDgYN+goSDgXV6d3d5fX58e3t5ent7e3t7fHl5eXt8fn5+jJefnpqWjIJ/gX9+gH58fn2BhIOEh4WAh4WEhoiKiYeChIWEg4RxdHN0dXd3d3l8d3d2d3h4d3Z6ent8fX1+fn2AhIaHhYF9f4F/foB+fH5/gX99foOFg4GBgYGCgoKChYJ/gYSGdXZ3eHp8e3p8gH17ent9fXx5eXp8fXx8fH2DgICEhoSCg4GDgYCCgX+BgIODg4SHh4SDhIWFhISFhoKEhYSDg3Rzc3R3enl3d3h6eHd4eXl4dnd6fH17enp7fXt8fn99e3t7fnx7fn17fHx+f3+AgoB9f3+AgICBgYKBhYeGgoF6end3eHx+fXt6fX19fX18fHx3enx9e3p6e3p+gICAgH99gYOCgoSDgYOGhIKAgYOFhYSDgoKEhYSChYKAgYOFc3R1cnF1eHl4eHh6enp5eHl5eXt9fXx8fH13fH17eXt8e3t+fHx/fnx+f39+fn5/f36Bf31+f4B+fIOCgoKDhHN2eXd2eXt7ent9fX1+fn5+fXp7fHx9fX19fn59fX18fH19f35+gYB+gX5/goSFhIF/hISDg4SFhIN/g4eFgoBvdHR0dnh3dHNzenl4eXt8e3l6enp7fH19fX96eoCCfnyAe359fYB/foB/fn1/gIGCgn+AgYKCg4SFgYCAgoODeHZ2d3p2fHh6e3d3eXt9fn9+fXt7fH+Af317fH1/gIGBgYKDf36BgoKGg4KBgoSFhYR9hYaDhIWEhYSEhIWHiHZ1dHR2c3t2dnV0dXd4eXp6end3eHp8fX19f359fX1+gIGBgoB/g4OChIODg4ODhIODfIGDgoSDgoSFhISEhYV3d3l4eXZ/enl2eHl7e3p6e3x4eXt8fX5/f39+fXx8fX9/f4GAgIODgYKCg4ODgoKDg4KFhYaIhYSJiYiHh4iHd3l1dndze3Z2dXR2eHd2dXZ4c3V3eHd3eHp6e3x+fn5+fn6Bf3+DgoCCgIGCg4KCg4SCgoCBgn9+hIKCgYKDg3Z3enx+eX56fH55e3x8enp8fnl8f39+fX6AeXp8fX5+fn5/gH5+gYGAgn+BgoKBgYOEiIeEhIaDg4mGhoaHiIl1dnR3eXN4c3d7dXZ3dnZ2d3h2eHt8fHt8fX18e3t7fX5/f4B9fYCBgIOBgYKBgYGBgYGBfn6AgICEg4ODhIWFdXZ4eXt2e3d5e3p6enp6e3t8eXt+f39+fn5+fXx7e3x+f3+AfXyAgICCgYGAgIGBgYCBhIKBhISDhIaGhoaHiHNzd3h5dXt2d3d7enl5ent7end5ent6eXh3e3x9fX5+fX1+f319gIB/gYB/f4CBgoKBfoOCf4KDgH6CgYKDhIV4eHl5enp6eXd3eXl5eXp6ent8e3p+gn58gXx9fX59fn5/foCBgYOFhIGAgYKCgYCAgIeDgn+Cg4CGhIKHhoaIdHV1dXZ3eHh4eHR1dnd4eHh3eXl5fIB8eXx7fHx9fn5/gH98enl6fH19fH1/gIGBgoKEgYKAg4R/hYKAhYSEhnh5d3h4ent8fH13eXt9fn18e3x8fH+Cfnt+e3x8fX5/f3+GgX1+f36Ag39/f4CAgYKCgoGDgoWFgIaEgoaEhIZ0dHR0dHR1dnd3dHV3eXp5eHd3eHd5fHp3eX59fX5+fn5+gHt5fn98fH+BgH9/f4CAgYKChYOGhoGHhoSHhIOFeHh5eXl5eXp7e3l6e3t7e3t6fX17fH9+fYB+fn1+f39+foF8fYKEgH+Bf359fX+AgYKDgoSChIWAh4SChYKBgw==",
+                            "Index": 2,
+                            "X": 1398,
+                            "Y": 6637
+                        },
+                        {
+                            "Image": "ent2eHl5enx8enp5eniAent7gn99foCBf32AgIB/f4CCg3t+f36AhIN+hIKAf4CBgoGEhIKGhIWEh4GChYiIhnl7fH18fH6BgX9+fX99hX9/gIF/fn+AgYB+gH9+f3+AgICEhIODhIWEgYKChIeJiIWChIOEg4SBhYeGh4mLioh3eHp5d3d6fn59enp+fIN8fH56e31+f358en5+f4CBgX57g358f4GAgIOCgYGDhYaFhIWChoKFgIaIhoWGhoSCe3l7eXx5en58f318e3x+gH56foGAf4KAfX98gYJ8g36AhoKBgYGCgoKChIGEgYaDhoODhIaGhIKFioWHiYuLind2enh7eHh7en58fHx7fH5+fH1+e3p8e3p9en1+eYB7fIB9fXx9fn+AgIB9gHyBfoKAgIGCg4F/gISAgYSFhoZ6eHp3end2eXh8foCAf36AgYKBgoB+gIB/goCBgn6FgIGCgYGBgoOEhYWEg4WAhIKHh4WFhoeHhYWHhIWHh4iJdXR6d3l3d3l4fXl7e3l5e3x8en18fH9+fH1+fH97gn5/fYB/f3+AgYGBgYCDfoJ+hISDgYGDhISEhoODg4ODhHt7e3d6eXl7en9+f39/gIGBf3x/f4CDg4GDg3+CgIWChICHhoWEhYWEhISDh4OGg4eHiYaFhoiIiYuIiIiHh4h7fHx3e3t7fHuBent7e31/fnt6fHp6fX5+gX96f31/fYF8g4KBgYGBgIB/foJ/g3+CgYeEg4ODg4OFg4SEhISEf4B8d3t8fHx6gH1/gH9/gYGBfoB+fYCBgYSCfYKBgoCGgYWEg4OEhYWEhYOFgoeEh4aJiIeIh4WFhoeIiIiIiHh4fHd8fHx7eH56fX58enx/gHl8e3x+fXt9fnh/fX18g35+fn1+gIGBgYWBgn6EgoaEgoKDhIOBgIKEhYWFhIJ5e3t6ent9f39/hIF/gIKDf3t9gH9/gYF/gYGAgIGCgoGAgYODg4SHh4WAgIN+hYOIhIWEhYaEg4OFioaDhIWFdnd6eXl6fH18fHp9f357eXp7e318e359fH58fX6AgoKAfnt+f3+AgYB9fn99fX+DgX+CgYGCgYCBg4OCgoWFhHl7eXh4eXt8e3l7f4OCfnt9f3x9e3p9fHt+fH1+gIKCgoF/goODgoOCgYCBe4KBioWEhISGiIeGhYeCg4SGhoR2eHd3eHl7fHt6enp6fH18end9f318fn58fn9+fn6AgoOEfn9/fn5/gIF9fnt/f4WCgn5/g4aGhIGBh4eGhYSEe354eHl6fH18en99fX+Cgn56fH99fX9+fH5+fn5+f4CCg4ODhISEhIWGiIaIhYeDhoWDg4WIiYeGhoeHhoSDhHZ4e3p6e3x8e3l5e3x9fHt6en1/fn6Af31/fX6AgYKDhISBgIGDhIKBgIKAhX+DfIGChIGAgYKCg4WFhYWFhod5e3t6eXp7e3p5fX+BgX99fn99f318f39+gX5/gIGDhYmLjYqHiImHhYSBgIKDhYOFh4qGhIWGh4iKhISEhYeJeHp5eHd4ent7ent7e3t7e3p4e3x5d3p7fIB/fn18foSMkZSMhYOEhIOEgYB8g4CEgYSFg4KEhYWEhISDgYCDhnp4f316e31+fHt/goGAgH17fX9+fX19fXx6fHt7h3+EvLu5u7qPiIl8g4iCgoaDgoeEh4OBg4aGh4iEhYaGhYV2dXh2dXd6fXx7gIKBf4F+fH17e3x9f399fIB7gH+ImfD7///2pYeEhIeDgH+CgoOFgIWCgIGCgYGBgoOEg4KCfHp8e3t8f4GAfn+Bf32Afnt8fn5/goSEg4GCf4N/iaX8/////7aViId+hISCgIKGhICGhISFh4eGhoiIiIeGhnl3eXh4enx9fHp8f317fXt5fHt7e31/f359foB+iI+7/P3/+f3GnYiIhYeIiIKChoSEgoGAgYOEhISDg4KBgYF7eHp6e32AgYGAe359e3t6en6CgYCBg4SEg4CAfIeQxv//////3qaNi5KJhImFgoWDhomIh4WFhoeGh4aFhISFd3R3d3h5ent7e3x/fnt8e3uAfXx7fH6BgYGEgYSAjr3//f3//+2/r6Kdl4OIiYWHhIeFhYOBgYOEhISDgoKCg3x7fXx8fHx9fX1/f3t6fn59f39+foCChISEgX+GhZLD/////v//+v///bqMhomFiISFhoeHhYaIioqIh4aHiIl3eHV1dnd4ent8gH54eH6AfX18fHx9f4GAf4GBf4mOyf3///v////8//7ZloOFgIWCgYSGhoOChISCg4KCg4WFfXt4enx8fHt9f4F/fn5/f316gXx8e4KCgoKDhISHkL/8//////7+/////5iGjoWDhoqFh4aHiYeFiIaFiIWDhXl3dXd5eXl6fH5+fX1+gIGAf3l8g4GLhoqJjIuIiZPC+/////////////udio2HhISGhIaFhYeEg4eGhIaDgYR8end5ent7fH6AfXx7e3x9fHp8f4OJnJegnpmbnaKt1f3//v////7+/v/imIeGhYOAgoSFhISEgoGFhIKEgICDdnVzdHV1dXZ3eXx7enl5eXh3dHiAstfi6+zt6urr6fn///////////77vIyCfoKCf4KDhIOCg4GAhYJ/goCAhHp4eXl6e3t8fX58e3t7e3x8fHuBi+T///////v9////+Pn6+Pf5+/nz7aCHhX+DgoGDg4SCgoSCgYWAfoKBgoZ3dXR1dnh5ent7fXx8e3t7fHx1fIn4///9/v/8/////M7Dvbu6vL+9trCSh4mBg4GBgYODgYKFhIKFgH6DgoSHenh2d3l7fX19fXt7enl5eXl6foGR///9///9/v////y0l5GQkJGSkY2KiYKHgIGAg4CFg4CBh4aCgoOAg4KDhnRyc3R2eHl5eHd2d3d4eHp8fnp7kP//+//6/v//+v//s4uCg4SEhIODg4J9g36AgoiDhoN/gYeGgYCFgYSBgoV5eXd4eXt8fHx8e3p+e396fXyAfpP3///7//3//P7//K6PhYB/goWDg4WFgoWEgIWKhIaFhYSDhIaIgYKJiomHdnZ0dXd4eXl5eHh2end7dnp5fXmH2fX////////8/vqwhYN+fH5/fXx+fn2Bgn6DhoCCgYGBgYKDg4B/g4CAg3h4eHl6fHx8e3t8e396fnp+fH2Ahq7Ax87Q//j/////toaDf31+fnx7fICBhIOBhYiEhISEhYWGhYWGhIWBgol0c3R2d3l5eXh4eHh7dnp3enhwfHyIi4yWov/4/v/+/amDgn99f39+fn9+gIB+fICCgYCBgoKBgYKDgICDf4CHenl5enx+f39+fnp7f3l9e357d394gYSJi5f3//7///+mi358e3x9fX5/gYaGhISFhoWFiImIhYSHioWEiIWGinV1cnR2eXp6eXh0dnp1eXd6d3l8dXl7fXqE1P///f/6nIF8e3p6enp7fHZ/goCCgn9/gIKEgoB/goWEgYSCgoR3d3V3eXt8fHt6dnh+eX18fnp6e355fnp/h8X6//z83ZF8fXx8enl6ent5g4WDhoWCg4SFhYWFhIWFiISHhoaGdHR0dnh6e3p4d3B0eXR5eHp2eXR8b3x3gIClztrZ3K+CgHx9fHp5enp7fIWDf4KCgISEg4KDhYaDgYN+goSDgXV6d3d5fX58e3t5ent7e3t7fHl5eXt8fn5+jJefnpqWjIJ/gX9+gH58fn2BhIOEh4WAh4WEhoiKiYeChIWEg4RxdHN0dXd3d3l8d3d2d3h4d3Z6ent8fX1+fn2AhIaHhYF9f4F/foB+fH5/gX99foOFg4GBgYGCgoKChYJ/gYSGdXZ3eHp8e3p8gH17ent9fXx5eXp8fXx8fH2DgICEhoSCg4GDgYCCgX+BgIODg4SHh4SDhIWFhISFhoKEhYSDg3Rzc3R3enl3d3h6eHd4eXl4dnd6fH17enp7fXt8fn99e3t7fnx7fn17fHx+f3+AgoB9f3+AgICBgYKBhYeGgoF6end3eHx+fXt6fX19fX18fHx3enx9e3p6e3p+gICAgH99gYOCgoSDgYOGhIKAgYOFhYSDgoKEhYSChYKAgYOFc3R1cnF1eHl4eHh6enp5eHl5eXt9fXx8fH13fH17eXt8e3t+fHx/fnx+f39+fn5/f36Bf31+f4B+fIOCgoKDhHN2eXd2eXt7ent9fX1+fn5+fXp7fHx9fX19fn59fX18fH19f35+gYB+gX5/goSFhIF/hISDg4SFhIN/g4eFgoBvdHR0dnh3dHNzenl4eXt8e3l6enp7fH19fX96eoCCfnyAe359fYB/foB/fn1/gIGCgn+AgYKCg4SFgYCAgoODeHZ2d3p2fHh6e3d3eXt9fn9+fXt7fH+Af317fH1/gIGBgYKDf36BgoKGg4KBgoSFhYR9hYaDhIWEhYSEhIWHiHZ1dHR2c3t2dnV0dXd4eXp6end3eHp8fX19f359fX1+gIGBgoB/g4OChIODg4ODhIODfIGDgoSDgoSFhISEhYV3d3l4eXZ/enl2eHl7e3p6e3x4eXt8fX5/f39+fXx8fX9/f4GAgIODgYKCg4ODgoKDg4KFhYaIhYSJiYiHh4iHd3l1dndze3Z2dXR2eHd2dXZ4c3V3eHd3eHp6e3x+fn5+fn6Bf3+DgoCCgIGCg4KCg4SCgoCBgn9+hIKCgYKDg3Z3enx+eX56fH55e3x8enp8fnl8f39+fX6AeXp8fX5+fn5/gH5+gYGAgn+BgoKBgYOEiIeEhIaDg4mGhoaHiIl1dnR3eXN4c3d7dXZ3dnZ2d3h2eHt8fHt8fX18e3t7fX5/f4B9fYCBgIOBgYKBgYGBgYGBfn6AgICEg4ODhIWFdXZ4eXt2e3d5e3p6enp6e3t8eXt+f39+fn5+fXx7e3x+f3+AfXyAgICCgYGAgIGBgYCBhIKBhISDhIaGhoaHiHNzd3h5dXt2d3d7enl5ent7end5ent6eXh3e3x9fX5+fX1+f319gIB/gYB/f4CBgoKBfoOCf4KDgH6CgYKDhIV4eHl5enp6eXd3eXl5eXp6ent8e3p+gn58gXx9fX59fn5/foCBgYOFhIGAgYKCgYCAgIeDgn+Cg4CGhIKHhoaIdHV1dXZ3eHh4eHR1dnd4eHh3eXl5fIB8eXx7fHx9fn5/gH98enl6fH19fH1/gIGBgoKEgYKAg4R/hYKAhYSEhnh5d3h4ent8fH13eXt9fn18e3x8fH+Cfnt+e3x8fX5/f3+GgX1+f36Ag39/f4CAgYKCgoGDgoWFgIaEgoaEhIZ0dHR0dHR1dnd3dHV3eXp5eHd3eHd5fHp3eX59fX5+fn5+gHt5fn98fH+BgH9/f4CAgYKChYOGhoGHhoSHhIOFeHh5eXl5eXp7e3l6e3t7e3t6fX17fH9+fYB+fn1+f39+foF8fYKEgH+Bf359fX+AgYKDgoSChIWAh4SChYKBgw==",
+                            "Index": 3,
+                            "X": 1398,
+                            "Y": 6637
+                        }
+                    ],
+                    "usePositionROI": 1
+                },
+                "Light": [
+                    {
+                        "LightID": 0,
+                        "LightName": "Ch1",
+                        "ROI": [
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1536,
+                                    "ey": 5568,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1387,
+                                            "Y": 2223
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1386,
+                                            "Y": 5568
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1534,
+                                            "Y": 5568
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1537,
+                                            "Y": 2223
+                                        }
+                                    ],
+                                    "sx": 1386,
+                                    "sy": 2223
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "InspType": 1000,
+                                    "M_T_Classification_MatchingID": 2,
+                                    "MergeDist": 10,
+                                    "MergeMode": 1,
+                                    "MinSize": 5,
+                                    "MinSizeMerge": 3,
+                                    "PitchType": 5,
+                                    "PitchX": 0,
+                                    "PitchY": 64,
+                                    "PositionName": "DIC_Crack",
+                                    "ThrH": 128,
+                                    "ThrL": 5
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1322,
+                                    "ey": 1373,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1322,
+                                            "Y": 1206
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1190,
+                                            "Y": 1207
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1190,
+                                            "Y": 1224
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1142,
+                                            "Y": 1225
+                                        },
+                                        {
+                                            "Index": 4,
+                                            "X": 1143,
+                                            "Y": 1373
+                                        },
+                                        {
+                                            "Index": 5,
+                                            "X": 1323,
+                                            "Y": 1373
+                                        }
+                                    ],
+                                    "sx": 1142,
+                                    "sy": 1205
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "InspType": 1000,
+                                    "MergeDist": 5,
+                                    "MergeMode": 1,
+                                    "MinSize": 10,
+                                    "MinSizeMerge": 10,
+                                    "PitchType": 5,
+                                    "PitchX": 0,
+                                    "PitchY": 30,
+                                    "PositionName": "SR_OverFlow",
+                                    "ThrH": 5,
+                                    "ThrL": 10
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1319,
+                                    "ey": 6584,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1317,
+                                            "Y": 6443
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1145,
+                                            "Y": 6441
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1145,
+                                            "Y": 6569
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1192,
+                                            "Y": 6569
+                                        },
+                                        {
+                                            "Index": 4,
+                                            "X": 1192,
+                                            "Y": 6583
+                                        },
+                                        {
+                                            "Index": 5,
+                                            "X": 1319,
+                                            "Y": 6584
+                                        }
+                                    ],
+                                    "sx": 1144,
+                                    "sy": 6441
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "InspType": 1000,
+                                    "MergeDist": 5,
+                                    "MergeMode": 1,
+                                    "MinSize": 10,
+                                    "MinSizeMerge": 10,
+                                    "PitchType": 5,
+                                    "PitchX": 0,
+                                    "PitchY": 30,
+                                    "PositionName": "SR_OverFlow",
+                                    "ThrH": 5,
+                                    "ThrL": 10
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 2013,
+                                    "ey": 1680,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 2014,
+                                            "Y": 1474
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1767,
+                                            "Y": 1474
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1767,
+                                            "Y": 1681
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 2014,
+                                            "Y": 1681
+                                        }
+                                    ],
+                                    "sx": 1766,
+                                    "sy": 1473
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "InspType": 1000,
+                                    "M_T_Classification_MatchingID": 1,
+                                    "MergeDist": 10,
+                                    "MergeMode": 1,
+                                    "MinSize": 15,
+                                    "MinSizeMerge": 10,
+                                    "PitchType": 41,
+                                    "PitchX": 0,
+                                    "PitchY": 30,
+                                    "PositionName": "MCL_Patten_Bubble",
+                                    "ThrH": 128,
+                                    "ThrL": 10,
+                                    "bb_inner_thre": 133,
+                                    "dbGain": 200,
+                                    "dbMask": 20
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 2030,
+                                    "ey": 6331,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 2030,
+                                            "Y": 6332
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1778,
+                                            "Y": 6332
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1778,
+                                            "Y": 6110
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 2030,
+                                            "Y": 6110
+                                        }
+                                    ],
+                                    "sx": 1778,
+                                    "sy": 6109
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "InspType": 1000,
+                                    "M_T_Classification_MatchingID": 1,
+                                    "MergeDist": 10,
+                                    "MergeMode": 1,
+                                    "MinSize": 15,
+                                    "MinSizeMerge": 10,
+                                    "PitchType": 41,
+                                    "PitchX": 0,
+                                    "PitchY": 30,
+                                    "PositionName": "MCL_Patten_Bubble",
+                                    "ThrH": 128,
+                                    "ThrL": 10,
+                                    "bb_inner_thre": 133,
+                                    "dbGain": 200,
+                                    "dbMask": 20
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 2023,
+                                    "ey": 1668,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 2023,
+                                            "Y": 1462
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1776,
+                                            "Y": 1462
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1776,
+                                            "Y": 1669
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 2023,
+                                            "Y": 1669
+                                        }
+                                    ],
+                                    "sx": 1776,
+                                    "sy": 1461
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "Gain": 20,
+                                    "InspType": 1000,
+                                    "M_T_Classification_MatchingID": 1,
+                                    "MergeDist": 3,
+                                    "MergeMode": 1,
+                                    "MinSize": 15,
+                                    "MinSizeMerge": 3,
+                                    "PitchType": 51,
+                                    "PitchX": 51,
+                                    "PitchY": 0,
+                                    "PositionName": "MCL_Patten_Bubble",
+                                    "ThrH": 128,
+                                    "ThrL": 20,
+                                    "bb_inner_thre": 133
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 2024,
+                                    "ey": 6331,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 2024,
+                                            "Y": 6331
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1772,
+                                            "Y": 6331
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1772,
+                                            "Y": 6109
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 2024,
+                                            "Y": 6109
+                                        }
+                                    ],
+                                    "sx": 1772,
+                                    "sy": 6109
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "Gain": 20,
+                                    "InspType": 1000,
+                                    "M_T_Classification_MatchingID": 1,
+                                    "MergeDist": 3,
+                                    "MergeMode": 1,
+                                    "MinSize": 15,
+                                    "MinSizeMerge": 3,
+                                    "PitchType": 51,
+                                    "PitchX": 51,
+                                    "PitchY": 0,
+                                    "PositionName": "MCL_Patten_Bubble",
+                                    "ThrH": 128,
+                                    "ThrL": 20,
+                                    "bb_inner_thre": 133
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 2025,
+                                    "ey": 3797,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1924,
+                                            "Y": 2344
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1922,
+                                            "Y": 3797
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 2025,
+                                            "Y": 3798
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 2023,
+                                            "Y": 2344
+                                        }
+                                    ],
+                                    "sx": 1922,
+                                    "sy": 2344
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "Gain": 15,
+                                    "InspType": 1000,
+                                    "MergeDist": 3,
+                                    "MergeMode": 1,
+                                    "MinSize": 3,
+                                    "MinSizeMerge": 3,
+                                    "PitchType": 1,
+                                    "PitchX": 31,
+                                    "PitchY": 31,
+                                    "PositionName": "insp_var",
+                                    "ThrH": 128,
+                                    "ThrL": 128,
+                                    "ref_var_prc": 400,
+                                    "ref_var_src": 300
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 2021,
+                                    "ey": 5431,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1926,
+                                            "Y": 3980
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1927,
+                                            "Y": 5432
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 2016,
+                                            "Y": 5432
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 2021,
+                                            "Y": 3980
+                                        }
+                                    ],
+                                    "sx": 1926,
+                                    "sy": 3979
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "Gain": 15,
+                                    "InspType": 1000,
+                                    "MergeDist": 3,
+                                    "MergeMode": 1,
+                                    "MinSize": 3,
+                                    "MinSizeMerge": 3,
+                                    "PitchType": 1,
+                                    "PitchX": 31,
+                                    "PitchY": 31,
+                                    "PositionName": "insp_var",
+                                    "ThrH": 128,
+                                    "ThrL": 128,
+                                    "ref_var_prc": 400,
+                                    "ref_var_src": 300
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 2019,
+                                    "ey": 6089,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 2017,
+                                            "Y": 1710
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1875,
+                                            "Y": 1709
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1873,
+                                            "Y": 6088
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 2020,
+                                            "Y": 6089
+                                        }
+                                    ],
+                                    "sx": 1873,
+                                    "sy": 1709
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "Gain": 10,
+                                    "InspType": 1000,
+                                    "M_T_Classification_MatchingID": 1,
+                                    "MergeDist": 3,
+                                    "MergeMode": 1,
+                                    "MinSize": 15,
+                                    "MinSizeMerge": 8,
+                                    "PitchType": 42,
+                                    "PitchX": 0,
+                                    "PitchY": 31,
+                                    "PositionName": "MCL_AA_Bubble",
+                                    "ThrH": 128,
+                                    "ThrL": 75,
+                                    "dbGain": 200,
+                                    "dbMask": 50,
+                                    "dbMaskY": 1
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 2093,
+                                    "ey": 2319,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 2050,
+                                            "Y": 2055
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 2051,
+                                            "Y": 2320
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 2093,
+                                            "Y": 2320
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 2093,
+                                            "Y": 2055
+                                        }
+                                    ],
+                                    "sx": 2050,
+                                    "sy": 2054
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "InspType": 1000,
+                                    "MCLOverflowXYRatio": 10,
+                                    "MergeDist": 3,
+                                    "MergeMode": 1,
+                                    "MinSize": 30,
+                                    "MinSizeMerge": 5,
+                                    "PitchType": 0,
+                                    "PitchX": 20,
+                                    "PitchY": 0,
+                                    "PositionName": "MCL_OverFlow_SG",
+                                    "ResinWidthNo": 1,
+                                    "ThrH": 128,
+                                    "ThrL": 8,
+                                    "bright_diff_thre": 1000
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 2096,
+                                    "ey": 3066,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 2053,
+                                            "Y": 2919
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 2053,
+                                            "Y": 3067
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 2097,
+                                            "Y": 3067
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 2097,
+                                            "Y": 2919
+                                        }
+                                    ],
+                                    "sx": 2052,
+                                    "sy": 2918
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "InspType": 1000,
+                                    "MCLOverflowXYRatio": 10,
+                                    "MergeDist": 3,
+                                    "MergeMode": 1,
+                                    "MinSize": 30,
+                                    "MinSizeMerge": 5,
+                                    "PitchType": 0,
+                                    "PitchX": 20,
+                                    "PitchY": 0,
+                                    "PositionName": "MCL_OverFlow_SG",
+                                    "ResinWidthNo": 2,
+                                    "ThrH": 128,
+                                    "ThrL": 8,
+                                    "bright_diff_thre": 1000
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 2095,
+                                    "ey": 3967,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 2051,
+                                            "Y": 3819
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 2051,
+                                            "Y": 3967
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 2095,
+                                            "Y": 3967
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 2095,
+                                            "Y": 3819
+                                        }
+                                    ],
+                                    "sx": 2051,
+                                    "sy": 3819
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "InspType": 1000,
+                                    "MCLOverflowXYRatio": 10,
+                                    "MergeDist": 3,
+                                    "MergeMode": 1,
+                                    "MinSize": 30,
+                                    "MinSizeMerge": 5,
+                                    "PitchType": 0,
+                                    "PitchX": 20,
+                                    "PitchY": 0,
+                                    "PositionName": "MCL_OverFlow_SG",
+                                    "ResinWidthNo": 3,
+                                    "ThrH": 128,
+                                    "ThrL": 8,
+                                    "bright_diff_thre": 1000
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 2097,
+                                    "ey": 4745,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 2053,
+                                            "Y": 4597
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 2053,
+                                            "Y": 4745
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 2097,
+                                            "Y": 4745
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 2097,
+                                            "Y": 4597
+                                        }
+                                    ],
+                                    "sx": 2053,
+                                    "sy": 4597
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "InspType": 1000,
+                                    "MCLOverflowXYRatio": 10,
+                                    "MergeDist": 3,
+                                    "MergeMode": 1,
+                                    "MinSize": 30,
+                                    "MinSizeMerge": 5,
+                                    "PitchType": 0,
+                                    "PitchX": 20,
+                                    "PitchY": 0,
+                                    "PositionName": "MCL_OverFlow_SG",
+                                    "ResinWidthNo": 4,
+                                    "ThrH": 128,
+                                    "ThrL": 8,
+                                    "bright_diff_thre": 1000
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 2090,
+                                    "ey": 5736,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 2050,
+                                            "Y": 5471
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 2050,
+                                            "Y": 5736
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 2089,
+                                            "Y": 5737
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 2090,
+                                            "Y": 5471
+                                        }
+                                    ],
+                                    "sx": 2050,
+                                    "sy": 5470
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "InspType": 1000,
+                                    "MCLOverflowXYRatio": 10,
+                                    "MergeDist": 3,
+                                    "MergeMode": 1,
+                                    "MinSize": 30,
+                                    "MinSizeMerge": 5,
+                                    "PitchType": 0,
+                                    "PitchX": 20,
+                                    "PitchY": 0,
+                                    "PositionName": "MCL_OverFlow_SG",
+                                    "ResinWidthNo": 5,
+                                    "ThrH": 128,
+                                    "ThrL": 8,
+                                    "bright_diff_thre": 1000
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 2088,
+                                    "ey": 1398,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 2047,
+                                            "Y": 1238
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 2047,
+                                            "Y": 1398
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 2089,
+                                            "Y": 1398
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 2089,
+                                            "Y": 1238
+                                        }
+                                    ],
+                                    "sx": 2046,
+                                    "sy": 1238
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "InspType": 1000,
+                                    "MergeDist": 3,
+                                    "MergeMode": 1,
+                                    "MinSize": 30,
+                                    "MinSizeMerge": 5,
+                                    "PitchType": 0,
+                                    "PitchX": 20,
+                                    "PitchY": 0,
+                                    "PositionName": "MCL_OverFlow",
+                                    "ResinWidthNo": 1,
+                                    "ThrH": 128,
+                                    "ThrL": 8,
+                                    "bright_diff_thre": 1000
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 2093,
+                                    "ey": 3429,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 2051,
+                                            "Y": 3269
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 2051,
+                                            "Y": 3429
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 2093,
+                                            "Y": 3429
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 2093,
+                                            "Y": 3269
+                                        }
+                                    ],
+                                    "sx": 2051,
+                                    "sy": 3269
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "InspType": 1000,
+                                    "MergeDist": 3,
+                                    "MergeMode": 1,
+                                    "MinSize": 30,
+                                    "MinSizeMerge": 5,
+                                    "PitchType": 0,
+                                    "PitchX": 20,
+                                    "PitchY": 0,
+                                    "PositionName": "MCL_OverFlow",
+                                    "ResinWidthNo": 3,
+                                    "ThrH": 128,
+                                    "ThrL": 8,
+                                    "bright_diff_thre": 1000
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 2089,
+                                    "ey": 2823,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 2048,
+                                            "Y": 2664
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 2048,
+                                            "Y": 2824
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 2090,
+                                            "Y": 2824
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 2090,
+                                            "Y": 2664
+                                        }
+                                    ],
+                                    "sx": 2047,
+                                    "sy": 2663
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "InspType": 1000,
+                                    "MergeDist": 3,
+                                    "MergeMode": 1,
+                                    "MinSize": 30,
+                                    "MinSizeMerge": 5,
+                                    "PitchType": 0,
+                                    "PitchX": 20,
+                                    "PitchY": 0,
+                                    "PositionName": "MCL_OverFlow",
+                                    "ResinWidthNo": 2,
+                                    "ThrH": 128,
+                                    "ThrL": 8,
+                                    "bright_diff_thre": 1000
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 2092,
+                                    "ey": 4433,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 2050,
+                                            "Y": 4273
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 2050,
+                                            "Y": 4433
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 2092,
+                                            "Y": 4433
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 2092,
+                                            "Y": 4273
+                                        }
+                                    ],
+                                    "sx": 2050,
+                                    "sy": 4273
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "InspType": 1000,
+                                    "MergeDist": 3,
+                                    "MergeMode": 1,
+                                    "MinSize": 30,
+                                    "MinSizeMerge": 5,
+                                    "PitchType": 0,
+                                    "PitchX": 20,
+                                    "PitchY": 0,
+                                    "PositionName": "MCL_OverFlow",
+                                    "ResinWidthNo": 3,
+                                    "ThrH": 128,
+                                    "ThrL": 8,
+                                    "bright_diff_thre": 1000
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 2093,
+                                    "ey": 5181,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 2051,
+                                            "Y": 5021
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 2051,
+                                            "Y": 5181
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 2093,
+                                            "Y": 5181
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 2093,
+                                            "Y": 5021
+                                        }
+                                    ],
+                                    "sx": 2051,
+                                    "sy": 5021
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "InspType": 1000,
+                                    "MergeDist": 3,
+                                    "MergeMode": 1,
+                                    "MinSize": 30,
+                                    "MinSizeMerge": 5,
+                                    "PitchType": 0,
+                                    "PitchX": 20,
+                                    "PitchY": 0,
+                                    "PositionName": "MCL_OverFlow",
+                                    "ResinWidthNo": 4,
+                                    "ThrH": 128,
+                                    "ThrL": 8,
+                                    "bright_diff_thre": 1000
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 2094,
+                                    "ey": 6206,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 2050,
+                                            "Y": 6046
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 2050,
+                                            "Y": 6206
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 2094,
+                                            "Y": 6206
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 2094,
+                                            "Y": 6046
+                                        }
+                                    ],
+                                    "sx": 2050,
+                                    "sy": 6046
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "InspType": 1000,
+                                    "MergeDist": 3,
+                                    "MergeMode": 1,
+                                    "MinSize": 30,
+                                    "MinSizeMerge": 5,
+                                    "PitchType": 0,
+                                    "PitchX": 20,
+                                    "PitchY": 0,
+                                    "PositionName": "MCL_OverFlow",
+                                    "ResinWidthNo": 5,
+                                    "ThrH": 128,
+                                    "ThrL": 8,
+                                    "bright_diff_thre": 1000
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1539,
+                                    "ey": 5567,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1390,
+                                            "Y": 2222
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1392,
+                                            "Y": 5568
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1539,
+                                            "Y": 5567
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1538,
+                                            "Y": 2221
+                                        }
+                                    ],
+                                    "sx": 1390,
+                                    "sy": 2220
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "COP_DiffThre_Left": 50,
+                                    "COP_DiffThre_Right": -30,
+                                    "InspType": 4001,
+                                    "MergeDist": 1,
+                                    "MergeMode": 1,
+                                    "MinSize": 10,
+                                    "MinSizeMerge": 1,
+                                    "PitchType": 5,
+                                    "PitchX": 0,
+                                    "PitchY": 64,
+                                    "PositionName": "Cop_Squeeze_Out",
+                                    "ThrH": 50,
+                                    "ThrL": 1
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1335,
+                                    "ey": 6669,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1199,
+                                            "Y": 1126
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1202,
+                                            "Y": 6666
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1335,
+                                            "Y": 6669
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1333,
+                                            "Y": 1124
+                                        }
+                                    ],
+                                    "sx": 1199,
+                                    "sy": 1124
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "FopDiffThre": 70,
+                                    "FopRtOffset_O": 90,
+                                    "FopRtOffset_P": 90,
+                                    "FopYLimitOffset": 700,
+                                    "Fop_DetectCnt_O": 10,
+                                    "Fop_DetectCnt_P": 10,
+                                    "Fop_LGDAlgo": 1,
+                                    "Fop_LGD_eraseRangeH": 5,
+                                    "Fop_LGD_eraseRangeL": 0,
+                                    "Fop_LGD_minsize": 8,
+                                    "Fop_LGD_morphCnt": 1,
+                                    "Fop_LGD_thrPortion": 30,
+                                    "Fop_XRange_O": 150,
+                                    "Fop_XRange_P": 150,
+                                    "Fop_YRange_O": 75,
+                                    "Fop_YRange_P": 75,
+                                    "InspType": 4002,
+                                    "MergeDist": 1,
+                                    "MergeMode": 1,
+                                    "MinSize": 10,
+                                    "MinSizeMerge": 1,
+                                    "PitchType": 5,
+                                    "PitchX": 0,
+                                    "PitchY": 64,
+                                    "PositionName": "Fop_Squeeze_Out_Measure",
+                                    "ThrH": 70,
+                                    "ThrL": 1
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1429,
+                                    "ey": 1187,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1374,
+                                            "Y": 1135
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1374,
+                                            "Y": 1187
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1429,
+                                            "Y": 1187
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1429,
+                                            "Y": 1135
+                                        }
+                                    ],
+                                    "sx": 1374,
+                                    "sy": 1135
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "InspType": 6000,
+                                    "PositionName": "IQ_CHECK"
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1430,
+                                    "ey": 6660,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1376,
+                                            "Y": 6608
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1376,
+                                            "Y": 6660
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1431,
+                                            "Y": 6660
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1431,
+                                            "Y": 6608
+                                        }
+                                    ],
+                                    "sx": 1375,
+                                    "sy": 6608
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "InspType": 6000,
+                                    "PositionName": "IQ_CHECK_2"
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 2093,
+                                    "ey": 2320,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 2049,
+                                            "Y": 2055
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 2050,
+                                            "Y": 2320
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 2094,
+                                            "Y": 2320
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 2094,
+                                            "Y": 2055
+                                        }
+                                    ],
+                                    "sx": 2049,
+                                    "sy": 2055
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "InspType": 4004,
+                                    "MCLOverflowXYRatio": 10,
+                                    "MergeDist": 3,
+                                    "MergeMode": 1,
+                                    "MinSize": 15,
+                                    "MinSizeMerge": 5,
+                                    "OverflowBeforeDiff": 100,
+                                    "OverflowCurDiff": 200,
+                                    "OverflowDecreaseCnt": 1,
+                                    "OverflowMinOption": 3,
+                                    "OverflowRangeDiff": 500,
+                                    "PitchType": 0,
+                                    "PitchX": 20,
+                                    "PitchY": 0,
+                                    "PositionName": "MCL_OverFlow_SG",
+                                    "ResinWidthNo": 1,
+                                    "ThrH": 128,
+                                    "ThrL": 8,
+                                    "bright_diff_thre": 1000
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 2095,
+                                    "ey": 3067,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 2051,
+                                            "Y": 2919
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 2051,
+                                            "Y": 3067
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 2095,
+                                            "Y": 3067
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 2095,
+                                            "Y": 2919
+                                        }
+                                    ],
+                                    "sx": 2051,
+                                    "sy": 2919
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "InspType": 4004,
+                                    "MCLOverflowXYRatio": 10,
+                                    "MergeDist": 3,
+                                    "MergeMode": 1,
+                                    "MinSize": 15,
+                                    "MinSizeMerge": 5,
+                                    "OverflowBeforeDiff": 100,
+                                    "OverflowCurDiff": 200,
+                                    "OverflowDecreaseCnt": 1,
+                                    "OverflowMinOption": 3,
+                                    "OverflowRangeDiff": 500,
+                                    "PitchType": 0,
+                                    "PitchX": 20,
+                                    "PitchY": 0,
+                                    "PositionName": "MCL_OverFlow_SG",
+                                    "ResinWidthNo": 2,
+                                    "ThrH": 128,
+                                    "ThrL": 8,
+                                    "bright_diff_thre": 1000
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 2094,
+                                    "ey": 3968,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 2050,
+                                            "Y": 3820
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 2050,
+                                            "Y": 3968
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 2094,
+                                            "Y": 3968
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 2094,
+                                            "Y": 3820
+                                        }
+                                    ],
+                                    "sx": 2050,
+                                    "sy": 3820
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "InspType": 4004,
+                                    "MCLOverflowXYRatio": 10,
+                                    "MergeDist": 3,
+                                    "MergeMode": 1,
+                                    "MinSize": 15,
+                                    "MinSizeMerge": 5,
+                                    "OverflowBeforeDiff": 100,
+                                    "OverflowCurDiff": 200,
+                                    "OverflowDecreaseCnt": 1,
+                                    "OverflowMinOption": 3,
+                                    "OverflowRangeDiff": 500,
+                                    "PitchType": 0,
+                                    "PitchX": 20,
+                                    "PitchY": 0,
+                                    "PositionName": "MCL_OverFlow_SG",
+                                    "ResinWidthNo": 3,
+                                    "ThrH": 128,
+                                    "ThrL": 8,
+                                    "bright_diff_thre": 1000
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 2095,
+                                    "ey": 4746,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 2051,
+                                            "Y": 4598
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 2051,
+                                            "Y": 4746
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 2095,
+                                            "Y": 4746
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 2095,
+                                            "Y": 4598
+                                        }
+                                    ],
+                                    "sx": 2051,
+                                    "sy": 4598
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "InspType": 4004,
+                                    "MCLOverflowXYRatio": 10,
+                                    "MergeDist": 3,
+                                    "MergeMode": 1,
+                                    "MinSize": 15,
+                                    "MinSizeMerge": 5,
+                                    "OverflowBeforeDiff": 100,
+                                    "OverflowCurDiff": 200,
+                                    "OverflowDecreaseCnt": 1,
+                                    "OverflowMinOption": 3,
+                                    "OverflowRangeDiff": 500,
+                                    "PitchType": 0,
+                                    "PitchX": 20,
+                                    "PitchY": 0,
+                                    "PositionName": "MCL_OverFlow_SG",
+                                    "ResinWidthNo": 4,
+                                    "ThrH": 128,
+                                    "ThrL": 8,
+                                    "bright_diff_thre": 1000
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 2088,
+                                    "ey": 5737,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 2048,
+                                            "Y": 5471
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 2049,
+                                            "Y": 5737
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 2088,
+                                            "Y": 5737
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 2088,
+                                            "Y": 5471
+                                        }
+                                    ],
+                                    "sx": 2048,
+                                    "sy": 5471
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "InspType": 4004,
+                                    "MCLOverflowXYRatio": 10,
+                                    "MergeDist": 3,
+                                    "MergeMode": 1,
+                                    "MinSize": 15,
+                                    "MinSizeMerge": 5,
+                                    "OverflowBeforeDiff": 100,
+                                    "OverflowCurDiff": 200,
+                                    "OverflowDecreaseCnt": 1,
+                                    "OverflowMinOption": 3,
+                                    "OverflowRangeDiff": 500,
+                                    "PitchType": 0,
+                                    "PitchX": 20,
+                                    "PitchY": 0,
+                                    "PositionName": "MCL_OverFlow_SG",
+                                    "ResinWidthNo": 5,
+                                    "ThrH": 128,
+                                    "ThrL": 8,
+                                    "bright_diff_thre": 1000
+                                }
+                            }
+                        ],
+                        "SensorRoiID": 1
+                    },
+                    {
+                        "LightID": 1,
+                        "LightName": "Ch2",
+                        "ROI": [
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 2045,
+                                    "ey": 6370,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 2014,
+                                            "Y": 1378
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 2014,
+                                            "Y": 6370
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 2045,
+                                            "Y": 6371
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 2044,
+                                            "Y": 1378
+                                        }
+                                    ],
+                                    "sx": 2013,
+                                    "sy": 1377
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "InspType": 4000,
+                                    "MergeDist": 5,
+                                    "MergeMode": 1,
+                                    "MinSize": 5,
+                                    "MinSizeMerge": 5,
+                                    "PitchType": 5,
+                                    "PitchX": 0,
+                                    "PitchY": 130,
+                                    "PositionName": "MCL_Resin_Open_Right",
+                                    "ResinRatio": 10,
+                                    "ThrH": 128,
+                                    "ThrH_Resin": 200,
+                                    "ThrL": 128,
+                                    "ThrL_Resin": 40
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1851,
+                                    "ey": 6346,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1758,
+                                            "Y": 1449
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1761,
+                                            "Y": 6346
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1844,
+                                            "Y": 6346
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1851,
+                                            "Y": 1448
+                                        }
+                                    ],
+                                    "sx": 1758,
+                                    "sy": 1448
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "InspType": 4000,
+                                    "MergeDist": 5,
+                                    "MergeMode": 1,
+                                    "MinSize": 5,
+                                    "MinSizeMerge": 5,
+                                    "PitchType": 5,
+                                    "PitchX": 0,
+                                    "PitchY": 130,
+                                    "PositionName": "MCL_Resin_Open_Left",
+                                    "ResinRatio": 3,
+                                    "ThrH": 60,
+                                    "ThrH_Resin": 100,
+                                    "ThrL": 60,
+                                    "ThrL_Resin": 38
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 504,
+                                    "ey": 3416,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 378,
+                                            "Y": 3290
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 378,
+                                            "Y": 3417
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 504,
+                                            "Y": 3417
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 504,
+                                            "Y": 3290
+                                        }
+                                    ],
+                                    "sx": 378,
+                                    "sy": 3289
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "InspType": 6000,
+                                    "PositionName": "IQ_CHECK"
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 511,
+                                    "ey": 4335,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 383,
+                                            "Y": 4202
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 384,
+                                            "Y": 4335
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 511,
+                                            "Y": 4334
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 511,
+                                            "Y": 4202
+                                        }
+                                    ],
+                                    "sx": 383,
+                                    "sy": 4202
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "InspType": 6000,
+                                    "PositionName": "IQ_CHECK_2"
+                                }
+                            }
+                        ],
+                        "SensorRoiID": 2
+                    },
+                    {
+                        "LightID": 2,
+                        "LightName": "Ch3",
+                        "ROI": [
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 2025,
+                                    "ey": 6215,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1812,
+                                            "Y": 1558
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1821,
+                                            "Y": 6215
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 2026,
+                                            "Y": 6214
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 2025,
+                                            "Y": 1558
+                                        }
+                                    ],
+                                    "sx": 1812,
+                                    "sy": 1558
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "Gain": 10,
+                                    "InspType": 1000,
+                                    "M_T_Classification_MatchingID": 3,
+                                    "MergeDist": 10,
+                                    "MergeMode": 1,
+                                    "MinSize": 15,
+                                    "MinSizeMerge": 10,
+                                    "PitchType": 42,
+                                    "PitchX": 0,
+                                    "PitchY": 10,
+                                    "PositionName": "MCL_Side_Mid_Bubble",
+                                    "ThrH": 128,
+                                    "ThrL": 45,
+                                    "dbGain": 120,
+                                    "dbMask": 100,
+                                    "dbMaskY": 1
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 2006,
+                                    "ey": 6334,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 2006,
+                                            "Y": 1456
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1871,
+                                            "Y": 1458
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1866,
+                                            "Y": 6334
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 2004,
+                                            "Y": 6335
+                                        }
+                                    ],
+                                    "sx": 1865,
+                                    "sy": 1456
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "InspType": 1000,
+                                    "MergeDist": 20,
+                                    "MergeMode": 1,
+                                    "MinSize": 35,
+                                    "MinSizeMerge": 5,
+                                    "PitchType": 5,
+                                    "PitchX": 0,
+                                    "PitchY": 130,
+                                    "PositionName": "MCL_Open_Left",
+                                    "ResinRatio": 10,
+                                    "ThrH": 128,
+                                    "ThrH_Resin": 100,
+                                    "ThrL": 85,
+                                    "ThrL_Resin": 30
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1427,
+                                    "ey": 1188,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1372,
+                                            "Y": 1137
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1372,
+                                            "Y": 1189
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1427,
+                                            "Y": 1189
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1427,
+                                            "Y": 1137
+                                        }
+                                    ],
+                                    "sx": 1372,
+                                    "sy": 1136
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "InspType": 6000,
+                                    "PositionName": "IQ_CHECK"
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1428,
+                                    "ey": 6660,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1374,
+                                            "Y": 6609
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1374,
+                                            "Y": 6661
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1429,
+                                            "Y": 6661
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1429,
+                                            "Y": 6609
+                                        }
+                                    ],
+                                    "sx": 1373,
+                                    "sy": 6608
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "InspType": 6000,
+                                    "PositionName": "IQ_CHECK_2"
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 2027,
+                                    "ey": 6339,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1990,
+                                            "Y": 1461
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1995,
+                                            "Y": 6339
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 2027,
+                                            "Y": 6339
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 2026,
+                                            "Y": 1459
+                                        }
+                                    ],
+                                    "sx": 1990,
+                                    "sy": 1459
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "InspType": 1000,
+                                    "M_T_Classification_MatchingID": 3,
+                                    "MergeDist": 10,
+                                    "MergeMode": 1,
+                                    "MinSize": 5,
+                                    "MinSizeMerge": 1,
+                                    "PitchType": 5,
+                                    "PitchX": 40,
+                                    "PitchY": 40,
+                                    "PositionName": "MCL_Open_right",
+                                    "ThrH": 128,
+                                    "ThrL": 80
+                                }
+                            }
+                        ],
+                        "SensorRoiID": 3
+                    },
+                    {
+                        "LightID": 3,
+                        "LightName": "Ch4",
+                        "ROI": [
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 2034,
+                                    "ey": 1673,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 2034,
+                                            "Y": 1466
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1787,
+                                            "Y": 1466
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1787,
+                                            "Y": 1673
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 2034,
+                                            "Y": 1673
+                                        }
+                                    ],
+                                    "sx": 1787,
+                                    "sy": 1466
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "InspType": 103,
+                                    "MergeDist": 10,
+                                    "MergeMode": 1,
+                                    "MinSize": 15,
+                                    "MinSizeMerge": 10,
+                                    "PitchType": 41,
+                                    "PitchX": 0,
+                                    "PitchY": 30,
+                                    "PositionName": "MCL_Patten_Bubble",
+                                    "ThrH": 128,
+                                    "ThrL": 10,
+                                    "bb_inner_thre": 133,
+                                    "dbGain": 200,
+                                    "dbMask": 20
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 2030,
+                                    "ey": 6324,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 2030,
+                                            "Y": 6324
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1778,
+                                            "Y": 6324
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1778,
+                                            "Y": 6102
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 2030,
+                                            "Y": 6102
+                                        }
+                                    ],
+                                    "sx": 1778,
+                                    "sy": 6102
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "InspType": 103,
+                                    "MergeDist": 10,
+                                    "MergeMode": 1,
+                                    "MinSize": 15,
+                                    "MinSizeMerge": 10,
+                                    "PitchType": 41,
+                                    "PitchX": 0,
+                                    "PitchY": 30,
+                                    "PositionName": "MCL_Patten_Bubble",
+                                    "ThrH": 128,
+                                    "ThrL": 10,
+                                    "bb_inner_thre": 133,
+                                    "dbGain": 200,
+                                    "dbMask": 20
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 2034,
+                                    "ey": 1673,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 2034,
+                                            "Y": 1466
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1787,
+                                            "Y": 1466
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1787,
+                                            "Y": 1673
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 2034,
+                                            "Y": 1673
+                                        }
+                                    ],
+                                    "sx": 1787,
+                                    "sy": 1466
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "Gain": 20,
+                                    "InspType": 103,
+                                    "MergeDist": 3,
+                                    "MergeMode": 1,
+                                    "MinSize": 15,
+                                    "MinSizeMerge": 3,
+                                    "PitchType": 51,
+                                    "PitchX": 51,
+                                    "PitchY": 0,
+                                    "PositionName": "MCL_Patten_Bubble",
+                                    "ThrH": 128,
+                                    "ThrL": 10,
+                                    "bb_inner_thre": 133
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 2030,
+                                    "ey": 6324,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 2030,
+                                            "Y": 6324
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1778,
+                                            "Y": 6324
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1778,
+                                            "Y": 6102
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 2030,
+                                            "Y": 6102
+                                        }
+                                    ],
+                                    "sx": 1778,
+                                    "sy": 6102
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "Gain": 20,
+                                    "InspType": 103,
+                                    "MergeDist": 3,
+                                    "MergeMode": 1,
+                                    "MinSize": 15,
+                                    "MinSizeMerge": 3,
+                                    "PitchType": 51,
+                                    "PitchX": 51,
+                                    "PitchY": 0,
+                                    "PositionName": "MCL_Patten_Bubble",
+                                    "ThrH": 128,
+                                    "ThrL": 10,
+                                    "bb_inner_thre": 133
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 2059,
+                                    "ey": 6081,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1867,
+                                            "Y": 1713
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1889,
+                                            "Y": 6081
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 2045,
+                                            "Y": 6078
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 2059,
+                                            "Y": 1710
+                                        }
+                                    ],
+                                    "sx": 1867,
+                                    "sy": 1710
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "Gain": 10,
+                                    "InspType": 103,
+                                    "MergeDist": 3,
+                                    "MergeMode": 1,
+                                    "MinSize": 15,
+                                    "MinSizeMerge": 5,
+                                    "PitchType": 32,
+                                    "PitchX": 0,
+                                    "PitchY": 41,
+                                    "PositionName": "MCL_AA_Bubble",
+                                    "ThrH": 120,
+                                    "ThrL": 20,
+                                    "pitchThreH": 100
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 2081,
+                                    "ey": 6728,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1999,
+                                            "Y": 1055
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1996,
+                                            "Y": 6728
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 2078,
+                                            "Y": 6729
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 2081,
+                                            "Y": 1054
+                                        }
+                                    ],
+                                    "sx": 1995,
+                                    "sy": 1053
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "InspType": 1000,
+                                    "MergeDist": 3,
+                                    "MergeMode": 1,
+                                    "MinSize": 30,
+                                    "MinSizeMerge": 5,
+                                    "PitchType": 0,
+                                    "PitchX": 20,
+                                    "PitchY": 0,
+                                    "PositionName": "MCL_OverFlow2",
+                                    "ThrH": 128,
+                                    "ThrL": 128,
+                                    "bright_diff_thre": 1000,
+                                    "pol_line_diff1_thr": 65,
+                                    "pol_line_fall": 0,
+                                    "pol_line_range_y": 250,
+                                    "pol_line_thre": 7,
+                                    "pol_line_useProj": 1
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1327,
+                                    "ey": 6674,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1190,
+                                            "Y": 1122
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1189,
+                                            "Y": 6674
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1327,
+                                            "Y": 6672
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1328,
+                                            "Y": 1121
+                                        }
+                                    ],
+                                    "sx": 1189,
+                                    "sy": 1121
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "FopBotPos": 3,
+                                    "FopDiffThr_O": 11,
+                                    "FopDiffThr_P": 11,
+                                    "FopLineDiffThre": 200,
+                                    "FopYLimitOffset": 700,
+                                    "Fop_UseProj": 1,
+                                    "InspType": 4002,
+                                    "MergeDist": 1,
+                                    "MergeMode": 1,
+                                    "MinSize": 10,
+                                    "MinSizeMerge": 1,
+                                    "PitchType": 5,
+                                    "PitchX": 0,
+                                    "PitchY": 64,
+                                    "PositionName": "Fop_Squeeze_Out_Line",
+                                    "ThrH": 50,
+                                    "ThrL": 1
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1432,
+                                    "ey": 1196,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1368,
+                                            "Y": 1132
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1368,
+                                            "Y": 1196
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1432,
+                                            "Y": 1196
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1432,
+                                            "Y": 1132
+                                        }
+                                    ],
+                                    "sx": 1368,
+                                    "sy": 1132
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "InspType": 6000,
+                                    "PositionName": "IQ_CHECK"
+                                }
+                            },
+                            {
+                                "Area": {
+                                    "Type": 5,
+                                    "ex": 1427,
+                                    "ey": 6667,
+                                    "polygon": [
+                                        {
+                                            "Index": 0,
+                                            "X": 1366,
+                                            "Y": 6605
+                                        },
+                                        {
+                                            "Index": 1,
+                                            "X": 1366,
+                                            "Y": 6667
+                                        },
+                                        {
+                                            "Index": 2,
+                                            "X": 1428,
+                                            "Y": 6667
+                                        },
+                                        {
+                                            "Index": 3,
+                                            "X": 1428,
+                                            "Y": 6605
+                                        }
+                                    ],
+                                    "sx": 1365,
+                                    "sy": 6605
+                                },
+                                "InspectionParam": {
+                                    "BaseGray": 128,
+                                    "InspType": 6000,
+                                    "PositionName": "IQ_CHECK_2"
+                                }
+                            }
+                        ],
+                        "SensorRoiID": 4
+                    }
+                ],
+                "OpticType": "MCL",
+                "eqp_sceneHeight": 7808,
+                "eqp_sceneWidth": 4096,
+                "eqp_showParameter": false,
+                "eqp_showRoiEditor": true
+            }
+        ],
+        "GLOBAL": {
+            "CropInfo": {
+                "OrgImgThumbnail": 1,
+                "SingleHeight": 100,
+                "SingleWidth": 100
+            },
+            "DisplayOption": {
+                "BoxExt": 5,
+                "ClassifyDrawBox": 1,
+                "DrawBox": 0,
+                "DrawText": 0,
+                "PolLineBox": 1,
+                "PolLineColor": 255,
+                "numGridX": 14,
+                "numGridY": 20,
+                "thickness": 2
+            },
+            "ImageSaverOption": {
+                "quality": 90,
+                "resize": 100,
+                "use_COPResult": 1,
+                "use_DICQuality": 100,
+                "use_DICResize": 70,
+                "use_DICResult": 1,
+                "use_FOPResult": 1,
+                "use_SGOrgResult": 1,
+                "use_SGQuality": 50,
+                "use_SGResult": 1,
+                "use_markresult": 0
+            },
+            "MavinInfo": {
+                "AssignedGPU": 0,
+                "BatchSize": 8,
+                "BitsPerPixel": 8,
+                "CamEnable": 1,
+                "MavinDir": "D:\\Mavin\\",
+                "NumChannel": 1
+            },
+            "PanelInfo": {
+                "ModelName": "D964",
+                "x": 68,
+                "y": 144
+            }
+        }
+    }
+}

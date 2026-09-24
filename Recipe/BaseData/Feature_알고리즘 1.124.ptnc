@@ -1,0 +1,1480 @@
+{
+    "FeatureList": [
+        {
+            "Index": 0,
+            "Name": "G001_RealX",
+            "Desc": "feature_desc",
+            "ID": "{ef73eae2-b857-4efb-a9a1-f8c00d7b3745}"
+        },
+        {
+            "Index": 1,
+            "Name": "G002_RealY",
+            "Desc": "feature_desc",
+            "ID": "{067c97b8-7f70-4be2-86e2-b5e20e3547c0}"
+        },
+        {
+            "Index": 2,
+            "Name": "G003_GridPos",
+            "Desc": "feature_desc",
+            "ID": "{57f2ce42-1d5e-4776-81fd-d74fbe4b6eb9}"
+        },
+        {
+            "Index": 3,
+            "Name": "G004_PxlX",
+            "Desc": "feature_desc",
+            "ID": "{c55e7bff-41e1-40f3-bd02-1030a74c0297}"
+        },
+        {
+            "Index": 4,
+            "Name": "G005_PxlY",
+            "Desc": "feature_desc",
+            "ID": "{4bf2e139-8a14-4dbc-bb9b-8e5892c4471f}"
+        },
+        {
+            "Index": 5,
+            "Name": "G006_DefectID",
+            "Desc": "feature_desc",
+            "ID": "{e8a111a1-4970-4e32-8d27-0d048d2ec8a4}"
+        },
+        {
+            "Index": 6,
+            "Name": "G007_LightID",
+            "Desc": "feature_desc",
+            "ID": "{ed005634-5ee1-4630-8232-17e21f607f36}"
+        },
+        {
+            "Index": 7,
+            "Name": "G008_RoiID",
+            "Desc": "feature_desc",
+            "ID": "{8fe75172-4616-4faa-a231-5a3043f72b43}"
+        },
+        {
+            "Index": 8,
+            "Name": "G009_VpID",
+            "Desc": "feature_desc",
+            "ID": "{053e4543-5ec9-41c4-93f1-161def756f66}"
+        },
+        {
+            "Index": 9,
+            "Name": "G010_ScanID",
+            "Desc": "feature_desc",
+            "ID": "{9f6befe9-bf9c-4386-9150-dc8ad07cae99}"
+        },
+        {
+            "Index": 10,
+            "Name": "G011_TotalDetection",
+            "Desc": "feature_desc",
+            "ID": "{522a0f30-afbf-4e4d-8e10-b2736f4e7a02}"
+        },
+        {
+            "Index": 11,
+            "Name": "G012_RealWidth",
+            "Desc": "feature_desc",
+            "ID": "{90272a50-7b55-4a0f-beac-1fdb9b3bb1e8}"
+        },
+        {
+            "Index": 12,
+            "Name": "G013_RealHeight",
+            "Desc": "feature_desc",
+            "ID": "{e114e2e9-a347-4ee8-b18b-82108e42ef49}"
+        },
+        {
+            "Index": 13,
+            "Name": "G014_RealLength",
+            "Desc": "feature_desc",
+            "ID": "{6b956c04-8735-4abe-84c5-7b4a9106fc8f}"
+        },
+        {
+            "Index": 14,
+            "Name": "G015_RealArea",
+            "Desc": "feature_desc",
+            "ID": "{31d1da42-2098-4949-a825-9bf9fcd921f6}"
+        },
+        {
+            "Index": 15,
+            "Name": "G016_PxlWidth",
+            "Desc": "feature_desc",
+            "ID": "{ad6decf9-9dd8-47e8-b389-782d808a94d6}"
+        },
+        {
+            "Index": 16,
+            "Name": "G017_PxlHeight",
+            "Desc": "feature_desc",
+            "ID": "{64be2036-c281-4f43-8717-1af4fd490be7}"
+        },
+        {
+            "Index": 17,
+            "Name": "G018_PxlLength",
+            "Desc": "feature_desc",
+            "ID": "{062003fb-6304-43a1-a32b-8a31355d67ff}"
+        },
+        {
+            "Index": 18,
+            "Name": "G019_PxlArea",
+            "Desc": "feature_desc",
+            "ID": "{cb896b1d-7d2f-422f-83bb-77e639a65819}"
+        },
+        {
+            "Index": 19,
+            "Name": "G020_FillRate",
+            "Desc": "feature_desc",
+            "ID": "{f7930a45-9c50-4f8f-b9bb-94522d3f1f85}"
+        },
+        {
+            "Index": 20,
+            "Name": "G021_Circularity",
+            "Desc": "feature_desc",
+            "ID": "{6cd2e3d7-6d4a-45ed-ac00-35ea0250ecda}"
+        },
+        {
+            "Index": 21,
+            "Name": "G022_SeqID",
+            "Desc": "feature_desc",
+            "ID": "{48680f74-8b42-4d3e-b01e-2600581a4c3c}"
+        },
+        {
+            "Index": 22,
+            "Name": "G023_InspPass",
+            "Desc": "feature_desc",
+            "ID": "{5041efeb-c1fb-40e8-bada-0360de82ac95}"
+        },
+        {
+            "Index": 23,
+            "Name": "G024_CenterRate",
+            "Desc": "feature_desc",
+            "ID": "{48507460-493f-4fa1-9772-fe5cea3fcb2c}"
+        },
+        {
+            "Index": 24,
+            "Name": "G025_DefocusIdx",
+            "Desc": "feature_desc",
+            "ID": "{4106c78d-d069-4a37-b4fa-d1f0ebc677d5}"
+        },
+        {
+            "Index": 25,
+            "Name": "G026_PrjDensity",
+            "Desc": "feature_desc",
+            "ID": "{73759120-d5cb-4e90-ad31-a8420b18e07f}"
+        },
+        {
+            "Index": 26,
+            "Name": "G027_StdAngle",
+            "Desc": "feature_desc",
+            "ID": "{1c2257f9-2c7a-4a9d-8950-80ae4ce743b8}"
+        },
+        {
+            "Index": 27,
+            "Name": "G028_RealAreaH",
+            "Desc": "feature_desc",
+            "ID": "{bfb8e2ac-e113-4a74-a4a8-b1f8d7f16d4b}"
+        },
+        {
+            "Index": 28,
+            "Name": "G029_RealAreaL",
+            "Desc": "feature_desc",
+            "ID": "{6679b8ad-1278-43e6-bc48-513d164f7a92}"
+        },
+        {
+            "Index": 29,
+            "Name": "G030_PxlAreaH",
+            "Desc": "feature_desc",
+            "ID": "{085d661e-5f39-4b77-8eee-54bbca7569f3}"
+        },
+        {
+            "Index": 30,
+            "Name": "G031_PxlAreaL",
+            "Desc": "feature_desc",
+            "ID": "{403a8a8a-7536-489c-aa4e-da34825a131d}"
+        },
+        {
+            "Index": 31,
+            "Name": "G032_NumContours",
+            "Desc": "feature_desc",
+            "ID": "{f8a1e239-ee80-47ef-b826-dbc71a04a49b}"
+        },
+        {
+            "Index": 32,
+            "Name": "G033_PrcGrayAvg",
+            "Desc": "feature_desc",
+            "ID": "{4469f7bf-9070-4334-be29-9f1a91095ba6}"
+        },
+        {
+            "Index": 33,
+            "Name": "G034_PrcGrayAvgH",
+            "Desc": "feature_desc",
+            "ID": "{d32a15c3-feb8-47ee-8ab1-d67bbec4396b}"
+        },
+        {
+            "Index": 34,
+            "Name": "G035_PrcGrayAvgL",
+            "Desc": "feature_desc",
+            "ID": "{3637d00b-d566-4d3c-bdfd-f103b08e1c60}"
+        },
+        {
+            "Index": 35,
+            "Name": "G036_PrcGrayMax",
+            "Desc": "feature_desc",
+            "ID": "{cb606df7-a0a7-4894-ab10-04673885b85f}"
+        },
+        {
+            "Index": 36,
+            "Name": "G037_PrcGrayMin",
+            "Desc": "feature_desc",
+            "ID": "{63dc02fe-68c6-450b-9193-843191fbc9a8}"
+        },
+        {
+            "Index": 37,
+            "Name": "G038_PrcGrayStdDev",
+            "Desc": "feature_desc",
+            "ID": "{3fc68b76-e8f5-4a61-9743-6e1cec271420}"
+        },
+        {
+            "Index": 38,
+            "Name": "G039_RippleScore",
+            "Desc": "feature_desc",
+            "ID": "{7163ba2d-dceb-4b73-b6fd-70113c474e67}"
+        },
+        {
+            "Index": 39,
+            "Name": "G040_Kurtosis",
+            "Desc": "feature_desc",
+            "ID": "{b888c4ed-a814-429d-bcb2-d1924b307d8e}"
+        },
+        {
+            "Index": 40,
+            "Name": "G041_Contrast",
+            "Desc": "feature_desc",
+            "ID": "{ce33c1d5-b7d0-4a57-8410-786530f7f06b}"
+        },
+        {
+            "Index": 41,
+            "Name": "G042_ContrastRatio",
+            "Desc": "feature_desc",
+            "ID": "{7cab4ce9-0822-42b6-bd0c-295276beef02}"
+        },
+        {
+            "Index": 42,
+            "Name": "G043_PCA_Axis1",
+            "Desc": "feature_desc",
+            "ID": "{d6f03d48-147b-4990-952b-41e6070c872b}"
+        },
+        {
+            "Index": 43,
+            "Name": "G044_PCA_Axis2",
+            "Desc": "feature_desc",
+            "ID": "{c4c7fe78-aad4-4fd2-bc17-09bf4893243a}"
+        },
+        {
+            "Index": 44,
+            "Name": "G045_PCA_Angle",
+            "Desc": "feature_desc",
+            "ID": "{90efddbe-6515-48d6-ac0c-71d25681d0e7}"
+        },
+        {
+            "Index": 45,
+            "Name": "G046_SPARE",
+            "Desc": "feature_desc",
+            "ID": "{f4fdaa17-8332-4e4b-9445-4bd6af40387b}"
+        },
+        {
+            "Index": 46,
+            "Name": "G047_RoiArea",
+            "Desc": "feature_desc",
+            "ID": "{d11b2824-fce5-4133-a954-520f78a48f94}"
+        },
+        {
+            "Index": 47,
+            "Name": "G048_Rsquare",
+            "Desc": "feature_desc",
+            "ID": "{6ba99195-074c-4bed-83f8-b35a6b6547b5}"
+        },
+        {
+            "Index": 48,
+            "Name": "G049_Rsquare2",
+            "Desc": "feature_desc",
+            "ID": "{414a6a0b-abfa-416c-8985-e49586553531}"
+        },
+        {
+            "Index": 49,
+            "Name": "G050_Entropy",
+            "Desc": "feature_desc",
+            "ID": "{9e47c4d4-e9d3-4b5e-9563-6fff9be2cba2}"
+        },
+        {
+            "Index": 50,
+            "Name": "G051_InspType",
+            "Desc": "feature_desc",
+            "ID": "{f170770c-eed4-4607-8119-714858b942c2}"
+        },
+        {
+            "Index": 51,
+            "Name": "G052_Correlation",
+            "Desc": "feature_desc",
+            "ID": "{6ac8cf04-fc2e-421a-9ed6-89dba3f3c18b}"
+        },
+        {
+            "Index": 52,
+            "Name": "G053_HistMaximaStdDev",
+            "Desc": "feature_desc",
+            "ID": "{d1ae7113-5c72-4aa6-a645-7b27a1754d0a}"
+        },
+        {
+            "Index": 53,
+            "Name": "G054_ResinArea",
+            "Desc": "feature_desc",
+            "ID": "{6c80ad2b-fab6-44b8-91f5-3bfb979f06f6}"
+        },
+        {
+            "Index": 54,
+            "Name": "G055_ResinRoiRatio",
+            "Desc": "feature_desc",
+            "ID": "{fcb8945e-609d-491d-9c51-d3eb75e3a90f}"
+        },
+        {
+            "Index": 55,
+            "Name": "G056_SPARE",
+            "Desc": "feature_desc",
+            "ID": "{01c839c4-2cec-45bd-b514-bf2e68568d52}"
+        },
+        {
+            "Index": 56,
+            "Name": "G057_SPARE",
+            "Desc": "feature_desc",
+            "ID": "{20ea0753-a73c-43cb-88f5-2300809b5035}"
+        },
+        {
+            "Index": 57,
+            "Name": "G058_ParticleLayer",
+            "Desc": "feature_desc",
+            "ID": "{1ad023c6-a377-4f55-b3fb-9205b502287c}"
+        },
+        {
+            "Index": 58,
+            "Name": "G059_ShadowDist",
+            "Desc": "feature_desc",
+            "ID": "{dd7de7cc-4c11-4b99-98ff-65fc3897eeeb}"
+        },
+        {
+            "Index": 59,
+            "Name": "G060_OrgGrayAvg",
+            "Desc": "feature_desc",
+            "ID": "{7db6bc53-9a60-4fc7-928a-b12ec8289517}"
+        },
+        {
+            "Index": 60,
+            "Name": "G061_OrgGrayMax",
+            "Desc": "feature_desc",
+            "ID": "{f9f3eeb0-3e66-4795-b627-aa44fdde2a0f}"
+        },
+        {
+            "Index": 61,
+            "Name": "G062_OrgGrayMin",
+            "Desc": "feature_desc",
+            "ID": "{e6349158-6c90-47db-8506-22732dfbb8ff}"
+        },
+        {
+            "Index": 62,
+            "Name": "G063_OrgGrayStdDev",
+            "Desc": "feature_desc",
+            "ID": "{13e68d14-5225-4d00-a463-4e6181c6b1f9}"
+        },
+        {
+            "Index": 63,
+            "Name": "G064_Anomaly_MaxScore",
+            "Desc": "feature_desc",
+            "ID": "{8a18dfec-d10f-473d-a97b-9d31be059198}"
+        },
+        {
+            "Index": 64,
+            "Name": "G065_SPARE",
+            "Desc": "feature_desc",
+            "ID": "{f1e422b4-78bf-4bdb-a27a-bd31fab493a1}"
+        },
+        {
+            "Index": 65,
+            "Name": "G066_OrgAvg_R",
+            "Desc": "feature_desc",
+            "ID": "{e5952e60-cb35-4f19-8d50-8c168cccb523}"
+        },
+        {
+            "Index": 66,
+            "Name": "G067_OrgMax_R",
+            "Desc": "feature_desc",
+            "ID": "{f43a4270-dcd6-4a36-aef2-10d2c3cd82a0}"
+        },
+        {
+            "Index": 67,
+            "Name": "G068_OrgMin_R",
+            "Desc": "feature_desc",
+            "ID": "{0ddfc11c-299c-47df-83e4-09a1bcd4b83d}"
+        },
+        {
+            "Index": 68,
+            "Name": "G069_OrgAvg_G",
+            "Desc": "feature_desc",
+            "ID": "{5d47d05b-c8ad-4aa2-bd25-4d3d90eefb36}"
+        },
+        {
+            "Index": 69,
+            "Name": "G070_OrgMax_G",
+            "Desc": "feature_desc",
+            "ID": "{cc3a25e5-4ff6-4ffa-9716-6e89aa361c5b}"
+        },
+        {
+            "Index": 70,
+            "Name": "G071_OrgMin_G",
+            "Desc": "feature_desc",
+            "ID": "{25289e06-a87a-4306-b895-1f7ecbdaf3c8}"
+        },
+        {
+            "Index": 71,
+            "Name": "G072_OrgAvg_B",
+            "Desc": "feature_desc",
+            "ID": "{70af7198-ff85-437a-8b0d-2f45b75afe97}"
+        },
+        {
+            "Index": 72,
+            "Name": "G073_OrgMax_B",
+            "Desc": "feature_desc",
+            "ID": "{90796ad1-244d-487a-a59f-7138b76986a3}"
+        },
+        {
+            "Index": 73,
+            "Name": "G074_OrgMin_B",
+            "Desc": "feature_desc",
+            "ID": "{60bc8dab-a131-4353-b8d1-dd2491615c51}"
+        },
+        {
+            "Index": 74,
+            "Name": "G075 realwidthsub",
+            "Desc": "feature_desc",
+            "ID": "{6e0b4cf2-bb42-42d5-9fc8-e5f211bc1fd0}"
+        },
+        {
+            "Index": 75,
+            "Name": "G076 realheightsub",
+            "Desc": "feature_desc",
+            "ID": "{28def2fb-3157-4a01-8af6-be7d379861ee}"
+        },
+        {
+            "Index": 76,
+            "Name": "G077_DFT_VAR_SRC",
+            "Desc": "feature_desc",
+            "ID": "{b108fd30-e055-4100-adc9-f22eae18090b}"
+        },
+        {
+            "Index": 77,
+            "Name": "G078_DFT_VAR_PRC",
+            "Desc": "feature_desc",
+            "ID": "{e85f95b5-7b85-420a-81d5-e17aef71ddad}"
+        },
+        {
+            "Index": 78,
+            "Name": "G079_MarkMatchRate_LT",
+            "Desc": "feature_desc",
+            "ID": "{4fe48724-f373-4533-a2ca-5fb63831bb97}"
+        },
+        {
+            "Index": 79,
+            "Name": "G080_MarkMatchRate_RT",
+            "Desc": "feature_desc",
+            "ID": "{b176227c-207a-449e-90c8-1814b3532193}"
+        },
+        {
+            "Index": 80,
+            "Name": "G081_MarkMatchRate_LB",
+            "Desc": "feature_desc",
+            "ID": "{3b590927-8294-4087-8f67-87f5f86eb433}"
+        },
+        {
+            "Index": 81,
+            "Name": "G082_MarkMatchRate_RB",
+            "Desc": "feature_desc",
+            "ID": "{e11c9dad-bf5e-463a-98bf-885122361d3d}"
+        },
+        {
+            "Index": 82,
+            "Name": "G083_PolLineToWidth",
+            "Desc": "feature_desc",
+            "ID": "{cbbfd47b-622d-4cc6-9b70-557dc855ddfc}"
+        },
+        {
+            "Index": 83,
+            "Name": "G084_RealPolLineToWidth",
+            "Desc": "feature_desc",
+            "ID": "{beb997c9-d943-447c-ab88-8446db11f918}"
+        },
+        {
+            "Index": 84,
+            "Name": "G085_SPARE",
+            "Desc": "feature_desc",
+            "ID": "{7e8b5e27-2616-46fb-a94b-04dede1a85be}"
+        },
+        {
+            "Index": 85,
+            "Name": "G086_Real_ResinAvgWidth01",
+            "Desc": "feature_desc",
+            "ID": "{2929a586-7231-49b8-b45e-4232444abf3b}"
+        },
+        {
+            "Index": 86,
+            "Name": "G086_Real_ResinMaxWidth01",
+            "Desc": "feature_desc",
+            "ID": "{f4ca00a7-a2dc-48a5-ae38-9e24ce15326e}"
+        },
+        {
+            "Index": 87,
+            "Name": "G086_Real_ResinMinWidth01",
+            "Desc": "feature_desc",
+            "ID": "{17da6cf9-014c-4e74-8a4e-ee0f560748e9}"
+        },
+        {
+            "Index": 88,
+            "Name": "G087_Real_ResinAvgWidth02",
+            "Desc": "feature_desc",
+            "ID": "{5ac4c2a4-984b-4a6c-abde-d02fac9c3b52}"
+        },
+        {
+            "Index": 89,
+            "Name": "G087_Real_ResinMaxWidth02",
+            "Desc": "feature_desc",
+            "ID": "{082d2934-7f55-480c-abd9-fe0bcca82757}"
+        },
+        {
+            "Index": 90,
+            "Name": "G087_Real_ResinMinWidth02",
+            "Desc": "feature_desc",
+            "ID": "{07fff71d-884c-4dad-8975-03f294802256}"
+        },
+        {
+            "Index": 91,
+            "Name": "G088_Real_ResinAvgWidth03",
+            "Desc": "feature_desc",
+            "ID": "{49ea7070-c226-44b6-8035-4c940d2b2b0e}"
+        },
+        {
+            "Index": 92,
+            "Name": "G088_Real_ResinMaxWidth03",
+            "Desc": "feature_desc",
+            "ID": "{af8975eb-83dd-49aa-b1ed-cc4b2517016b}"
+        },
+        {
+            "Index": 93,
+            "Name": "G088_Real_ResinMinWidth03",
+            "Desc": "feature_desc",
+            "ID": "{f60af7d3-9b12-49ee-b415-062e26d952a6}"
+        },
+        {
+            "Index": 94,
+            "Name": "G089_Real_ResinAvgWidth04",
+            "Desc": "feature_desc",
+            "ID": "{c6fc177e-7c49-4234-949a-200a3fd1d539}"
+        },
+        {
+            "Index": 95,
+            "Name": "G089_Real_ResinMaxWidth04",
+            "Desc": "feature_desc",
+            "ID": "{d1a37efd-de17-4a6e-bdc8-d005a81ffdae}"
+        },
+        {
+            "Index": 96,
+            "Name": "G089_Real_ResinMinWidth04",
+            "Desc": "feature_desc",
+            "ID": "{21181c4b-cc0e-4a7c-9f28-d79cb74e6b91}"
+        },
+        {
+            "Index": 97,
+            "Name": "G090_Real_ResinAvgWidth05",
+            "Desc": "feature_desc",
+            "ID": "{32ac0408-afb9-47a1-91e8-e195f5fdcaff}"
+        },
+        {
+            "Index": 98,
+            "Name": "G090_Real_ResinMaxWidth05",
+            "Desc": "feature_desc",
+            "ID": "{a68527fd-a0ae-4fd6-be87-5be83c61b89f}"
+        },
+        {
+            "Index": 99,
+            "Name": "G090_Real_ResinMinWidth05",
+            "Desc": "feature_desc",
+            "ID": "{0d0ecd17-e6a7-4c0f-9cbb-eeb3cdd98671}"
+        },
+        {
+            "Index": 100,
+            "Name": "L0101_Detection",
+            "Desc": "feature_desc",
+            "ID": "{ed7c546f-3a66-483f-8568-5901dc7a5541}"
+        },
+        {
+            "Index": 101,
+            "Name": "L0102_AreaL",
+            "Desc": "feature_desc",
+            "ID": "{abe2ddd2-86ff-4151-b210-153df1176125}"
+        },
+        {
+            "Index": 102,
+            "Name": "L0103_AreaH",
+            "Desc": "feature_desc",
+            "ID": "{9b6dfc53-880a-4633-a6ab-f733f6780875}"
+        },
+        {
+            "Index": 103,
+            "Name": "L0104_FillRate",
+            "Desc": "feature_desc",
+            "ID": "{fdeecd82-2a7a-4146-8131-ecb143948d8b}"
+        },
+        {
+            "Index": 104,
+            "Name": "L0105_Prc_GrayAvgL",
+            "Desc": "feature_desc",
+            "ID": "{48f88380-266c-4be4-b164-dd301c8cc0ad}"
+        },
+        {
+            "Index": 105,
+            "Name": "L0106_Prc_GrayAvgH",
+            "Desc": "feature_desc",
+            "ID": "{9429532e-4652-4f8a-b4e2-b3012612196b}"
+        },
+        {
+            "Index": 106,
+            "Name": "L0107_Prc_GrayMin",
+            "Desc": "feature_desc",
+            "ID": "{e9533885-a02d-4d7d-bafb-d29dd46c7b46}"
+        },
+        {
+            "Index": 107,
+            "Name": "L0108_Prc_GrayMax",
+            "Desc": "feature_desc",
+            "ID": "{eb8982b2-306b-46bc-a4e3-e92c1ca08d56}"
+        },
+        {
+            "Index": 108,
+            "Name": "L0109_Similarity",
+            "Desc": "feature_desc",
+            "ID": "{8ce3a84c-89be-4cc0-977e-9762806264a8}"
+        },
+        {
+            "Index": 109,
+            "Name": "L0110_AreaL_limit",
+            "Desc": "feature_desc",
+            "ID": "{6d04d233-fbe3-45f0-8eb4-0f65711a84dd}"
+        },
+        {
+            "Index": 110,
+            "Name": "L0111_AreaH_limit",
+            "Desc": "feature_desc",
+            "ID": "{5eb2fbf5-5164-40a2-8abc-650e6f427fef}"
+        },
+        {
+            "Index": 111,
+            "Name": "L0112_Org_GrayAvgL",
+            "Desc": "feature_desc",
+            "ID": "{112b6b4b-566c-40f9-a15a-def1fe4ba1a8}"
+        },
+        {
+            "Index": 112,
+            "Name": "L0113_Org_GrayAvgH",
+            "Desc": "feature_desc",
+            "ID": "{c08cf39f-caf9-4060-ad72-b16a40ccb21e}"
+        },
+        {
+            "Index": 113,
+            "Name": "L0114_Org_GrayMin",
+            "Desc": "feature_desc",
+            "ID": "{075de4ed-3873-4fe6-b2eb-ef033dafbaa2}"
+        },
+        {
+            "Index": 114,
+            "Name": "L0115_Org_GrayMax",
+            "Desc": "feature_desc",
+            "ID": "{6624d7af-58dd-4d18-af59-a1ee7e0ffc85}"
+        },
+        {
+            "Index": 115,
+            "Name": "L0116_Width",
+            "Desc": "feature_desc",
+            "ID": "{cbf47a44-aa68-4d19-821b-c028ddd5136c}"
+        },
+        {
+            "Index": 116,
+            "Name": "L0117_Height",
+            "Desc": "feature_desc",
+            "ID": "{14457b9c-4535-4db8-b5f3-a71603112c17}"
+        },
+        {
+            "Index": 117,
+            "Name": "L0118_Length",
+            "Desc": "feature_desc",
+            "ID": "{531753e5-c9a7-4df8-8e72-5ddea2994c31}"
+        },
+        {
+            "Index": 118,
+            "Name": "L0119_SimilarityBrt",
+            "Desc": "feature_desc",
+            "ID": "{4ce3ebaf-77c2-436a-bb70-a6f061d06bd1}"
+        },
+        {
+            "Index": 119,
+            "Name": "L0120_SimilarityArea",
+            "Desc": "feature_desc",
+            "ID": "{c301d301-7f9d-47f1-97d3-2101303b725a}"
+        },
+        {
+            "Index": 120,
+            "Name": "L0121_Layer",
+            "Desc": "feature_desc",
+            "ID": "{8358544b-e00b-4102-be83-49270379694a}"
+        },
+        {
+            "Index": 121,
+            "Name": "L0122_SPARE",
+            "Desc": "feature_desc",
+            "ID": "{e58eed45-d42b-48a9-99c2-ba2c2abe4cbe}"
+        },
+        {
+            "Index": 122,
+            "Name": "L0123_SPARE",
+            "Desc": "feature_desc",
+            "ID": "{b1cf5394-e102-4601-aef4-a78759a433bb}"
+        },
+        {
+            "Index": 123,
+            "Name": "L0124_SPARE",
+            "Desc": "feature_desc",
+            "ID": "{5e6e8be4-d8bd-4c1f-b047-6f4f7b550c46}"
+        },
+        {
+            "Index": 124,
+            "Name": "L0125_bb_inner_wid",
+            "Desc": "feature_desc",
+            "ID": "{59336c5a-d4f1-4338-948b-f0133e80cd93}"
+        },
+        {
+            "Index": 125,
+            "Name": "L0126_bb_inner_hgt",
+            "Desc": "feature_desc",
+            "ID": "{e8438001-aef6-4287-9f47-14c1f7940231}"
+        },
+        {
+            "Index": 126,
+            "Name": "L0127_bb_outer_wid",
+            "Desc": "feature_desc",
+            "ID": "{c22d1cf9-9624-40e6-b7b7-d2fbe3e8dad2}"
+        },
+        {
+            "Index": 127,
+            "Name": "L0128_bb_outer_hgt",
+            "Desc": "feature_desc",
+            "ID": "{02d1d142-64ef-417f-81bc-a35b4f29ce9e}"
+        },
+        {
+            "Index": 128,
+            "Name": "L0129_real_bb_inner_wid",
+            "Desc": "feature_desc",
+            "ID": "{dea1354d-0777-44e4-a763-8b647e5d2392}"
+        },
+        {
+            "Index": 129,
+            "Name": "L0130_real_bb_inner_hgt",
+            "Desc": "feature_desc",
+            "ID": "{c8144d41-8174-4b1f-864a-7ad0f3a26221}"
+        },
+        {
+            "Index": 130,
+            "Name": "L0131_real_bb_outer_wid",
+            "Desc": "feature_desc",
+            "ID": "{b43d36b8-add8-4916-a12c-c4394e03a08c}"
+        },
+        {
+            "Index": 131,
+            "Name": "L0132_real_bb_outer_hgt",
+            "Desc": "feature_desc",
+            "ID": "{b6ba783f-16a4-42d8-abd5-d3e17484e372}"
+        },
+        {
+            "Index": 132,
+            "Name": "L0133_bb_outer_wid1",
+            "Desc": "feature_desc",
+            "ID": "{365e7f19-7888-4f2d-b224-87664afecf7f}"
+        },
+        {
+            "Index": 133,
+            "Name": "L0134_real_bb_outer_wid1",
+            "Desc": "feature_desc",
+            "ID": "{e15bb42f-aac6-43d9-b5d6-bd98192c9afe}"
+        },
+        {
+            "Index": 134,
+            "Name": "L0201_Detection",
+            "Desc": "feature_desc",
+            "ID": "{1b74f83d-03e6-4407-81e3-55134539cb32}"
+        },
+        {
+            "Index": 135,
+            "Name": "L0202_AreaL",
+            "Desc": "feature_desc",
+            "ID": "{e3442ce6-ab6b-4d88-a4d2-effcf9f2a3aa}"
+        },
+        {
+            "Index": 136,
+            "Name": "L0203_AreaH",
+            "Desc": "feature_desc",
+            "ID": "{badf4413-aa5a-4e81-bc39-cd37544137d5}"
+        },
+        {
+            "Index": 137,
+            "Name": "L0204_FillRate",
+            "Desc": "feature_desc",
+            "ID": "{cec5e5c5-d4bd-4399-9b22-a55ef2b4ef31}"
+        },
+        {
+            "Index": 138,
+            "Name": "L0205_Prc_GrayAvgL",
+            "Desc": "feature_desc",
+            "ID": "{cf1deb8a-f48e-4156-baec-15e8b3445e40}"
+        },
+        {
+            "Index": 139,
+            "Name": "L0206_Prc_GrayAvgH",
+            "Desc": "feature_desc",
+            "ID": "{f93cdd9b-6859-4874-b2d2-271ff760ae71}"
+        },
+        {
+            "Index": 140,
+            "Name": "L0207_Prc_GrayMin",
+            "Desc": "feature_desc",
+            "ID": "{aa7f7d70-7313-437c-8357-bf9bfa3b2008}"
+        },
+        {
+            "Index": 141,
+            "Name": "L0208_Prc_GrayMax",
+            "Desc": "feature_desc",
+            "ID": "{d8171620-ac65-4197-9d11-57b79d409514}"
+        },
+        {
+            "Index": 142,
+            "Name": "L0209_Similarity",
+            "Desc": "feature_desc",
+            "ID": "{31cb2e6d-8427-497c-b279-e344c37e430e}"
+        },
+        {
+            "Index": 143,
+            "Name": "L0210_AreaL_limit",
+            "Desc": "feature_desc",
+            "ID": "{adfd2b2f-f766-4022-9d72-9a0a59fbb8bc}"
+        },
+        {
+            "Index": 144,
+            "Name": "L0211_AreaH_limit",
+            "Desc": "feature_desc",
+            "ID": "{76c8279d-8f66-4ed9-a272-4df3595a8049}"
+        },
+        {
+            "Index": 145,
+            "Name": "L0212_Org_GrayAvgL",
+            "Desc": "feature_desc",
+            "ID": "{77fc07b9-cdc6-43e8-8a15-49ab58f08624}"
+        },
+        {
+            "Index": 146,
+            "Name": "L0213_Org_GrayAvgH",
+            "Desc": "feature_desc",
+            "ID": "{679b88e1-363c-440b-a8e1-f6d4899669cd}"
+        },
+        {
+            "Index": 147,
+            "Name": "L0214_Org_GrayMin",
+            "Desc": "feature_desc",
+            "ID": "{edd38c82-52d2-4dd1-b056-2763d4d0fd89}"
+        },
+        {
+            "Index": 148,
+            "Name": "L0215_Org_GrayMax",
+            "Desc": "feature_desc",
+            "ID": "{00c0321b-5bd5-4380-9de6-39578edd3822}"
+        },
+        {
+            "Index": 149,
+            "Name": "L0216_Width",
+            "Desc": "feature_desc",
+            "ID": "{9612b655-94df-4a3a-8092-92396e39ab5d}"
+        },
+        {
+            "Index": 150,
+            "Name": "L0217_Height",
+            "Desc": "feature_desc",
+            "ID": "{3c6f5f89-f902-4bc6-8ca8-be5ea1901d49}"
+        },
+        {
+            "Index": 151,
+            "Name": "L0218_Length",
+            "Desc": "feature_desc",
+            "ID": "{42758cea-e918-4b3c-b98e-2905a9fd996e}"
+        },
+        {
+            "Index": 152,
+            "Name": "L0219_SimilarityBrt",
+            "Desc": "feature_desc",
+            "ID": "{50719e39-dc74-4580-8d24-934191eb76d0}"
+        },
+        {
+            "Index": 153,
+            "Name": "L0220_SimilarityArea",
+            "Desc": "feature_desc",
+            "ID": "{23dc900c-557c-464d-8070-329568044442}"
+        },
+        {
+            "Index": 154,
+            "Name": "L0221_Layer",
+            "Desc": "feature_desc",
+            "ID": "{fb2d71be-6a1d-495e-874f-a011261049d7}"
+        },
+        {
+            "Index": 155,
+            "Name": "L0222_SPARE",
+            "Desc": "feature_desc",
+            "ID": "{f4bbcbd1-c694-43f7-ab9b-3b0a6dbdb6b4}"
+        },
+        {
+            "Index": 156,
+            "Name": "L0223_SPARE",
+            "Desc": "feature_desc",
+            "ID": "{d3472895-d545-4cb1-aaa9-7e3fe6d190f7}"
+        },
+        {
+            "Index": 157,
+            "Name": "L0224_SPARE",
+            "Desc": "feature_desc",
+            "ID": "{2813b404-5514-41de-9ee9-0c205b8c1319}"
+        },
+        {
+            "Index": 158,
+            "Name": "L0301_Detection",
+            "Desc": "feature_desc",
+            "ID": "{71b00f6e-9654-4c1d-8eeb-3c60b5f5c5fe}"
+        },
+        {
+            "Index": 159,
+            "Name": "L0302_AreaL",
+            "Desc": "feature_desc",
+            "ID": "{a1a2961d-e550-40d0-a135-c6083d1fcfce}"
+        },
+        {
+            "Index": 160,
+            "Name": "L0303_AreaH",
+            "Desc": "feature_desc",
+            "ID": "{155b8f18-7dcf-40a3-81be-c05c9fda5bd5}"
+        },
+        {
+            "Index": 161,
+            "Name": "L0304_FillRate",
+            "Desc": "feature_desc",
+            "ID": "{c59e847d-988a-488f-8731-e38589c7c066}"
+        },
+        {
+            "Index": 162,
+            "Name": "L0305_Prc_GrayAvgL",
+            "Desc": "feature_desc",
+            "ID": "{23f1ce57-6629-4c83-8199-78006ebe2057}"
+        },
+        {
+            "Index": 163,
+            "Name": "L0306_Prc_GrayAvgH",
+            "Desc": "feature_desc",
+            "ID": "{db9b174c-b054-489a-9d1b-292a573bb74f}"
+        },
+        {
+            "Index": 164,
+            "Name": "L0307_Prc_GrayMin",
+            "Desc": "feature_desc",
+            "ID": "{1840dedf-cf3c-4eb6-a436-acd155ea3342}"
+        },
+        {
+            "Index": 165,
+            "Name": "L0308_Prc_GrayMax",
+            "Desc": "feature_desc",
+            "ID": "{73593711-b168-4f76-a77f-84c939446bda}"
+        },
+        {
+            "Index": 166,
+            "Name": "L0309_Similarity",
+            "Desc": "feature_desc",
+            "ID": "{fdeb6d2b-02df-4e7c-b6eb-3f3b03419120}"
+        },
+        {
+            "Index": 167,
+            "Name": "L0310_AreaL_limit",
+            "Desc": "feature_desc",
+            "ID": "{59f7759b-acb6-4061-9c0b-b287ae01dd92}"
+        },
+        {
+            "Index": 168,
+            "Name": "L0311_AreaH_limit",
+            "Desc": "feature_desc",
+            "ID": "{308983ca-d069-403d-bf94-3293334ba1d5}"
+        },
+        {
+            "Index": 169,
+            "Name": "L0312_Org_GrayAvgL",
+            "Desc": "feature_desc",
+            "ID": "{793ededd-4a88-4f56-9976-3afb42aef556}"
+        },
+        {
+            "Index": 170,
+            "Name": "L0313_Org_GrayAvgH",
+            "Desc": "feature_desc",
+            "ID": "{370ad5c2-0729-4b22-bf35-a60dc469471a}"
+        },
+        {
+            "Index": 171,
+            "Name": "L0314_Org_GrayMin",
+            "Desc": "feature_desc",
+            "ID": "{f501064e-bf9c-4d26-b676-505fcb29965b}"
+        },
+        {
+            "Index": 172,
+            "Name": "L0315_Org_GrayMax",
+            "Desc": "feature_desc",
+            "ID": "{63041525-b577-4f44-9297-8dc41519903c}"
+        },
+        {
+            "Index": 173,
+            "Name": "L0316_Width",
+            "Desc": "feature_desc",
+            "ID": "{c50761af-9dbc-4858-8b70-b2a6c14539cf}"
+        },
+        {
+            "Index": 174,
+            "Name": "L0317_Height",
+            "Desc": "feature_desc",
+            "ID": "{970df183-9d5e-48b1-a3b8-97d5f807eed9}"
+        },
+        {
+            "Index": 175,
+            "Name": "L0318_Length",
+            "Desc": "feature_desc",
+            "ID": "{af1f624d-42c1-44fa-a5df-de8b177dcd7e}"
+        },
+        {
+            "Index": 176,
+            "Name": "L0319_SimilarityBrt",
+            "Desc": "feature_desc",
+            "ID": "{a9640fb8-5922-4e11-9df8-a6b9c509dac8}"
+        },
+        {
+            "Index": 177,
+            "Name": "L0320_SimilarityArea",
+            "Desc": "feature_desc",
+            "ID": "{bdd31614-3dfc-42d4-a867-7e1299ea2662}"
+        },
+        {
+            "Index": 178,
+            "Name": "L0321_Layer",
+            "Desc": "feature_desc",
+            "ID": "{ec477471-34b7-4cb0-834a-3f35c57661bf}"
+        },
+        {
+            "Index": 179,
+            "Name": "L0322_SPARE",
+            "Desc": "feature_desc",
+            "ID": "{2d8d5a97-aa4f-4132-a2ca-81456995218f}"
+        },
+        {
+            "Index": 180,
+            "Name": "L0323_SPARE",
+            "Desc": "feature_desc",
+            "ID": "{47af0423-c048-4c83-8f8a-8893e8cdf621}"
+        },
+        {
+            "Index": 181,
+            "Name": "L0324_SPARE",
+            "Desc": "feature_desc",
+            "ID": "{accf06d7-11db-48ba-a843-fe4c2e7e6950}"
+        },
+        {
+            "Index": 182,
+            "Name": "L0401_Detection",
+            "Desc": "feature_desc",
+            "ID": "{88638e19-ffac-4ff2-af6f-d64cd9b8ec23}"
+        },
+        {
+            "Index": 183,
+            "Name": "L0402_AreaL",
+            "Desc": "feature_desc",
+            "ID": "{cb1f75a1-875a-4bf0-b1a8-d926e155b2b9}"
+        },
+        {
+            "Index": 184,
+            "Name": "L0403_AreaH",
+            "Desc": "feature_desc",
+            "ID": "{0af38767-e554-4db6-9194-3dd454b5d6ef}"
+        },
+        {
+            "Index": 185,
+            "Name": "L0404_FillRate",
+            "Desc": "feature_desc",
+            "ID": "{6ae412ea-1ad8-499e-a7f8-f8a1535346df}"
+        },
+        {
+            "Index": 186,
+            "Name": "L0405_Prc_GrayAvgL",
+            "Desc": "feature_desc",
+            "ID": "{55bd3e47-e9c8-4ac7-9fd4-246c283a870c}"
+        },
+        {
+            "Index": 187,
+            "Name": "L0406_Prc_GrayAvgH",
+            "Desc": "feature_desc",
+            "ID": "{a43f141c-aab6-4de9-afc0-840f073f227b}"
+        },
+        {
+            "Index": 188,
+            "Name": "L0407_Prc_GrayMin",
+            "Desc": "feature_desc",
+            "ID": "{ea25957b-60b6-47cb-a34b-25f6cd24738a}"
+        },
+        {
+            "Index": 189,
+            "Name": "L0408_Prc_GrayMax",
+            "Desc": "feature_desc",
+            "ID": "{cfc59f45-b3e6-49f5-907b-742cd736aa0c}"
+        },
+        {
+            "Index": 190,
+            "Name": "L0409_Similarity",
+            "Desc": "feature_desc",
+            "ID": "{b85b2798-cf0c-4076-8869-c81f6ff8595a}"
+        },
+        {
+            "Index": 191,
+            "Name": "L0410_AreaL_limit",
+            "Desc": "feature_desc",
+            "ID": "{6030414f-1dfe-4222-94fc-00ea92fe24f6}"
+        },
+        {
+            "Index": 192,
+            "Name": "L0411_AreaH_limit",
+            "Desc": "feature_desc",
+            "ID": "{73ac4a46-e4bd-4d0b-973c-26dabf976f8b}"
+        },
+        {
+            "Index": 193,
+            "Name": "L0412_Org_GrayAvgL",
+            "Desc": "feature_desc",
+            "ID": "{d84205db-ac29-4f1a-81b9-f385c8b59c7e}"
+        },
+        {
+            "Index": 194,
+            "Name": "L0413_Org_GrayAvgH",
+            "Desc": "feature_desc",
+            "ID": "{3dc0c3f8-f5bb-4562-b2da-82b60a548fad}"
+        },
+        {
+            "Index": 195,
+            "Name": "L0414_Org_GrayMin",
+            "Desc": "feature_desc",
+            "ID": "{e734b182-2d9c-4731-b78b-2e8311853629}"
+        },
+        {
+            "Index": 196,
+            "Name": "L0415_Org_GrayMax",
+            "Desc": "feature_desc",
+            "ID": "{d9b9026a-7d39-49f8-9243-af0d1999fc50}"
+        },
+        {
+            "Index": 197,
+            "Name": "L0416_Width",
+            "Desc": "feature_desc",
+            "ID": "{fa0032d8-cdb3-4844-af79-00547163edd8}"
+        },
+        {
+            "Index": 198,
+            "Name": "L0417_Height",
+            "Desc": "feature_desc",
+            "ID": "{e3d6e88e-076a-4e00-b476-0cb1bb1b3e6a}"
+        },
+        {
+            "Index": 199,
+            "Name": "L0418_Length",
+            "Desc": "feature_desc",
+            "ID": "{fd18fbaa-0e5e-423d-ae16-93011c2c013c}"
+        },
+        {
+            "Index": 200,
+            "Name": "L0419_SimilarityBrt",
+            "Desc": "feature_desc",
+            "ID": "{6cbed6fd-6b69-4e70-ab66-bd1df42f743a}"
+        },
+        {
+            "Index": 201,
+            "Name": "L0420_SimilarityArea",
+            "Desc": "feature_desc",
+            "ID": "{c5c3d870-a29c-42ab-8406-d5b0cc8f84f4}"
+        },
+        {
+            "Index": 202,
+            "Name": "L0421_Layer",
+            "Desc": "feature_desc",
+            "ID": "{b617d69e-417d-49cb-84f1-5f1b81afa862}"
+        },
+        {
+            "Index": 203,
+            "Name": "L0422_SPARE",
+            "Desc": "feature_desc",
+            "ID": "{6496eb3c-466a-4be9-b000-d266814641bd}"
+        },
+        {
+            "Index": 204,
+            "Name": "L0423_SPARE",
+            "Desc": "feature_desc",
+            "ID": "{c9ca0eb1-e542-478f-965f-6481dffbef70}"
+        },
+        {
+            "Index": 205,
+            "Name": "L0424_SPARE",
+            "Desc": "feature_desc",
+            "ID": "{ab981dcf-38aa-4d85-bf43-ee1021258bc1}"
+        },
+        {
+            "Index": 206,
+            "Name": "L0501_Detection",
+            "Desc": "feature_desc",
+            "ID": "{fc7cfc31-4b8f-4fa7-a662-b9bdf6312b80}"
+        },
+        {
+            "Index": 207,
+            "Name": "L0502_AreaL",
+            "Desc": "feature_desc",
+            "ID": "{179ef62d-b38d-4e34-8bf9-03c5ca639a08}"
+        },
+        {
+            "Index": 208,
+            "Name": "L0503_AreaH",
+            "Desc": "feature_desc",
+            "ID": "{e5e88a09-15de-4226-b629-fdffdcc9ef1f}"
+        },
+        {
+            "Index": 209,
+            "Name": "L0504_FillRate",
+            "Desc": "feature_desc",
+            "ID": "{4e8b623c-415b-448d-91ed-7a31ae8979f9}"
+        },
+        {
+            "Index": 210,
+            "Name": "L0505_Prc_GrayAvgL",
+            "Desc": "feature_desc",
+            "ID": "{51b16a75-2c03-43d7-9e54-be97e1f47a50}"
+        },
+        {
+            "Index": 211,
+            "Name": "L0506_Prc_GrayAvgH",
+            "Desc": "feature_desc",
+            "ID": "{0330b886-3619-4491-9d96-b4b9cae2b9ff}"
+        },
+        {
+            "Index": 212,
+            "Name": "L0507_Prc_GrayMin",
+            "Desc": "feature_desc",
+            "ID": "{561433f6-2800-4451-b646-92d725e4d3b6}"
+        },
+        {
+            "Index": 213,
+            "Name": "L0508_Prc_GrayMax",
+            "Desc": "feature_desc",
+            "ID": "{656be065-ff74-4642-aaa3-e4c117875b59}"
+        },
+        {
+            "Index": 214,
+            "Name": "L0509_Similarity",
+            "Desc": "feature_desc",
+            "ID": "{6e806d0e-0758-4150-92cc-49bbd8e96eaa}"
+        },
+        {
+            "Index": 215,
+            "Name": "L0510_AreaL_limit",
+            "Desc": "feature_desc",
+            "ID": "{9447285f-4dc5-404a-ab90-860346723c1b}"
+        },
+        {
+            "Index": 216,
+            "Name": "L0511_AreaH_limit",
+            "Desc": "feature_desc",
+            "ID": "{8ca57c8b-6ba1-4eec-a5ee-fe1f47d7ecac}"
+        },
+        {
+            "Index": 217,
+            "Name": "L0512_Org_GrayAvgL",
+            "Desc": "feature_desc",
+            "ID": "{c77837a6-4824-4004-8518-77c6dc6f16f3}"
+        },
+        {
+            "Index": 218,
+            "Name": "L0513_Org_GrayAvgH",
+            "Desc": "feature_desc",
+            "ID": "{1b23673e-12a0-4557-92cb-603c673c9a09}"
+        },
+        {
+            "Index": 219,
+            "Name": "L0514_Org_GrayMin",
+            "Desc": "feature_desc",
+            "ID": "{c093675a-c22e-423a-b187-14fcb6989c03}"
+        },
+        {
+            "Index": 220,
+            "Name": "L0515_Org_GrayMax",
+            "Desc": "feature_desc",
+            "ID": "{3269a9a6-a856-4feb-88aa-c698cbcf0a3d}"
+        },
+        {
+            "Index": 221,
+            "Name": "L0516_Width",
+            "Desc": "feature_desc",
+            "ID": "{b08fa77a-c490-4a86-88cd-005ebf707029}"
+        },
+        {
+            "Index": 222,
+            "Name": "L0517_Height",
+            "Desc": "feature_desc",
+            "ID": "{7c8030de-d658-4943-a4cb-eefc44d05170}"
+        },
+        {
+            "Index": 223,
+            "Name": "L0518_Length",
+            "Desc": "feature_desc",
+            "ID": "{0c698380-9c14-4ce2-9865-ba19beef29ce}"
+        },
+        {
+            "Index": 224,
+            "Name": "L0519_SimilarityBrt",
+            "Desc": "feature_desc",
+            "ID": "{b793d7dd-fc44-44ad-8670-f377cd7edcc8}"
+        },
+        {
+            "Index": 225,
+            "Name": "L0520_SimilarityArea",
+            "Desc": "feature_desc",
+            "ID": "{93db1897-01ee-403d-a610-08c11fe193a7}"
+        },
+        {
+            "Index": 226,
+            "Name": "L0521_Layer",
+            "Desc": "feature_desc",
+            "ID": "{ba81ea60-5899-42c0-bdec-e3a123eb690d}"
+        },
+        {
+            "Index": 227,
+            "Name": "L0522_SPARE",
+            "Desc": "feature_desc",
+            "ID": "{57c4c56b-9dc5-4914-be29-d344cdec5a5e}"
+        },
+        {
+            "Index": 228,
+            "Name": "L0523_SPARE",
+            "Desc": "feature_desc",
+            "ID": "{6d00bc13-72a6-45e6-b7ff-cbfae7a599fa}"
+        },
+        {
+            "Index": 229,
+            "Name": "L0524_SPARE",
+            "Desc": "feature_desc",
+            "ID": "{e53f8679-0e77-486a-881c-9568f2b181b9}"
+        },
+        {
+            "Index": 230,
+            "Name": "MLClass01",
+            "Desc": "feature_desc",
+            "ID": "{e0e9a610-6ae7-4598-96c2-20d3bd08705e}"
+        },
+        {
+            "Index": 231,
+            "Name": "MLClass02",
+            "Desc": "feature_desc",
+            "ID": "{c7f81a2c-b821-49cc-942b-17c698b44871}"
+        },
+        {
+            "Index": 232,
+            "Name": "MLClass03",
+            "Desc": "feature_desc",
+            "ID": "{aa608bf2-3454-44fd-962c-a1066793ebfb}"
+        },
+        {
+            "Index": 233,
+            "Name": "MLClass04",
+            "Desc": "feature_desc",
+            "ID": "{4d77a046-a89b-4c4c-a008-dda823bd6348}"
+        },
+        {
+            "Index": 234,
+            "Name": "MLClass05",
+            "Desc": "feature_desc",
+            "ID": "{04d56ec0-83bc-48c1-a086-61f1c3183e5c}"
+        },
+        {
+            "Index": 235,
+            "Name": "MLClass06",
+            "Desc": "feature_desc",
+            "ID": "{62265d62-4374-4579-aef2-962be2cc6ab5}"
+        },
+        {
+            "Index": 236,
+            "Name": "MLClass07",
+            "Desc": "feature_desc",
+            "ID": "{6938325a-d434-43a9-924d-1150c4bb899c}"
+        },
+        {
+            "Index": 237,
+            "Name": "MLClass08",
+            "Desc": "feature_desc",
+            "ID": "{e0fa091f-5f5c-427f-8ca9-c4f501688335}"
+        },
+        {
+            "Index": 238,
+            "Name": "MLClass09",
+            "Desc": "feature_desc",
+            "ID": "{71d9b2ca-a29e-431e-8972-5b357919417d}"
+        },
+        {
+            "Index": 239,
+            "Name": "MLClass10",
+            "Desc": "feature_desc",
+            "ID": "{f9a8d10e-b47f-404b-bbce-df823abd9bd8}"
+        },
+        {
+            "Index": 240,
+            "Name": "V001_AlgoVersion",
+            "Desc": "feature_desc",
+            "ID": "{14fb7a09-0b2a-4781-87e2-b94f7032e23f}"
+        },
+        {
+            "Index": 241,
+            "Name": "V002_ClsfVersion",
+            "Desc": "feature_desc",
+            "ID": "{28db72f3-32f8-48cd-80e6-836140566560}"
+        },
+        {
+            "Index": 242,
+            "Name": "V003_VP_IP",
+            "Desc": "feature_desc",
+            "ID": "{0d2f6823-b046-4bbf-a477-366780f5f231}"
+        },
+        {
+            "Index": 243,
+            "Name": "V004_PosName",
+            "Desc": "feature_desc",
+            "ID": "{15b084ea-eca3-46de-a7a5-ed8266658296}"
+        },
+        {
+            "Index": 244,
+            "Name": "V005_SPARE",
+            "Desc": "feature_desc",
+            "ID": "{ddce2100-be21-4aca-9256-f353d0eb3c56}"
+        },
+        {
+            "Index": 245,
+            "Name": "V006_SPARE",
+            "Desc": "feature_desc",
+            "ID": "{21c004f3-500b-4d99-bcc7-6ad268c1aa9c}"
+        }
+    ]
+}

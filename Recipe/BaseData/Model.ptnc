@@ -1,0 +1,14 @@
+{
+    "ModelList": [
+        {
+            "Name": "D953",
+            "Width": 1256.0,
+            "Height": 2972.0,
+            "PxlResX": 1.0,
+            "PxlResY": 1.0,
+            "MergeDistance": 0,
+            "GridMapRowCount": 6,
+            "GridMapColCount": 6
+        }
+    ]
+}

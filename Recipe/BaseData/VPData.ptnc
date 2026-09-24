@@ -1,0 +1,36 @@
+{
+    "VPDataList": [
+        {
+            "Zone": "A",
+            "Number": 1,
+            "Path": "d\\image\\VP01",
+            "IP": "192.168.200.131",
+            "PCID": "user",
+            "PCPWD": "pripri"
+        },
+        {
+            "Zone": "B",
+            "Number": 1,
+            "Path": "d\\image\\VP01",
+            "IP": "192.168.200.231",
+            "PCID": "user",
+            "PCPWD": "pripri"
+        },
+        {
+            "Zone": "A",
+            "Number": 2,
+            "Path": "d\\image\\VP02",
+            "IP": "192.168.200.132",
+            "PCID": "user",
+            "PCPWD": "pripri"
+        },
+        {
+            "Zone": "B",
+            "Number": 2,
+            "Path": "d\\image\\VP02",
+            "IP": "192.168.200.232",
+            "PCID": "user",
+            "PCPWD": "pripri"
+        }
+    ]
+}
