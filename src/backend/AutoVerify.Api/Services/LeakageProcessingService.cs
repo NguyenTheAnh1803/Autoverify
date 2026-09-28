@@ -171,9 +171,9 @@ public sealed class LeakageProcessingService : ILeakageProcessingService
             }
         }
 
-        while (!reader.EndOfStream)
+        string? line;
+        while ((line = await reader.ReadLineAsync(cancellationToken)) != null)
         {
-            var line = await reader.ReadLineAsync(cancellationToken);
             if (string.IsNullOrWhiteSpace(line)) continue;
             ProcessCsvDataLine(line, productIdIndex, lineCodeIndex, defaultLine, batchId, items, seenProductIds);
         }
