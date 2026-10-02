@@ -3,6 +3,7 @@ import { connectionsApi, overkillPipelineApi, productsApi, scanListsApi, storage
 import { formatDate, formatDateTime, paginate } from '../format'
 import { DefectFeatureInspector, Field, JudgeBadge, Modal, Pagination, StatusPill } from '../ui'
 import { BatchPipelinesModal } from '../components/BatchPipelinesModal'
+import { PipelineHub } from '../components/PipelineHub'
 import type {
   DatabaseConnection,
   DefectRecord,
@@ -20,7 +21,8 @@ export function OverkillOpsTab({ onNotice }: { onNotice: (notice: Notice) => voi
   const [candidates, setCandidates] = useState<OverkillCandidate[]>([])
   const [pipelines, setPipelines] = useState<OverkillPipelineConfig[]>([])
   const [recentExecutions, setRecentExecutions] = useState<OverkillPipelineExecution[]>([])
-  const [runningPipelineId, setRunningPipelineId] = useState<string | null>(null)
+  const [runningPipelineIds, setRunningPipelineIds] = useState<ReadonlySet<string>>(() => new Set())
+  const [pipelinesUpdatedAt, setPipelinesUpdatedAt] = useState<number | null>(null)
   const [machineCode, setMachineCode] = useState('AUTO')
   const [lineCode, setLineCode] = useState('All')
   const [busy, setBusy] = useState(false)
@@ -99,6 +101,7 @@ export function OverkillOpsTab({ onNotice }: { onNotice: (notice: Notice) => voi
     try {
       const data = await overkillPipelineApi.getConfigs()
       setPipelines(data)
+      setPipelinesUpdatedAt(Date.now())
     } catch {
       // soft fail on background fetch
     }
@@ -128,8 +131,12 @@ export function OverkillOpsTab({ onNotice }: { onNotice: (notice: Notice) => voi
       })
   }, [loadLists, loadCandidates, loadPipelines, loadRecentExecutions, onNotice])
 
+  const refreshPipelineHub = useCallback(async () => {
+    await Promise.all([loadPipelines(), loadRecentExecutions()])
+  }, [loadPipelines, loadRecentExecutions])
+
   async function handleRunPipelineNow(id: string, name: string) {
-    setRunningPipelineId(id)
+    setRunningPipelineIds((current) => new Set(current).add(id))
     try {
       const res = await overkillPipelineApi.runConfig(id)
       onNotice({
@@ -138,13 +145,18 @@ export function OverkillOpsTab({ onNotice }: { onNotice: (notice: Notice) => voi
       })
       await loadRecentExecutions()
       await loadCandidates()
+      await loadPipelines()
     } catch (err) {
       onNotice({
         tone: 'error',
         message: err instanceof Error ? err.message : `Failed to run pipeline '${name}'.`,
       })
     } finally {
-      setRunningPipelineId(null)
+      setRunningPipelineIds((current) => {
+        const next = new Set(current)
+        next.delete(id)
+        return next
+      })
     }
   }
 
@@ -216,113 +228,15 @@ export function OverkillOpsTab({ onNotice }: { onNotice: (notice: Notice) => voi
 
   return (
     <div className="tab-stack">
-      {/* MariaDB Automated Pipeline Ingestion Widget */}
-      <section className="panel" style={{ borderLeft: '4px solid var(--primary-accent, #3b82f6)' }}>
-        <div className="panel-header-inline">
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span className="eyebrow-accent" style={{ margin: 0 }}>Automated MariaDB Ingestion</span>
-              <span className="tag-badge" style={{ background: '#e0f2fe', color: '#0284c7' }}>MariaDB Engine</span>
-            </div>
-            <h3 style={{ margin: '4px 0 0' }}>Overkill Query Pipelines ({pipelines.length})</h3>
-            <p className="field-hint">
-              Scheduled background pipeline extracting product & defect tables from MariaDB into local inspection tables.
-            </p>
-          </div>
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            <button
-              type="button"
-              className="primary compact-button"
-              style={{ background: '#2563eb', borderColor: '#3b82f6', fontWeight: 600 }}
-              onClick={() => setBatchProvisionOpen(true)}
-              title="Batch configure Overkill pipelines for multiple lines and defect tables"
-            >
-              🚀 Batch Setup Defect Pipelines
-            </button>
-            <button type="button" className="ghost-button compact" onClick={() => { void loadPipelines(); void loadRecentExecutions(); }}>
-              ↻ Refresh Pipelines
-            </button>
-          </div>
-        </div>
-
-        {pipelines.length === 0 ? (
-          <div style={{ padding: '16px', background: 'var(--surface-muted, #f8fafc)', borderRadius: '6px', textAlign: 'center', marginTop: '10px' }}>
-            <p style={{ margin: 0, color: 'var(--text-muted, #64748b)' }}>
-              No Overkill MariaDB Pipelines configured yet. You can create automated multi-table pipelines in the <strong>Query Profiles</strong> tab.
-            </p>
-          </div>
-        ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '12px', marginTop: '12px' }}>
-            {pipelines.map((p) => {
-              const lastExec = recentExecutions.find((e) => e.configId === p.id)
-              const isRunning = runningPipelineId === p.id || lastExec?.status === 'Running'
-              return (
-                <div key={p.id} className="pipeline-run-card" style={{ borderColor: isRunning ? '#3b82f6' : undefined }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <div>
-                      <strong style={{ fontSize: '1rem', color: 'var(--text-main, #0f172a)' }}>{p.name}</strong>
-                      <div style={{ fontSize: '0.8rem', color: 'var(--text-muted, #64748b)', marginTop: '2px' }}>
-                        Machine: <strong>{p.machineCode}</strong> &bull; Line: <strong>{p.lineCode}</strong>
-                      </div>
-                    </div>
-                    <span className="tag-badge" style={{
-                      backgroundColor: p.enabled ? '#ecfdf5' : '#f1f5f9',
-                      color: p.enabled ? '#059669' : '#64748b',
-                    }}>
-                      {p.enabled ? `Every ${p.scheduleIntervalMinutes}m` : 'Paused'}
-                    </span>
-                  </div>
-
-                  <div style={{ fontSize: '0.82rem', marginTop: '8px', color: 'var(--text-muted, #64748b)' }}>
-                    <span>Connection: <strong>{p.connectionName}</strong></span>
-                    <br />
-                    <span>Product Table: <code>{p.productTableName}</code> &bull; Defect Tables: <strong>{p.defectTables.length}</strong></span>
-                    <br />
-                    <span>PC Image API: <code style={{ color: '#9333ea' }}>{p.imageCrawlerApiUrl || 'Default PC API'}</code></span>
-                  </div>
-
-                  <div style={{
-                    marginTop: '10px',
-                    padding: '8px 10px',
-                    background: 'var(--surface-muted, #f8fafc)',
-                    borderRadius: '4px',
-                    fontSize: '0.8rem',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center'
-                  }}>
-                    <div>
-                      <div style={{ color: 'var(--text-muted, #64748b)' }}>Last Ingestion:</div>
-                      <strong>
-                        {lastExec ? formatDate(lastExec.startedAtUtc) : 'Never executed'}
-                      </strong>
-                    </div>
-                    {lastExec ? (
-                      <div style={{ textAlign: 'right' }}>
-                        <StatusPill value={lastExec.status} />
-                        <div style={{ fontSize: '0.75rem', marginTop: '2px', color: 'var(--text-muted, #64748b)' }}>
-                          +{lastExec.productsScanned} items &bull; +{lastExec.defectsExtracted} defects
-                        </div>
-                      </div>
-                    ) : null}
-                  </div>
-
-                  <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                    <button
-                      type="button"
-                      className="primary-button compact"
-                      disabled={isRunning}
-                      onClick={() => void handleRunPipelineNow(p.id, p.name)}
-                    >
-                      {isRunning ? '⏳ Running Pipeline...' : '⚡ Run Pipeline Now'}
-                    </button>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        )}
-      </section>
+      <PipelineHub
+        pipelines={pipelines}
+        executions={recentExecutions}
+        runningIds={runningPipelineIds}
+        updatedAt={pipelinesUpdatedAt}
+        onRun={(id, name) => void handleRunPipelineNow(id, name)}
+        onRefresh={refreshPipelineHub}
+        onBatchSetup={() => setBatchProvisionOpen(true)}
+      />
 
       {/* Automated Overkill Operations Control Panel */}
       <section className="feature-grid">
