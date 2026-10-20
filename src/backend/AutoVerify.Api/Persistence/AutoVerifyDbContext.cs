@@ -22,6 +22,8 @@ public sealed class AutoVerifyDbContext(DbContextOptions<AutoVerifyDbContext> op
     public DbSet<OverkillPipelineConfigEntity> OverkillPipelineConfigs => Set<OverkillPipelineConfigEntity>();
     public DbSet<OverkillPipelineExecutionEntity> OverkillPipelineExecutions => Set<OverkillPipelineExecutionEntity>();
     public DbSet<LeakageBatchEntity> LeakageBatches => Set<LeakageBatchEntity>();
+    public DbSet<MasterStationMappingEntity> MasterStationMappings => Set<MasterStationMappingEntity>();
+    public DbSet<AiVerdictEntity> AiVerdicts => Set<AiVerdictEntity>();
     public DbSet<LeakageQueueItemEntity> LeakageQueueItems => Set<LeakageQueueItemEntity>();
     public DbSet<DefectPreviewSessionEntity> DefectPreviewSessions => Set<DefectPreviewSessionEntity>();
     public DbSet<DefectPreviewRecordEntity> DefectPreviewRecords => Set<DefectPreviewRecordEntity>();
@@ -64,6 +66,11 @@ public sealed class AutoVerifyDbContext(DbContextOptions<AutoVerifyDbContext> op
         modelBuilder.Entity<OverkillPipelineConfigEntity>().HasIndex(x => new { x.Enabled, x.NextRunAtUtc });
         modelBuilder.Entity<OverkillPipelineExecutionEntity>().HasIndex(x => x.ConfigId);
         modelBuilder.Entity<OverkillPipelineExecutionEntity>().HasIndex(x => x.StartedAtUtc);
+
+        modelBuilder.Entity<MasterStationMappingEntity>().HasIndex(x => new { x.MachineCode, x.LineCode, x.ModelCode }).IsUnique();
+        modelBuilder.Entity<AiVerdictEntity>().HasIndex(x => x.DefectId).IsUnique();
+        modelBuilder.Entity<AiVerdictEntity>().HasIndex(x => x.KeyId);
+        modelBuilder.Entity<AiVerdictEntity>().HasIndex(x => new { x.Status, x.MasterJobId });
 
         modelBuilder.Entity<LeakageBatchEntity>().HasIndex(x => x.CreatedAtUtc);
         modelBuilder.Entity<LeakageQueueItemEntity>().HasIndex(x => x.BatchId);

@@ -19,3 +19,4 @@ src/backend/AutoVerify.Api/data/
 !src/backend/AutoVerify.Api/Data/**/*.cs
 artifacts/
 src/backend/AutoVerify.Api/wwwroot/
+appsettings.Local.json

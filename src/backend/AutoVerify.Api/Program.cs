@@ -17,6 +17,7 @@ Log.Logger = new LoggerConfiguration()
 try
 {
     var builder = WebApplication.CreateBuilder(args);
+    builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true);
 
     builder.AddCustomSerilog();
 
@@ -85,6 +86,12 @@ try
     builder.Services.AddHttpClient<IImageCrawlerService, ImageCrawlerService>(client =>
         client.Timeout = TimeSpan.FromSeconds(imageCrawlerTimeoutSeconds));
     builder.Services.Configure<SeaweedFsOptions>(builder.Configuration.GetSection("SeaweedFs"));
+    builder.Services.Configure<AutoVerify.Api.Integration.MasterServerOptions>(builder.Configuration.GetSection(AutoVerify.Api.Integration.MasterServerOptions.SectionName));
+    builder.Services.Configure<AutoVerify.Api.Integration.AiVerificationOptions>(builder.Configuration.GetSection(AutoVerify.Api.Integration.AiVerificationOptions.SectionName));
+    builder.Services.AddScoped<AutoVerify.Api.Integration.IAiVerificationService, AutoVerify.Api.Integration.AiVerificationService>();
+    builder.Services.AddHostedService<AutoVerify.Api.Integration.AiVerificationHostedService>();
+    builder.Services.AddHttpClient<AutoVerify.Api.Integration.IMasterServerClient, AutoVerify.Api.Integration.MasterServerClient>(client =>
+        client.Timeout = TimeSpan.FromSeconds(Math.Max(1, builder.Configuration.GetValue("MasterServer:TimeoutSeconds", 60))));
     builder.Services.Configure<DefectPreviewOptions>(builder.Configuration.GetSection("DefectPreview"));
     builder.Services.Configure<ImageCrawlerOptions>(builder.Configuration.GetSection(ImageCrawlerOptions.SectionName));
     builder.Services.Configure<BackgroundJobOptions>(builder.Configuration.GetSection(BackgroundJobOptions.SectionName));

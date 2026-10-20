@@ -8,6 +8,49 @@ namespace AutoVerify.Api.Persistence;
 
 public static class DatabaseSeeder
 {
+    public static readonly string MasterStationMappingsCreateTableSql = """
+        CREATE TABLE IF NOT EXISTS `MasterStationMappings` (
+            `Id` char(36) COLLATE ascii_general_ci NOT NULL,
+            `MachineCode` varchar(128) NOT NULL,
+            `LineCode` varchar(128) NOT NULL,
+            `ModelCode` varchar(128) NOT NULL,
+            `StationId` varchar(128) NOT NULL,
+            `ProductId` varchar(128) NOT NULL,
+            `Enabled` tinyint(1) NOT NULL DEFAULT 1,
+            `UpdatedAtUtc` datetime(6) NOT NULL,
+            CONSTRAINT `PK_MasterStationMappings` PRIMARY KEY (`Id`),
+            UNIQUE KEY `IX_MasterStationMappings_Scope` (`MachineCode`, `LineCode`, `ModelCode`)
+        ) CHARACTER SET=utf8mb4;
+        """;
+
+    public static readonly string AiVerdictsCreateTableSql = """
+        CREATE TABLE IF NOT EXISTS `AiVerdicts` (
+            `Id` char(36) COLLATE ascii_general_ci NOT NULL,
+            `DefectId` char(36) COLLATE ascii_general_ci NOT NULL,
+            `KeyId` varchar(128) NOT NULL,
+            `MachineCode` varchar(128) NOT NULL,
+            `LineCode` varchar(128) NOT NULL,
+            `ModelCode` varchar(128) NOT NULL,
+            `StationId` varchar(128) NOT NULL,
+            `ProductId` varchar(128) NOT NULL,
+            `Status` varchar(32) NOT NULL,
+            `MasterJobId` varchar(64) NULL,
+            `Verdict` varchar(16) NULL,
+            `AnomalyScore` double NULL,
+            `DefectClass` varchar(255) NULL,
+            `BoxesJson` longtext NULL,
+            `ModelVersionsJson` text NULL,
+            `ClientMode` varchar(32) NULL,
+            `Error` text NULL,
+            `SubmittedAtUtc` datetime(6) NOT NULL,
+            `CompletedAtUtc` datetime(6) NULL,
+            CONSTRAINT `PK_AiVerdicts` PRIMARY KEY (`Id`),
+            UNIQUE KEY `IX_AiVerdicts_DefectId` (`DefectId`),
+            KEY `IX_AiVerdicts_KeyId` (`KeyId`),
+            KEY `IX_AiVerdicts_Status_MasterJobId` (`Status`, `MasterJobId`)
+        ) CHARACTER SET=utf8mb4;
+        """;
+
     public static readonly string DefectPreviewSessionsCreateTableSql = """
         CREATE TABLE IF NOT EXISTS `defect_preview_sessions` (
             `Id` char(36) COLLATE ascii_general_ci NOT NULL,
@@ -744,6 +787,9 @@ public static class DatabaseSeeder
         await db.Database.ExecuteSqlRawAsync("CREATE INDEX IF NOT EXISTS `IX_LeakageQueueItems_ProductId` ON `LeakageQueueItems` (`ProductId`);");
         await db.Database.ExecuteSqlRawAsync("CREATE INDEX IF NOT EXISTS `IX_LeakageQueueItems_Status` ON `LeakageQueueItems` (`Status`);");
         await db.Database.ExecuteSqlRawAsync("CREATE INDEX IF NOT EXISTS `IX_LeakageQueueItems_Status_CreatedAtUtc` ON `LeakageQueueItems` (`Status`, `CreatedAtUtc`);");
+
+        await ExecuteSqlRawIdempotentAsync(db, MasterStationMappingsCreateTableSql, logger, isCritical: true);
+        await ExecuteSqlRawIdempotentAsync(db, AiVerdictsCreateTableSql, logger, isCritical: true);
 
         await ExecuteSqlRawIdempotentAsync(db, DefectPreviewSessionsCreateTableSql, logger, isCritical: true);
         foreach (var sql in DefectPreviewSessionsUpgradeSqls)
