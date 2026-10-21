@@ -99,7 +99,8 @@ public class AiVerificationServiceTests
         db.SaveChanges();
     }
 
-    private static AiVerificationOptions AutoOptions(int maxProducts = 20) => new() { AutoSubmit = true, AutoSubmitMaxProductsPerTick = maxProducts };
+    private static AiVerificationOptions AutoOptions(int maxProducts = 20, bool includeOk = false) =>
+        new() { AutoSubmit = true, AutoSubmitMaxProductsPerTick = maxProducts, AutoSubmitIncludeOkProducts = includeOk };
 
     private static void Seed(AutoVerifyDbContext db, string key, string productJudge, params DefectRecordEntity[] defects)
     {
@@ -181,9 +182,24 @@ public class AiVerificationServiceTests
     }
 
     [Fact]
-    public async Task AutoSubmit_PicksNgAndOkProductsWithImages()
+    public async Task AutoSubmit_ByDefault_SendsOnlyNgProducts()
     {
         var (db, service, master, _) = Create(AutoOptions());
+        AddProduct(db, "NG1", "NG", Defect("NG1", "NG"));
+        AddProduct(db, "OK1", "OK", Defect("OK1", "OK"), Defect("OK1", "NG"));
+        AddMapping(db, autoSubmit: true);
+
+        var result = await service.AutoSubmitAsync(default);
+
+        Assert.Equal(1, result.Picked);
+        Assert.Equal("NG1", Assert.Single(db.AiVerdicts).KeyId);
+        Assert.Single(master.Jobs.SelectMany(j => j));
+    }
+
+    [Fact]
+    public async Task AutoSubmit_WithOkProductsEnabled_PicksNgAndOkProductsWithImages()
+    {
+        var (db, service, master, _) = Create(AutoOptions(includeOk: true));
         AddProduct(db, "NG1", "NG", Defect("NG1", "NG"), Defect("NG1", "OK"));
         AddProduct(db, "OK1", "OK", Defect("OK1", "OK"), Defect("OK1", "NG"));
         AddMapping(db, autoSubmit: true);

@@ -29,6 +29,12 @@ public sealed class AiVerificationOptions
     /// <summary>Products picked per tick; each carries up to MaxDefectsPerProduct images, and an Edge serves one image at a time per station.</summary>
     public int AutoSubmitMaxProductsPerTick { get; set; } = 20;
 
+    /// <summary>
+    /// Also send products the station judged OK (Leakage check). Off by default: it sends far more images, and the Overkill
+    /// pipeline does not load defects of OK products, so they only exist for lists run through the Leakage queue.
+    /// </summary>
+    public bool AutoSubmitIncludeOkProducts { get; set; }
+
     /// <summary>Only defects that entered AutoVerify within this window are considered, so switching AutoSubmit on does not replay history.</summary>
     public int AutoSubmitLookbackHours { get; set; } = 24;
 
@@ -244,6 +250,7 @@ public sealed class AiVerificationService : IAiVerificationService
         foreach (var key in candidates)
         {
             if (!judges.TryGetValue(key, out var judge) || !defectsByKey.TryGetValue(key, out var defects)) continue;
+            if (!_options.AutoSubmitIncludeOkProducts && !AiProductStatus.IsNg(judge)) continue;
             if (AiDefectSelector.Select(judge, defects, _options.MaxDefectsPerProduct).All(d => judged.Contains(d.Id))) continue;
             picked.Add(key);
             if (picked.Count >= max) break;

@@ -103,6 +103,7 @@ sequenceDiagram
 | **`AutoSubmit`** | `false` | Công tắc tổng cho tự động gửi. |
 | **`AutoSubmitMaxProductsPerTick`** | `20` | Số sản phẩm tối đa mỗi tick. Mỗi sản phẩm tối đa `MaxDefectsPerProduct` (20) ảnh. |
 | **`AutoSubmitLookbackHours`** | `24` | Chỉ xét sản phẩm kiểm tra trong khoảng này. Tránh gửi lại toàn bộ lịch sử khi vừa bật. |
+| **`AutoSubmitIncludeOkProducts`** | `false` | Gửi cả sản phẩm máy báo OK (Leakage). Tắt: chỉ gửi sản phẩm NG (Overkill). |
 | **`AutoSubmitBackoffMinutes`** | `5` | Tạm dừng gửi sau khi Master không phản hồi. |
 | **`AcceptLateResultsHours`** | `24` | Vẫn nhận kết quả về muộn trong khoảng này (mục 4.6). |
 | `PollIntervalSeconds` | `15` | Đã có. Chu kỳ tick. |
@@ -332,7 +333,7 @@ Lưu ý: test `AnalyzeClsf_RealD992File_*` đang fail từ trước, không liê
 
 | # | Câu hỏi | Đề xuất | Lý do |
 |---|---|---|---|
-| Q1 | Tự động gửi sản phẩm nào? | **Đã chốt: NG (Overkill) và OK (Leakage)** | Sản phẩm OK chỉ gửi được khi defect đã vào AutoVerify qua hàng đợi Leakage (mục 3.4). |
+| Q1 | Tự động gửi sản phẩm nào? | **Đã chốt: cả NG (Overkill) lẫn OK (Leakage), nhưng tạm thời chỉ chạy NG.** Leakage nằm sau `AiVerification:AutoSubmitIncludeOkProducts` (mặc định `false`) vì nặng. | Sản phẩm OK chỉ gửi được khi defect đã vào AutoVerify qua hàng đợi Leakage (mục 3.4). |
 | Q2 | Kết quả AI có thay kết luận theo luật không? | **Đã chốt: hiện song song, không thay** | Cần thời gian đối chiếu độ tin cậy của model. |
 | Q3 | Công tắc đặt ở đâu? | **Đã chốt: trên mapping trạm** | Mapping vốn bắt buộc, ít chỗ phải sửa, bật/tắt theo line. |
 
