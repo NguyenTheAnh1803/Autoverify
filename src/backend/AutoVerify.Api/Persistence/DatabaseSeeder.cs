@@ -17,6 +17,7 @@ public static class DatabaseSeeder
             `StationId` varchar(128) NOT NULL,
             `ProductId` varchar(128) NOT NULL,
             `Enabled` tinyint(1) NOT NULL DEFAULT 1,
+            `AutoSubmit` tinyint(1) NOT NULL DEFAULT 0,
             `UpdatedAtUtc` datetime(6) NOT NULL,
             CONSTRAINT `PK_MasterStationMappings` PRIMARY KEY (`Id`),
             UNIQUE KEY `IX_MasterStationMappings_Scope` (`MachineCode`, `LineCode`, `ModelCode`)
@@ -790,6 +791,8 @@ public static class DatabaseSeeder
 
         await ExecuteSqlRawIdempotentAsync(db, MasterStationMappingsCreateTableSql, logger, isCritical: true);
         await ExecuteSqlRawIdempotentAsync(db, AiVerdictsCreateTableSql, logger, isCritical: true);
+        await EnsureColumnExistsAsync(db, "MasterStationMappings", "AutoSubmit", "tinyint(1) NOT NULL DEFAULT 0", logger);
+        await ExecuteSqlRawIdempotentAsync(db, "CREATE INDEX IF NOT EXISTS `IX_DefectRecords_CreatedAtUtc` ON `DefectRecords` (`CreatedAtUtc`);", logger, isCritical: false);
 
         await ExecuteSqlRawIdempotentAsync(db, DefectPreviewSessionsCreateTableSql, logger, isCritical: true);
         foreach (var sql in DefectPreviewSessionsUpgradeSqls)

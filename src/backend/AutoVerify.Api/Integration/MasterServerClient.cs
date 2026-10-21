@@ -96,7 +96,8 @@ public sealed class MasterServerClient : IMasterServerClient
 
     /// <summary>
     /// Reachability + authorization probe. Asking for a job that cannot exist is answered 404 JOB_NOT_FOUND only after the
-    /// Master accepted the IP, the envelope, the API key and the verify.read scope, so it proves the whole chain without side effects.
+    /// Master accepted the IP, the envelope, the API key and the verify.read scope; an empty job then proves verify.submit.
+    /// Neither probe has side effects.
     /// </summary>
     public async Task<MasterConnectionStatus> TestConnectionAsync(CancellationToken cancellationToken)
     {
@@ -105,9 +106,16 @@ public sealed class MasterServerClient : IMasterServerClient
         {
             using var response = await SendAsync(HttpMethod.Get, "/api/verify/jobs/connection-test", null, cancellationToken);
             var text = await response.Content.ReadAsStringAsync(cancellationToken);
-            if ((int)response.StatusCode == 404 && text.Contains("JOB_NOT_FOUND", StringComparison.Ordinal))
-                return new MasterConnectionStatus(true, true, "Master accepted the access envelope and verify.read scope.");
-            return new MasterConnectionStatus(true, false, $"Master answered HTTP {(int)response.StatusCode}: {Truncate(text)}");
+            if (!((int)response.StatusCode == 404 && text.Contains("JOB_NOT_FOUND", StringComparison.Ordinal)))
+                return new MasterConnectionStatus(true, false, $"Master answered HTTP {(int)response.StatusCode}: {Truncate(text)}");
+
+            // An empty job passes the scope check and is then refused with ITEMS_REQUIRED, so it proves verify.submit without creating anything.
+            using var submitProbe = await SendAsync(HttpMethod.Post, "/api/verify/jobs", new { items = Array.Empty<object>() }, cancellationToken);
+            var submitText = await submitProbe.Content.ReadAsStringAsync(cancellationToken);
+            if ((int)submitProbe.StatusCode == 400 && submitText.Contains("ITEMS_REQUIRED", StringComparison.Ordinal))
+                return new MasterConnectionStatus(true, true, "Master accepted the access envelope and the verify.read and verify.submit scopes.");
+            return new MasterConnectionStatus(true, false,
+                $"Master accepted verify.read but not verify.submit (HTTP {(int)submitProbe.StatusCode}): {Truncate(submitText)}");
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or CryptographicException)
         {

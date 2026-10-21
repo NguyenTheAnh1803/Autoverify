@@ -6,12 +6,22 @@ namespace AutoVerify.Api.Controllers;
 
 public sealed record SubmitAiVerificationRequest(IReadOnlyCollection<string> KeyIds, bool Resubmit = false);
 
-public sealed record UpsertStationMappingRequest(string MachineCode, string LineCode, string ModelCode, string StationId, string ProductId, bool Enabled = true);
+public sealed record UpsertStationMappingRequest(string MachineCode, string LineCode, string ModelCode, string StationId, string ProductId, bool Enabled = true, bool AutoSubmit = false);
 
 [ApiController]
 [Route("api/v1/ai-verification")]
 public sealed class AiVerificationController(IAiVerificationService ai, AutoVerifyDbContext db) : ControllerBase
 {
+    // Master limits: verify_items.StationId is VARCHAR(64), ProductId VARCHAR(128).
+    private const int MaxStationIdLength = 64;
+    private const int MaxProductIdLength = 128;
+
+    private static bool IsMasterId(string? value, int maxLength)
+    {
+        var v = value?.Trim();
+        return !string.IsNullOrEmpty(v) && v.Length <= maxLength && v.All(c => char.IsLetterOrDigit(c) || c is '-' or '_' or '.');
+    }
+
     [HttpPost("submit")]
     public async Task<IActionResult> Submit([FromBody] SubmitAiVerificationRequest request, CancellationToken cancellationToken)
     {
@@ -40,6 +50,11 @@ public sealed class AiVerificationController(IAiVerificationService ai, AutoVeri
     {
         if (new[] { request.MachineCode, request.LineCode, request.ModelCode, request.StationId, request.ProductId }.Any(string.IsNullOrWhiteSpace))
             return BadRequest(new { error = "ALL_FIELDS_REQUIRED" });
+        // The Master rejects a whole job when any item has an unsafe id, so refuse a mapping it would never accept.
+        if (!IsMasterId(request.StationId, MaxStationIdLength))
+            return BadRequest(new { error = "INVALID_STATION_ID", message = $"StationId must be 1-{MaxStationIdLength} characters: letters, digits, '-', '_' or '.'." });
+        if (!IsMasterId(request.ProductId, MaxProductIdLength))
+            return BadRequest(new { error = "INVALID_PRODUCT_ID", message = $"ProductId must be 1-{MaxProductIdLength} characters: letters, digits, '-', '_' or '.'." });
 
         var entity = await db.MasterStationMappings.FirstOrDefaultAsync(m =>
             m.MachineCode == request.MachineCode && m.LineCode == request.LineCode && m.ModelCode == request.ModelCode, cancellationToken);
@@ -54,6 +69,7 @@ public sealed class AiVerificationController(IAiVerificationService ai, AutoVeri
         entity.StationId = request.StationId.Trim();
         entity.ProductId = request.ProductId.Trim();
         entity.Enabled = request.Enabled;
+        entity.AutoSubmit = request.AutoSubmit;
         entity.UpdatedAtUtc = DateTimeOffset.UtcNow;
         await db.SaveChangesAsync(cancellationToken);
         return Ok(entity);

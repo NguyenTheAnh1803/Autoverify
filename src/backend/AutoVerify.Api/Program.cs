@@ -89,6 +89,7 @@ try
     builder.Services.Configure<AutoVerify.Api.Integration.MasterServerOptions>(builder.Configuration.GetSection(AutoVerify.Api.Integration.MasterServerOptions.SectionName));
     builder.Services.Configure<AutoVerify.Api.Integration.AiVerificationOptions>(builder.Configuration.GetSection(AutoVerify.Api.Integration.AiVerificationOptions.SectionName));
     builder.Services.AddScoped<AutoVerify.Api.Integration.IAiVerificationService, AutoVerify.Api.Integration.AiVerificationService>();
+    builder.Services.AddSingleton<AutoVerify.Api.Integration.AiDispatchState>();
     builder.Services.AddHostedService<AutoVerify.Api.Integration.AiVerificationHostedService>();
     builder.Services.AddHttpClient<AutoVerify.Api.Integration.IMasterServerClient, AutoVerify.Api.Integration.MasterServerClient>(client =>
         client.Timeout = TimeSpan.FromSeconds(Math.Max(1, builder.Configuration.GetValue("MasterServer:TimeoutSeconds", 60))));

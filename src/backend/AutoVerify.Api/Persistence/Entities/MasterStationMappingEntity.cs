@@ -10,5 +10,8 @@ public class MasterStationMappingEntity
     public string StationId { get; set; } = string.Empty;
     public string ProductId { get; set; } = string.Empty;
     public bool Enabled { get; set; } = true;
+
+    /// <summary>When true (and AiVerification:AutoSubmit is on), new products of this machine/line/model are sent to the Master automatically.</summary>
+    public bool AutoSubmit { get; set; }
     public DateTimeOffset UpdatedAtUtc { get; set; }
 }

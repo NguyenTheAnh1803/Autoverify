@@ -77,26 +77,44 @@ public sealed class MasterServerClientTests
         await client.TestConnectionAsync(CancellationToken.None);
 
         var nonces = handler.Calls.Select(c => c.Envelope.GetProperty("nonce").GetString()).ToList();
-        Assert.Equal(2, nonces.Distinct().Count());
+        Assert.True(nonces.Count >= 2);
+        Assert.Equal(nonces.Count, nonces.Distinct().Count());
+    }
+
+    private static HttpResponseMessage Json(HttpStatusCode code, string json) =>
+        new(code) { Content = new StringContent(json) };
+
+    [Fact]
+    public async Task TestConnection_IsAuthorizedOnlyWhenMasterAcceptsReadAndSubmitProbes()
+    {
+        using var rsa = RSA.Create(3072);
+        var handler = new CapturingHandler(rsa, (req, _) => req.Method == HttpMethod.Get
+            ? Json(HttpStatusCode.NotFound, """{"error":"JOB_NOT_FOUND"}""")
+            : Json(HttpStatusCode.BadRequest, """{"error":"ITEMS_REQUIRED"}"""));
+        var ok = await CreateClient(handler).TestConnectionAsync(CancellationToken.None);
+        Assert.True(ok.Reachable);
+        Assert.True(ok.Authorized);
+        Assert.Equal(new[] { "/api/verify/jobs/connection-test", "/api/verify/jobs" }, handler.Calls.Select(c => c.Request.RequestUri!.AbsolutePath).ToArray());
+
+        var denied = await CreateClient(new CapturingHandler(rsa, (_, _) =>
+            Json(HttpStatusCode.Forbidden, """{"error":"ACCESS_DENIED","message":"API_KEY_INVALID"}"""))).TestConnectionAsync(CancellationToken.None);
+        Assert.True(denied.Reachable);
+        Assert.False(denied.Authorized);
     }
 
     [Fact]
-    public async Task TestConnection_IsAuthorizedOnlyWhenMasterAnswersJobNotFound()
+    public async Task TestConnection_IsNotAuthorizedWhenSubmitScopeIsMissing()
     {
         using var rsa = RSA.Create(3072);
-        var ok = await CreateClient(new CapturingHandler(rsa, (_, _) => new HttpResponseMessage(HttpStatusCode.NotFound)
-        {
-            Content = new StringContent("""{"error":"JOB_NOT_FOUND"}""")
-        })).TestConnectionAsync(CancellationToken.None);
-        Assert.True(ok.Reachable);
-        Assert.True(ok.Authorized);
+        var handler = new CapturingHandler(rsa, (req, _) => req.Method == HttpMethod.Get
+            ? Json(HttpStatusCode.NotFound, """{"error":"JOB_NOT_FOUND"}""")
+            : Json(HttpStatusCode.Forbidden, """{"error":"ACCESS_SCOPE_DENIED","requiredScope":"verify.submit"}"""));
 
-        var denied = await CreateClient(new CapturingHandler(rsa, (_, _) => new HttpResponseMessage(HttpStatusCode.Forbidden)
-        {
-            Content = new StringContent("""{"error":"ACCESS_DENIED","message":"API_KEY_INVALID"}""")
-        })).TestConnectionAsync(CancellationToken.None);
-        Assert.True(denied.Reachable);
-        Assert.False(denied.Authorized);
+        var status = await CreateClient(handler).TestConnectionAsync(CancellationToken.None);
+
+        Assert.True(status.Reachable);
+        Assert.False(status.Authorized);
+        Assert.Contains("verify.submit", status.Message);
     }
 
     [Fact]

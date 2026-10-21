@@ -58,6 +58,7 @@ public sealed class AutoVerifyDbContext(DbContextOptions<AutoVerifyDbContext> op
         modelBuilder.Entity<DefectRecordEntity>().HasIndex(x => x.ConnectionId);
         modelBuilder.Entity<DefectRecordEntity>().HasIndex(x => x.MachineCode);
         modelBuilder.Entity<DefectRecordEntity>().HasIndex(x => x.LineCode);
+        modelBuilder.Entity<DefectRecordEntity>().HasIndex(x => x.CreatedAtUtc);
         modelBuilder.Entity<ScanListItemEntity>().HasIndex(x => x.ScanListId);
         modelBuilder.Entity<ScanListItemEntity>().HasIndex(x => x.EntityId);
         modelBuilder.Entity<VerificationHistoryEntity>().HasIndex(x => x.CreatedAtUtc);

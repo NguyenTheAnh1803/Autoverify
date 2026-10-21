@@ -19,9 +19,35 @@ public sealed class AiVerificationOptions
 
     /// <summary>A Master job older than this without a result is given up on (marked Unavailable).</summary>
     public int GiveUpAfterMinutes { get; set; } = 60;
+
+    /// <summary>Raw image bytes per Master job. Base64 adds ~33%, and the Master caps a request body at 128 MB (Server:MaxRequestBodyMb).</summary>
+    public long MaxBytesPerJob { get; set; } = 48L * 1024 * 1024;
+
+    /// <summary>Master switch for automatic sending. A product is also only sent when its mapping has AutoSubmit on. Needs Enabled.</summary>
+    public bool AutoSubmit { get; set; }
+
+    /// <summary>Products picked per tick; each carries up to MaxDefectsPerProduct images, and an Edge serves one image at a time per station.</summary>
+    public int AutoSubmitMaxProductsPerTick { get; set; } = 20;
+
+    /// <summary>Only defects that entered AutoVerify within this window are considered, so switching AutoSubmit on does not replay history.</summary>
+    public int AutoSubmitLookbackHours { get; set; } = 24;
+
+    /// <summary>Sending pauses this long after the Master could not be reached or refused our credentials.</summary>
+    public int AutoSubmitBackoffMinutes { get; set; } = 5;
+
+    /// <summary>A verdict that arrives after GiveUpAfterMinutes is still accepted for this long.</summary>
+    public int AcceptLateResultsHours { get; set; } = 24;
 }
 
-public sealed record AiSubmitResult(int Submitted, int AlreadyJudged, int NoMapping, int NoImage, string? Message);
+/// <param name="Deferred">Items the Master could not take right now; nothing was written for them, so they are sent again later.</param>
+/// <param name="Transient">The Master was unreachable or refused our credentials. Callers should back off.</param>
+public sealed record AiSubmitResult(
+    int Submitted, int AlreadyJudged, int NoMapping, int NoImage, string? Message, int Deferred = 0, bool Transient = false);
+
+public sealed record AiAutoSubmitResult(int Picked, int Submitted, int NoImage, int Deferred, bool Transient, string? Message)
+{
+    public static readonly AiAutoSubmitResult None = new(0, 0, 0, 0, false, null);
+}
 
 public sealed record AiDefectResult(
     Guid DefectId, string Status, string? Verdict, double? AnomalyScore, string? DefectClass, string? ClientMode, string? Error);
@@ -31,6 +57,7 @@ public sealed record AiProductResult(string KeyId, string Judge, string AiStatus
 public interface IAiVerificationService
 {
     Task<AiSubmitResult> SubmitProductsAsync(IReadOnlyCollection<string> keyIds, bool resubmit, CancellationToken cancellationToken);
+    Task<AiAutoSubmitResult> AutoSubmitAsync(CancellationToken cancellationToken);
     Task<int> PollAsync(CancellationToken cancellationToken);
     Task<AiProductResult?> GetProductResultAsync(string keyId, CancellationToken cancellationToken);
 }
@@ -68,15 +95,54 @@ public sealed class AiVerificationService : IAiVerificationService
         var existing = await _db.AiVerdicts.Where(v => keys.Contains(v.KeyId)).ToDictionaryAsync(v => v.DefectId, cancellationToken);
         var mappings = await _db.MasterStationMappings.AsNoTracking().Where(m => m.Enabled).ToListAsync(cancellationToken);
 
-        int alreadyJudged = 0, noMapping = 0, noImage = 0;
-        var pending = new List<(AiVerdictEntity Row, MasterVerifyItem Item)>();
+        int alreadyJudged = 0, noMapping = 0, noImage = 0, submitted = 0, deferred = 0;
+        string? message = null;
+        var transient = false;
+        var batch = new List<PendingItem>();
+        long batchBytes = 0;
+        var maxItems = Math.Max(1, _master.MaxItemsPerJob);
+        var maxBytes = Math.Max(1, _options.MaxBytesPerJob);
+
+        // Images are fetched one batch at a time and every batch is saved as soon as the Master answers, so a cancelled
+        // or timed-out request cannot lose the job ids of batches the Master already accepted.
+        async Task FlushAsync()
+        {
+            if (batch.Count == 0) return;
+            var current = batch.ToList();
+            batch.Clear();
+            batchBytes = 0;
+            try
+            {
+                var jobId = await _master.SubmitJobAsync($"autoverify:{DateTime.UtcNow:yyyyMMddHHmmss}", current.Select(c => c.Item!).ToList(), cancellationToken);
+                foreach (var c in current) Stage(c, AiVerdictStatus.Submitted, null, jobId);
+                submitted += current.Count;
+            }
+            catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException && !cancellationToken.IsCancellationRequested)
+            {
+                if (IsTransient(ex))
+                {
+                    // Master down or credentials refused: write nothing, so these defects are picked up again once it is back.
+                    message = $"Master unavailable, will retry later: {ex.Message}";
+                    deferred += current.Count;
+                    transient = true;
+                    return;
+                }
+                // The Master read the job and refused it: retrying would fail the same way, so say so.
+                message = $"Master rejected the job: {ex.Message}";
+                foreach (var c in current) Stage(c, AiVerdictStatus.Unavailable, message, null);
+            }
+            await _db.SaveChangesAsync(cancellationToken);
+        }
 
         foreach (var product in products)
         {
+            if (transient) break;
             var selected = AiDefectSelector.Select(product.Judge, defects.Where(d => d.KeyId == product.KeyId), _options.MaxDefectsPerProduct);
             foreach (var defect in selected)
             {
-                if (existing.TryGetValue(defect.Id, out var prior) && (!resubmit || prior.Status == AiVerdictStatus.Submitted))
+                if (transient) break;
+                existing.TryGetValue(defect.Id, out var prior);
+                if (prior != null && (!resubmit || prior.Status == AiVerdictStatus.Submitted))
                 {
                     alreadyJudged++;
                     continue;
@@ -85,60 +151,138 @@ public sealed class AiVerificationService : IAiVerificationService
                 if (mapping == null) { noMapping++; continue; }
 
                 var image = await TryGetImageAsync(defect, cancellationToken);
-                var row = prior ?? new AiVerdictEntity { Id = Guid.NewGuid(), DefectId = defect.Id };
-                row.KeyId = defect.KeyId;
-                row.MachineCode = defect.MachineCode; row.LineCode = defect.LineCode; row.ModelCode = defect.ModelCode;
-                row.StationId = mapping.StationId; row.ProductId = mapping.ProductId;
-                row.Verdict = null; row.AnomalyScore = null; row.DefectClass = null; row.BoxesJson = null;
-                row.ModelVersionsJson = null; row.ClientMode = null; row.MasterJobId = null;
-                row.SubmittedAtUtc = DateTimeOffset.UtcNow; row.CompletedAtUtc = null;
-                if (prior == null) _db.AiVerdicts.Add(row);
-
+                var pendingItem = new PendingItem(prior, defect, mapping, image == null ? null : new MasterVerifyItem(defect.Id.ToString("N"), mapping.StationId, mapping.ProductId, image));
                 if (image == null)
                 {
-                    row.Status = AiVerdictStatus.Unavailable;
-                    row.Error = "The defect image could not be retrieved.";
-                    row.CompletedAtUtc = DateTimeOffset.UtcNow;
+                    Stage(pendingItem, AiVerdictStatus.Unavailable, "The defect image could not be retrieved.", null);
                     noImage++;
                     continue;
                 }
-                row.Status = AiVerdictStatus.Submitted;
-                row.Error = null;
-                pending.Add((row, new MasterVerifyItem(defect.Id.ToString("N"), mapping.StationId, mapping.ProductId, image)));
-            }
-        }
 
-        var submitted = 0;
-        string? message = null;
-        foreach (var chunk in pending.Chunk(Math.Max(1, _master.MaxItemsPerJob)))
-        {
-            try
-            {
-                var jobId = await _master.SubmitJobAsync($"autoverify:{DateTime.UtcNow:yyyyMMddHHmmss}", chunk.Select(c => c.Item).ToList(), cancellationToken);
-                foreach (var (row, _) in chunk) row.MasterJobId = jobId;
-                submitted += chunk.Length;
-            }
-            catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
-            {
-                // The Master never saw these: say so instead of leaving them "Submitted" forever.
-                message = $"Master rejected or could not receive a job: {ex.Message}";
-                foreach (var (row, _) in chunk)
-                {
-                    row.Status = AiVerdictStatus.Unavailable;
-                    row.Error = message;
-                    row.CompletedAtUtc = DateTimeOffset.UtcNow;
-                }
+                if (batch.Count > 0 && (batch.Count >= maxItems || batchBytes + image.Length > maxBytes))
+                    await FlushAsync();
+                batch.Add(pendingItem);
+                batchBytes += image.Length;
             }
         }
+        if (!transient) await FlushAsync();
         await _db.SaveChangesAsync(cancellationToken);
-        return new AiSubmitResult(submitted, alreadyJudged, noMapping, noImage, message);
+        return new AiSubmitResult(submitted, alreadyJudged, noMapping, noImage, message, deferred, transient);
+    }
+
+    /// <summary>
+    /// Temporary conditions worth retrying: no answer, timeouts, 429/5xx, and 403 (wrong IP/key/clock or a missing scope
+    /// that an operator fixes on the Master). Any other 4xx means the Master read the job and refused it.
+    /// </summary>
+    public static bool IsTransient(Exception ex) => ex switch
+    {
+        TaskCanceledException => true,
+        HttpRequestException h => h.StatusCode is null
+            or System.Net.HttpStatusCode.RequestTimeout or System.Net.HttpStatusCode.TooManyRequests or System.Net.HttpStatusCode.Forbidden
+            or >= System.Net.HttpStatusCode.InternalServerError,
+        _ => false
+    };
+
+    public async Task<AiAutoSubmitResult> AutoSubmitAsync(CancellationToken cancellationToken)
+    {
+        if (!_options.AutoSubmit || !_master.IsConfigured) return AiAutoSubmitResult.None;
+        var mappings = await _db.MasterStationMappings.AsNoTracking().Where(m => m.Enabled && m.AutoSubmit).ToListAsync(cancellationToken);
+        if (mappings.Count == 0) return AiAutoSubmitResult.None;
+
+        var keys = await PickProductKeysAsync(mappings, cancellationToken);
+        if (keys.Count == 0) return AiAutoSubmitResult.None;
+
+        var result = await SubmitProductsAsync(keys, false, cancellationToken);
+        return new AiAutoSubmitResult(keys.Count, result.Submitted, result.NoImage, result.Deferred, result.Transient, result.Message);
+    }
+
+    // At most this many recent products are examined per tick.
+    private const int CandidateScanLimit = 500;
+
+    /// <summary>
+    /// Newest products first whose defects entered AutoVerify inside the lookback window, belong to an AutoSubmit mapping and
+    /// still have an image the AI has not judged. The defect choice mirrors <see cref="AiDefectSelector"/> so a picked product
+    /// always has something to send; a product whose chosen defects all have a row is skipped, never retried.
+    /// </summary>
+    private async Task<List<string>> PickProductKeysAsync(IReadOnlyList<MasterStationMappingEntity> mappings, CancellationToken cancellationToken)
+    {
+        var cutoff = DateTimeOffset.UtcNow.AddHours(-Math.Max(1, _options.AutoSubmitLookbackHours));
+        var recent = await _db.DefectRecords.AsNoTracking()
+            .Where(d => d.CreatedAtUtc >= cutoff && d.ImageUri != null && d.ImageUri != "")
+            .Select(d => new { d.KeyId, d.MachineCode, d.LineCode, d.ModelCode, d.CreatedAtUtc })
+            .ToListAsync(cancellationToken);
+
+        var candidates = recent
+            .Where(d => mappings.Any(m =>
+                string.Equals(m.MachineCode, d.MachineCode, StringComparison.OrdinalIgnoreCase)
+                && string.Equals(m.LineCode, d.LineCode, StringComparison.OrdinalIgnoreCase)
+                && string.Equals(m.ModelCode, d.ModelCode, StringComparison.OrdinalIgnoreCase)))
+            .GroupBy(d => d.KeyId)
+            .OrderByDescending(g => g.Max(d => d.CreatedAtUtc))
+            .Take(CandidateScanLimit)
+            .Select(g => g.Key)
+            .ToList();
+        if (candidates.Count == 0) return new List<string>();
+
+        var judges = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var p in await _db.ProductRecords.AsNoTracking().Where(p => candidates.Contains(p.KeyId)).Select(p => new { p.KeyId, p.Judge }).ToListAsync(cancellationToken))
+            judges.TryAdd(p.KeyId, p.Judge);
+        var defectsByKey = (await _db.DefectRecords.AsNoTracking().Where(d => candidates.Contains(d.KeyId))
+                .Select(d => new DefectRecordEntity { Id = d.Id, KeyId = d.KeyId, Judge = d.Judge, ImageUri = d.ImageUri })
+                .ToListAsync(cancellationToken))
+            .GroupBy(d => d.KeyId, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(g => g.Key, g => g.ToList(), StringComparer.OrdinalIgnoreCase);
+        var judged = (await _db.AiVerdicts.AsNoTracking().Where(v => candidates.Contains(v.KeyId)).Select(v => v.DefectId).ToListAsync(cancellationToken)).ToHashSet();
+
+        var picked = new List<string>();
+        var max = Math.Max(1, _options.AutoSubmitMaxProductsPerTick);
+        foreach (var key in candidates)
+        {
+            if (!judges.TryGetValue(key, out var judge) || !defectsByKey.TryGetValue(key, out var defects)) continue;
+            if (AiDefectSelector.Select(judge, defects, _options.MaxDefectsPerProduct).All(d => judged.Contains(d.Id))) continue;
+            picked.Add(key);
+            if (picked.Count >= max) break;
+        }
+        return picked;
+    }
+
+    private sealed record PendingItem(AiVerdictEntity? Prior, DefectRecordEntity Defect, MasterStationMappingEntity Mapping, MasterVerifyItem? Item);
+
+    /// <summary>
+    /// Writes the verdict row only once its outcome is known. A row saved as "Submitted" without a job id would be
+    /// failed by the poller as "never accepted", so rows are not touched while a batch is still being assembled.
+    /// </summary>
+    private void Stage(PendingItem p, string status, string? error, string? jobId)
+    {
+        var row = p.Prior ?? new AiVerdictEntity { Id = Guid.NewGuid(), DefectId = p.Defect.Id };
+        row.KeyId = p.Defect.KeyId;
+        row.MachineCode = p.Defect.MachineCode; row.LineCode = p.Defect.LineCode; row.ModelCode = p.Defect.ModelCode;
+        row.StationId = p.Mapping.StationId; row.ProductId = p.Mapping.ProductId;
+        row.Verdict = null; row.AnomalyScore = null; row.DefectClass = null; row.BoxesJson = null;
+        row.ModelVersionsJson = null; row.ClientMode = null;
+        row.MasterJobId = jobId;
+        row.SubmittedAtUtc = DateTimeOffset.UtcNow;
+        row.Status = status;
+        row.Error = error;
+        row.CompletedAtUtc = status == AiVerdictStatus.Submitted ? null : DateTimeOffset.UtcNow;
+        if (p.Prior == null) _db.AiVerdicts.Add(row);
     }
 
     public async Task<int> PollAsync(CancellationToken cancellationToken)
     {
         if (!_master.IsConfigured) return 0;
-        var open = await _db.AiVerdicts.Where(v => v.Status == AiVerdictStatus.Submitted).ToListAsync(cancellationToken);
+        var now = DateTimeOffset.UtcNow;
+        var lateCutoff = now.AddHours(-Math.Max(1, _options.AcceptLateResultsHours));
+        // Rows given up on keep their job id and a TIMEOUT marker, so a verdict the Master delivers late is still collected.
+        var open = await _db.AiVerdicts
+            .Where(v => v.Status == AiVerdictStatus.Submitted || (v.Status == AiVerdictStatus.Unavailable && v.Error != null && v.Error.StartsWith(TimeoutMarker)))
+            .ToListAsync(cancellationToken);
         var completed = 0;
+        foreach (var expired in open.Where(v => v.Status == AiVerdictStatus.Unavailable && v.SubmittedAtUtc < lateCutoff).ToList())
+        {
+            expired.Error = expired.Error![TimeoutMarker.Length..].TrimStart(); // late window closed: stop polling it
+            open.Remove(expired);
+        }
         foreach (var group in open.GroupBy(v => v.MasterJobId))
         {
             if (string.IsNullOrEmpty(group.Key))
@@ -169,10 +313,10 @@ public sealed class AiVerificationService : IAiVerificationService
         }
 
         // Anything the Master keeps "pending" beyond the limit is abandoned so a dead job cannot hide a missing verdict.
-        var cutoff = DateTimeOffset.UtcNow.AddMinutes(-Math.Max(1, _options.GiveUpAfterMinutes));
+        var cutoff = now.AddMinutes(-Math.Max(1, _options.GiveUpAfterMinutes));
         foreach (var row in open.Where(v => v.Status == AiVerdictStatus.Submitted && v.SubmittedAtUtc < cutoff))
         {
-            Fail(row, $"No result from the Master within {_options.GiveUpAfterMinutes} minutes.");
+            Fail(row, $"{TimeoutMarker} No result from the Master within {_options.GiveUpAfterMinutes} minutes.");
             completed++;
         }
         await _db.SaveChangesAsync(cancellationToken);
@@ -222,6 +366,8 @@ public sealed class AiVerificationService : IAiVerificationService
         row.CompletedAtUtc = DateTimeOffset.UtcNow;
         return true;
     }
+
+    private const string TimeoutMarker = "TIMEOUT:";
 
     private static void Fail(AiVerdictEntity row, string error)
     {

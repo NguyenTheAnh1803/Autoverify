@@ -16,12 +16,16 @@ public class AiVerificationServiceTests
         public bool IsConfigured { get; set; } = true;
         public int MaxItemsPerJob { get; set; } = 50;
         public bool RejectSubmit { get; set; }
+        public Exception? SubmitError { get; set; }
+        public Action<int>? OnSubmit { get; set; }
         public List<IReadOnlyList<MasterVerifyItem>> Jobs { get; } = new();
         public Func<MasterVerifyItem, MasterVerifyItemResult>? Answer { get; set; }
 
         public Task<string> SubmitJobAsync(string? sourceRef, IReadOnlyList<MasterVerifyItem> items, CancellationToken ct)
         {
+            if (SubmitError != null) throw SubmitError;
             if (RejectSubmit) throw new HttpRequestException("403 ACCESS_DENIED");
+            OnSubmit?.Invoke(Jobs.Count + 1);
             Jobs.Add(items);
             return Task.FromResult($"job{Jobs.Count}");
         }
@@ -62,21 +66,40 @@ public class AiVerificationServiceTests
         public HttpClient CreateClient(string name) => throw new NotSupportedException();
     }
 
-    private static (AutoVerifyDbContext Db, AiVerificationService Service, FakeMaster Master, FakeCrawler Crawler) Create()
+    private static (AutoVerifyDbContext Db, AiVerificationService Service, FakeMaster Master, FakeCrawler Crawler) Create(AiVerificationOptions? options = null)
     {
         var db = new AutoVerifyDbContext(new DbContextOptionsBuilder<AutoVerifyDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString()).Options);
         var master = new FakeMaster();
         var crawler = new FakeCrawler();
-        var service = new AiVerificationService(db, master, crawler, new NoHttp(), Options.Create(new AiVerificationOptions()), NullLogger<AiVerificationService>.Instance);
+        var service = new AiVerificationService(db, master, crawler, new NoHttp(), Options.Create(options ?? new AiVerificationOptions()), NullLogger<AiVerificationService>.Instance);
         return (db, service, master, crawler);
     }
 
     private static DefectRecordEntity Defect(string key, string judge = "NG", string? image = "img.png") => new()
     {
         Id = Guid.NewGuid(), KeyId = key, Judge = judge, ImageUri = image,
-        MachineCode = "M1", LineCode = "LINE-1", ModelCode = "D992"
+        MachineCode = "M1", LineCode = "LINE-1", ModelCode = "D992", CreatedAtUtc = DateTimeOffset.UtcNow
     };
+
+    private static void AddProduct(AutoVerifyDbContext db, string key, string productJudge, params DefectRecordEntity[] defects)
+    {
+        db.ProductRecords.Add(new ProductRecordEntity { Id = Guid.NewGuid(), KeyId = key, Judge = productJudge, MachineCode = "M1", LineCode = "LINE-1", ModelCode = "D992" });
+        db.DefectRecords.AddRange(defects);
+        db.SaveChanges();
+    }
+
+    private static void AddMapping(AutoVerifyDbContext db, bool autoSubmit)
+    {
+        db.MasterStationMappings.Add(new MasterStationMappingEntity
+        {
+            Id = Guid.NewGuid(), MachineCode = "M1", LineCode = "LINE-1", ModelCode = "D992", StationId = "L01", ProductId = "P-A",
+            Enabled = true, AutoSubmit = autoSubmit
+        });
+        db.SaveChanges();
+    }
+
+    private static AiVerificationOptions AutoOptions(int maxProducts = 20) => new() { AutoSubmit = true, AutoSubmitMaxProductsPerTick = maxProducts };
 
     private static void Seed(AutoVerifyDbContext db, string key, string productJudge, params DefectRecordEntity[] defects)
     {
@@ -87,6 +110,208 @@ public class AiVerificationServiceTests
             Id = Guid.NewGuid(), MachineCode = "M1", LineCode = "LINE-1", ModelCode = "D992", StationId = "L01", ProductId = "P-A", Enabled = true
         });
         db.SaveChanges();
+    }
+
+    [Fact]
+    public async Task Submit_SplitsJobsByItemCount()
+    {
+        var (db, service, master, _) = Create();
+        master.MaxItemsPerJob = 2;
+        Seed(db, "KC", "OK", Enumerable.Range(0, 5).Select(_ => Defect("KC", "OK")).ToArray());
+
+        var submit = await service.SubmitProductsAsync(["KC"], false, default);
+
+        Assert.Equal(5, submit.Submitted);
+        Assert.Equal(new[] { 2, 2, 1 }, master.Jobs.Select(j => j.Count).ToArray());
+        Assert.All(db.AiVerdicts, v => Assert.False(string.IsNullOrEmpty(v.MasterJobId)));
+    }
+
+    [Fact]
+    public async Task Submit_SplitsJobsByImageBytes()
+    {
+        // Each fake image is 2 bytes; a 4-byte budget fits two per job.
+        var (db, service, master, _) = Create(new AiVerificationOptions { MaxBytesPerJob = 4 });
+        Seed(db, "KB", "OK", Enumerable.Range(0, 5).Select(_ => Defect("KB", "OK")).ToArray());
+
+        await service.SubmitProductsAsync(["KB"], false, default);
+
+        Assert.Equal(new[] { 2, 2, 1 }, master.Jobs.Select(j => j.Count).ToArray());
+    }
+
+    [Fact]
+    public async Task Submit_KeepsJobIdsOfAcceptedJobs_WhenRequestIsCancelledMidway()
+    {
+        var (db, service, master, _) = Create();
+        master.MaxItemsPerJob = 2;
+        Seed(db, "KX", "OK", Enumerable.Range(0, 4).Select(_ => Defect("KX", "OK")).ToArray());
+        using var cts = new CancellationTokenSource();
+        master.OnSubmit = n => { if (n == 2) { cts.Cancel(); throw new TaskCanceledException(); } };
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => service.SubmitProductsAsync(["KX"], false, cts.Token));
+
+        var rows = await db.AiVerdicts.AsNoTracking().ToListAsync();
+        Assert.Equal(2, rows.Count);
+        Assert.All(rows, r => { Assert.Equal("job1", r.MasterJobId); Assert.Equal(AiVerdictStatus.Submitted, r.Status); });
+    }
+
+    [Fact]
+    public async Task AutoSubmit_Disabled_SendsNothing()
+    {
+        var (db, service, master, _) = Create(new AiVerificationOptions { AutoSubmit = false });
+        AddProduct(db, "A1", "NG", Defect("A1"));
+        AddMapping(db, autoSubmit: true);
+
+        var result = await service.AutoSubmitAsync(default);
+
+        Assert.Equal(0, result.Picked);
+        Assert.Empty(master.Jobs);
+    }
+
+    [Fact]
+    public async Task AutoSubmit_MappingWithoutFlag_SendsNothing()
+    {
+        var (db, service, master, _) = Create(AutoOptions());
+        AddProduct(db, "A2", "NG", Defect("A2"));
+        AddMapping(db, autoSubmit: false);
+
+        await service.AutoSubmitAsync(default);
+
+        Assert.Empty(master.Jobs);
+        Assert.Empty(db.AiVerdicts);
+    }
+
+    [Fact]
+    public async Task AutoSubmit_PicksNgAndOkProductsWithImages()
+    {
+        var (db, service, master, _) = Create(AutoOptions());
+        AddProduct(db, "NG1", "NG", Defect("NG1", "NG"), Defect("NG1", "OK"));
+        AddProduct(db, "OK1", "OK", Defect("OK1", "OK"), Defect("OK1", "NG"));
+        AddMapping(db, autoSubmit: true);
+
+        var result = await service.AutoSubmitAsync(default);
+
+        Assert.Equal(2, result.Picked);
+        // NG product: only its NG defect (1). OK product: everything recorded against it (2).
+        Assert.Equal(3, master.Jobs.SelectMany(j => j).Count());
+        Assert.Equal(3, db.AiVerdicts.Count());
+    }
+
+    [Fact]
+    public async Task AutoSubmit_SkipsOldDefectsNoImagesAndJudgedProducts()
+    {
+        var (db, service, master, _) = Create(AutoOptions());
+        var old = Defect("OLD"); old.CreatedAtUtc = DateTimeOffset.UtcNow.AddDays(-3);
+        AddProduct(db, "OLD", "NG", old);
+        AddProduct(db, "NOIMG", "NG", Defect("NOIMG", image: null));
+        AddProduct(db, "NGOKONLY", "NG", Defect("NGOKONLY", "OK")); // NG product is only asked about its NG defects
+        var judged = Defect("JUDGED");
+        AddProduct(db, "JUDGED", "NG", judged);
+        db.AiVerdicts.Add(new AiVerdictEntity { Id = Guid.NewGuid(), DefectId = judged.Id, KeyId = "JUDGED", Status = AiVerdictStatus.Done, Verdict = "NG", SubmittedAtUtc = DateTimeOffset.UtcNow });
+        db.SaveChanges();
+        AddMapping(db, autoSubmit: true);
+
+        var result = await service.AutoSubmitAsync(default);
+
+        Assert.Equal(0, result.Picked);
+        Assert.Empty(master.Jobs);
+    }
+
+    [Fact]
+    public async Task AutoSubmit_RespectsMaxProductsPerTick_NewestFirst()
+    {
+        var (db, service, master, _) = Create(AutoOptions(maxProducts: 2));
+        for (var i = 0; i < 5; i++)
+        {
+            var d = Defect($"P{i}");
+            d.CreatedAtUtc = DateTimeOffset.UtcNow.AddMinutes(-10 + i); // P4 is the newest
+            AddProduct(db, $"P{i}", "NG", d);
+        }
+        AddMapping(db, autoSubmit: true);
+
+        var first = await service.AutoSubmitAsync(default);
+        Assert.Equal(2, first.Picked);
+        Assert.Equal(new[] { "P4", "P3" }, db.AiVerdicts.AsEnumerable().Select(v => v.KeyId).OrderByDescending(k => k).ToArray());
+
+        // The rest follow on later ticks and nothing is sent twice.
+        await service.AutoSubmitAsync(default);
+        await service.AutoSubmitAsync(default);
+        var again = await service.AutoSubmitAsync(default);
+        Assert.Equal(0, again.Picked);
+        Assert.Equal(5, master.Jobs.SelectMany(j => j).Count());
+    }
+
+    [Fact]
+    public async Task AutoSubmit_MasterDown_WritesNothingAndRetriesWhenBack()
+    {
+        var (db, service, master, _) = Create(AutoOptions());
+        AddProduct(db, "T1", "NG", Defect("T1"), Defect("T1"));
+        AddMapping(db, autoSubmit: true);
+        master.SubmitError = new HttpRequestException("connection refused");
+
+        var down = await service.AutoSubmitAsync(default);
+
+        Assert.True(down.Transient);
+        Assert.Equal(2, down.Deferred);
+        Assert.Equal(0, down.Submitted);
+        Assert.Empty(db.AiVerdicts);
+
+        master.SubmitError = null;
+        var back = await service.AutoSubmitAsync(default);
+        Assert.False(back.Transient);
+        Assert.Equal(2, back.Submitted);
+        Assert.Equal(2, db.AiVerdicts.Count(v => v.Status == AiVerdictStatus.Submitted));
+    }
+
+    [Theory]
+    [InlineData(System.Net.HttpStatusCode.Forbidden, true)]
+    [InlineData(System.Net.HttpStatusCode.TooManyRequests, true)]
+    [InlineData(System.Net.HttpStatusCode.BadGateway, true)]
+    [InlineData(System.Net.HttpStatusCode.BadRequest, false)]
+    [InlineData(System.Net.HttpStatusCode.RequestEntityTooLarge, false)]
+    public void IsTransient_ClassifiesMasterErrors(System.Net.HttpStatusCode status, bool expected) =>
+        Assert.Equal(expected, AiVerificationService.IsTransient(new HttpRequestException("x", null, status)));
+
+    [Fact]
+    public async Task AutoSubmit_ClientError_MarksUnavailableAndDoesNotRetry()
+    {
+        var (db, service, master, _) = Create(AutoOptions());
+        AddProduct(db, "C1", "NG", Defect("C1"));
+        AddMapping(db, autoSubmit: true);
+        master.SubmitError = new HttpRequestException("400", null, System.Net.HttpStatusCode.BadRequest);
+
+        await service.AutoSubmitAsync(default);
+        var again = await service.AutoSubmitAsync(default);
+
+        Assert.Equal(AiVerdictStatus.Unavailable, Assert.Single(db.AiVerdicts).Status);
+        Assert.Equal(0, again.Picked);
+    }
+
+    [Fact]
+    public async Task Poll_AcceptsAVerdictThatArrivesAfterGivingUp_ButNotAfterTheLateWindow()
+    {
+        var (db, service, master, _) = Create(new AiVerificationOptions { GiveUpAfterMinutes = 60, AcceptLateResultsHours = 24 });
+        Seed(db, "L1", "NG", Defect("L1"));
+        Seed(db, "L2", "NG", Defect("L2"));
+        master.Answer = i => new MasterVerifyItemResult(i.ExternalItemId, "Processing", null, null, null, null, null, null, null);
+        await service.SubmitProductsAsync(["L1"], false, default);
+        await service.SubmitProductsAsync(["L2"], false, default);
+        var rows = db.AiVerdicts.ToList();
+        rows.Single(r => r.KeyId == "L1").SubmittedAtUtc = DateTimeOffset.UtcNow.AddHours(-2);   // inside the late window
+        rows.Single(r => r.KeyId == "L2").SubmittedAtUtc = DateTimeOffset.UtcNow.AddHours(-30);  // outside it
+        db.SaveChanges();
+
+        await service.PollAsync(default); // gives up on both
+        Assert.All(db.AiVerdicts, r => Assert.StartsWith("TIMEOUT:", r.Error));
+
+        master.Answer = i => new MasterVerifyItemResult(i.ExternalItemId, "Done", "OK", 0.1, null, "[]", "{}", "Production", null);
+        await service.PollAsync(default);
+
+        var l1 = db.AiVerdicts.Single(r => r.KeyId == "L1");
+        var l2 = db.AiVerdicts.Single(r => r.KeyId == "L2");
+        Assert.Equal(AiVerdictStatus.Done, l1.Status);
+        Assert.Equal("OK", l1.Verdict);
+        Assert.Equal(AiVerdictStatus.Unavailable, l2.Status);
+        Assert.DoesNotContain("TIMEOUT:", l2.Error);
     }
 
     [Fact]
@@ -158,12 +383,13 @@ public class AiVerificationServiceTests
     {
         var (db, service, master, _) = Create();
         Seed(db, "K4", "NG", Defect("K4"));
-        master.RejectSubmit = true;
+        master.SubmitError = new HttpRequestException("400 INVALID_STATION_OR_PRODUCT", null, System.Net.HttpStatusCode.BadRequest);
 
         var submit = await service.SubmitProductsAsync(["K4"], false, default);
 
         Assert.Equal(0, submit.Submitted);
-        Assert.Contains("ACCESS_DENIED", submit.Message);
+        Assert.False(submit.Transient);
+        Assert.Contains("INVALID_STATION_OR_PRODUCT", submit.Message);
         var row = Assert.Single(db.AiVerdicts);
         Assert.Equal(AiVerdictStatus.Unavailable, row.Status);
         Assert.Null(row.Verdict);
