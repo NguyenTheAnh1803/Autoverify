@@ -54,12 +54,17 @@ public sealed record AiDefectResult(
 
 public sealed record AiProductResult(string KeyId, string Judge, string AiStatus, IReadOnlyList<AiDefectResult> Defects);
 
+/// <summary>One line per product for list screens: the combined status plus how many of its defect images are in each state.</summary>
+public sealed record AiProductSummary(
+    string KeyId, string AiStatus, int Done, int Ng, int Ok, int Pending, int Unavailable, double? MaxAnomalyScore);
+
 public interface IAiVerificationService
 {
     Task<AiSubmitResult> SubmitProductsAsync(IReadOnlyCollection<string> keyIds, bool resubmit, CancellationToken cancellationToken);
     Task<AiAutoSubmitResult> AutoSubmitAsync(CancellationToken cancellationToken);
     Task<int> PollAsync(CancellationToken cancellationToken);
     Task<AiProductResult?> GetProductResultAsync(string keyId, CancellationToken cancellationToken);
+    Task<IReadOnlyList<AiProductSummary>> GetProductSummariesAsync(IReadOnlyCollection<string> keyIds, CancellationToken cancellationToken);
 }
 
 public sealed class AiVerificationService : IAiVerificationService
@@ -330,6 +335,38 @@ public sealed class AiVerificationService : IAiVerificationService
         var rows = await _db.AiVerdicts.AsNoTracking().Where(v => v.KeyId == keyId).ToListAsync(cancellationToken);
         var defects = rows.Select(v => new AiDefectResult(v.DefectId, v.Status, v.Verdict, v.AnomalyScore, v.DefectClass, v.ClientMode, v.Error)).ToList();
         return new AiProductResult(keyId, product.Judge, AiProductStatus.Resolve(product.Judge, rows.Select(v => new AiDefectVerdict(v.Status, v.Verdict)).ToList()), defects);
+    }
+
+    public async Task<IReadOnlyList<AiProductSummary>> GetProductSummariesAsync(IReadOnlyCollection<string> keyIds, CancellationToken cancellationToken)
+    {
+        var keys = keyIds.Where(k => !string.IsNullOrWhiteSpace(k)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        if (keys.Count == 0) return Array.Empty<AiProductSummary>();
+
+        var rows = await _db.AiVerdicts.AsNoTracking().Where(v => keys.Contains(v.KeyId))
+            .Select(v => new { v.KeyId, v.Status, v.Verdict, v.AnomalyScore })
+            .ToListAsync(cancellationToken);
+        if (rows.Count == 0) return Array.Empty<AiProductSummary>();
+
+        var judges = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var p in await _db.ProductRecords.AsNoTracking().Where(p => keys.Contains(p.KeyId)).Select(p => new { p.KeyId, p.Judge }).ToListAsync(cancellationToken))
+            judges.TryAdd(p.KeyId, p.Judge);
+
+        return rows.GroupBy(r => r.KeyId, StringComparer.OrdinalIgnoreCase)
+            .Where(g => judges.ContainsKey(g.Key))
+            .Select(g =>
+            {
+                var done = g.Where(r => r.Status == AiVerdictStatus.Done).ToList();
+                return new AiProductSummary(
+                    g.Key,
+                    AiProductStatus.Resolve(judges[g.Key], g.Select(r => new AiDefectVerdict(r.Status, r.Verdict)).ToList()),
+                    done.Count,
+                    done.Count(r => r.Verdict == "NG"),
+                    done.Count(r => r.Verdict == "OK"),
+                    g.Count(r => r.Status == AiVerdictStatus.Submitted),
+                    g.Count(r => r.Status is AiVerdictStatus.Unavailable or AiVerdictStatus.Rejected),
+                    done.Select(r => r.AnomalyScore).Max());
+            })
+            .ToList();
     }
 
     private static bool MappingMatches(MasterStationMappingEntity m, DefectRecordEntity d) =>

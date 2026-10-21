@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
 import './App.css'
 import { authApi } from './api'
+import { AiVerificationTab } from './tabs/AiVerificationTab'
 import { AuditTab } from './tabs/AuditTab'
 import { ClassifierRulesTab } from './tabs/ClassifierRulesTab'
 import { FeatureTrendsTab } from './tabs/FeatureTrendsTab'
@@ -68,6 +69,7 @@ const SECTIONS: NavSection[] = [
     subTabs: [
       { id: 'classifier-rules', label: 'Classifier Rules & Scripts', icon: 'rules', description: 'AOI script management, batch JSON import, and interactive rule simulator' },
       { id: 'sources', label: 'Connections & Sources', icon: 'sources', description: 'Database connections and data sources' },
+      { id: 'ai-verification', label: 'AI Verification', icon: 'overkill', description: 'Master Server connection, station mappings and automatic sending to the AI' },
       { id: 'queries', label: 'Query Profiles', icon: 'queries', description: 'MariaDB queries and SQL parameters' },
       { id: 'storage', label: 'Object Storage', icon: 'storage', description: 'SeaweedFS payloads and defect images' },
       { id: 'audit', label: 'Audit & Health', icon: 'audit', description: 'Service health check and full audit log' },
@@ -328,6 +330,7 @@ function Workspace({ user, onLogout }: { user: UserProfile; onLogout: () => void
           {currentTabId === 'classifier-rules' ? <ClassifierRulesTab onNotice={onNotice} /> : null}
           {currentTabId === 'queries' ? <QueriesTab onNotice={onNotice} /> : null}
           {currentTabId === 'storage' ? <StorageTab onNotice={onNotice} /> : null}
+          {currentTabId === 'ai-verification' ? <AiVerificationTab onNotice={onNotice} /> : null}
           {currentTabId === 'audit' ? <AuditTab onNotice={onNotice} /> : null}
         </main>
       </div>

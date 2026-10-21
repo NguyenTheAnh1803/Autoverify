@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
-import { connectionsApi, defectsApi, productsApi, storageApi } from '../api'
+import { aiVerificationApi, connectionsApi, defectsApi, productsApi, storageApi } from '../api'
+import { AiDefectVerdict, AiStatusBadge } from '../components/AiStatusBadge'
 import { formatDateTime, formNumber, formString, paginate } from '../format'
 import { DataTable, DefectFeatureInspector, extractOriginalDefectVp, Field, JudgeBadge, Modal, Pagination, StatusPill } from '../ui'
-import type { DatabaseConnection, DefectRecord, MultiTableScanResponse, Notice, ProductFilterOptions, ProductHandoff, ProductRecord } from '../types'
+import type { AiProductResult, AiProductSummary, AiSubmitResult, DatabaseConnection, DefectRecord, MultiTableScanResponse, Notice, ProductFilterOptions, ProductHandoff, ProductRecord } from '../types'
 
 export function ProductsTab({
   onNotice,
@@ -37,6 +38,9 @@ export function ProductsTab({
   const [pane, setPane] = useState<'catalog' | 'scan'>('catalog')
   const [scanPage, setScanPage] = useState(1)
   const [defectPage, setDefectPage] = useState(1)
+  const [aiStatuses, setAiStatuses] = useState<Record<string, AiProductSummary>>({})
+  const [aiDetail, setAiDetail] = useState<AiProductResult | null>(null)
+  const [aiBusy, setAiBusy] = useState('')
   const pagedScan = paginate(scanResult?.items ?? [], scanPage)
   const pagedDefects = paginate(defects, defectPage)
 
@@ -62,9 +66,80 @@ export function ProductsTab({
     void load(1)
   }, [load])
 
+  // The AI column is optional: if the lookup fails the catalog still works and the column stays empty.
+  const loadAiStatuses = useCallback(async (keyIds: string[]) => {
+    if (keyIds.length === 0) {
+      setAiStatuses({})
+      return
+    }
+    try {
+      const list = await aiVerificationApi.productStatuses(keyIds)
+      setAiStatuses(Object.fromEntries(list.map((item) => [item.keyId, item])))
+    } catch {
+      /* keep the previous values */
+    }
+  }, [])
+
+  useEffect(() => {
+    void loadAiStatuses(products.map((product) => product.keyId))
+  }, [products, loadAiStatuses])
+
+  const hasPendingAi = Object.values(aiStatuses).some((item) => item.aiStatus === 'Pending')
+  useEffect(() => {
+    if (!hasPendingAi) return
+    const timer = window.setInterval(() => void loadAiStatuses(products.map((product) => product.keyId)), 15000)
+    return () => window.clearInterval(timer)
+  }, [hasPendingAi, products, loadAiStatuses])
+
+  function describeAiSubmit(result: AiSubmitResult): string {
+    if (result.message) return result.message
+    if (result.noMapping > 0) return 'No station mapping for this machine / line / model. Add one in Configuration & Data → AI Verification.'
+    if (result.noImage > 0) return 'The defect image could not be retrieved, so nothing was sent.'
+    if (result.alreadyJudged > 0) return 'Already sent to the AI. Use Resend to send it again.'
+    return 'Nothing to send: this product has no defect images for the AI to judge.'
+  }
+
+  async function sendToAi(keyId: string, resubmit: boolean) {
+    setAiBusy(keyId)
+    try {
+      const result = await aiVerificationApi.submit([keyId], resubmit)
+      if (result.submitted > 0) {
+        onNotice({ tone: 'success', message: `Sent ${result.submitted} defect image(s) of ${keyId} to the AI.` })
+      } else {
+        onNotice({ tone: result.transient ? 'error' : 'info', message: describeAiSubmit(result) })
+      }
+      await loadAiStatuses(products.map((product) => product.keyId))
+      if (selectedKey === keyId) setAiDetail(await aiVerificationApi.product(keyId).catch(() => null))
+    } catch (error) {
+      onNotice({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to send to the AI.' })
+    } finally {
+      setAiBusy('')
+    }
+  }
+
+  function aiActions(keyId: string) {
+    const status = aiStatuses[keyId]?.aiStatus
+    if (status === 'Pending') return null
+    const resend = status !== undefined
+    if (resend && status !== 'AiUnavailable') return null
+    return (
+      <button
+        type="button"
+        className="secondary compact-button"
+        disabled={aiBusy === keyId}
+        onClick={() => void sendToAi(keyId, resend)}
+        title={resend ? 'Send the defect images to the AI again' : 'Send the defect images to the AI for an OK/NG verdict'}
+      >
+        {aiBusy === keyId ? 'Sending…' : resend ? 'Resend' : 'Send to AI'}
+      </button>
+    )
+  }
+
   async function openDefects(keyId: string) {
     setSelectedKey(keyId)
     setInspectOpen(true)
+    setAiDetail(null)
+    void aiVerificationApi.product(keyId).then(setAiDetail).catch(() => setAiDetail(null))
     try {
       setDefects(await productsApi.defects(keyId))
       setDefectPage(1)
@@ -258,7 +333,7 @@ export function ProductsTab({
       </form>
 
       <DataTable
-        columns={['Key ID', 'Judge', 'OP Marking', 'OP Defect / Note', 'Zone', 'Defect Name', 'Panel', 'Panel judge', 'Machine', 'Line', 'DateTime Inspection', 'Defect Pack']}
+        columns={['Key ID', 'Judge', 'AI', 'OP Marking', 'OP Defect / Note', 'Zone', 'Defect Name', 'Panel', 'Panel judge', 'Machine', 'Line', 'DateTime Inspection', 'Defect Pack']}
         rows={products.map((product) => ({
             id: product.id,
             cells: [
@@ -266,6 +341,10 @@ export function ProductsTab({
                 {product.keyId}
               </button>,
               <JudgeBadge key="j" value={product.judge} />,
+              <div key="ai" style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                <AiStatusBadge summary={aiStatuses[product.keyId]} />
+                {aiActions(product.keyId)}
+              </div>,
               product.opReviewMark ? (
                 <span
                   key="op"
@@ -538,6 +617,8 @@ export function ProductsTab({
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
           <span style={{ fontSize: '12px', color: '#64748b' }}>
             List of individual defects for product <strong>{selectedKey}</strong>
+            <span style={{ marginLeft: '8px' }}><AiStatusBadge summary={aiStatuses[selectedKey]} /></span>
+            <span style={{ marginLeft: '6px' }}>{aiActions(selectedKey)}</span>
           </span>
           {selectedKey && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -578,7 +659,7 @@ export function ProductsTab({
           )}
         </div>
         <DataTable
-          columns={['Table', 'Defect Name', 'Judge / Reason', 'Spec / Equipment', 'Priority', 'VP Angles (Click)', 'Features & Analysis']}
+          columns={['Table', 'Defect Name', 'Judge / Reason', 'AI verdict', 'Spec / Equipment', 'Priority', 'VP Angles (Click)', 'Features & Analysis']}
           rows={pagedDefects.items.map((defect) => ({
             id: defect.id,
             cells: [
@@ -603,6 +684,7 @@ export function ProductsTab({
                 </div>
                 {defect.reason && <span style={{ fontSize: '11px', color: '#dc2626' }}>{defect.reason}</span>}
               </div>,
+              <AiDefectVerdict key="ai" result={aiDetail?.defects.find((item) => item.defectId.toLowerCase() === defect.id.toLowerCase())} />,
               <div key="spec" style={{ fontSize: '11px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
                 {defect.specName ? (
                   <span>

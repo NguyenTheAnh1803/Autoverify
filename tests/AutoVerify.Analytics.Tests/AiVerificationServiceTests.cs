@@ -315,6 +315,29 @@ public class AiVerificationServiceTests
     }
 
     [Fact]
+    public async Task ProductSummaries_ReportPendingThenCombinedStatus_AndOmitProductsNeverSent()
+    {
+        var (db, service, master, _) = Create();
+        var d1 = Defect("S1"); var d2 = Defect("S1");
+        Seed(db, "S1", "NG", d1, d2);
+        await service.SubmitProductsAsync(["S1"], false, default);
+
+        var pending = Assert.Single(await service.GetProductSummariesAsync(["S1", "NEVER"], default));
+        Assert.Equal("Pending", pending.AiStatus);
+        Assert.Equal(2, pending.Pending);
+
+        master.Answer = i => i.ExternalItemId == d1.Id.ToString("N")
+            ? new MasterVerifyItemResult(i.ExternalItemId, "Done", "NG", 0.9, null, "[]", "{}", "Production", null)
+            : new MasterVerifyItemResult(i.ExternalItemId, "Done", "OK", 0.1, null, "[]", "{}", "Production", null);
+        await service.PollAsync(default);
+
+        var done = Assert.Single(await service.GetProductSummariesAsync(["S1", "NEVER"], default));
+        Assert.Equal("ConsistentNg", done.AiStatus);
+        Assert.Equal((2, 1, 1, 0, 0), (done.Done, done.Ng, done.Ok, done.Pending, done.Unavailable));
+        Assert.Equal(0.9, done.MaxAnomalyScore);
+    }
+
+    [Fact]
     public async Task SubmitThenPoll_StoresVerdictsAndResolvesOverkillConfirmed()
     {
         var (db, service, master, _) = Create();

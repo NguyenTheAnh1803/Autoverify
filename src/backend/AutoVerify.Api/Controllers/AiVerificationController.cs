@@ -1,16 +1,21 @@
 using AutoVerify.Api.Integration;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace AutoVerify.Api.Controllers;
 
 public sealed record SubmitAiVerificationRequest(IReadOnlyCollection<string> KeyIds, bool Resubmit = false);
 
+public sealed record AiProductStatusRequest(IReadOnlyCollection<string> KeyIds);
+
 public sealed record UpsertStationMappingRequest(string MachineCode, string LineCode, string ModelCode, string StationId, string ProductId, bool Enabled = true, bool AutoSubmit = false);
 
 [ApiController]
 [Route("api/v1/ai-verification")]
-public sealed class AiVerificationController(IAiVerificationService ai, AutoVerifyDbContext db) : ControllerBase
+public sealed class AiVerificationController(
+    IAiVerificationService ai, AutoVerifyDbContext db, IMasterServerClient master,
+    IOptions<AiVerificationOptions> options, AiDispatchState dispatch) : ControllerBase
 {
     // Master limits: verify_items.StationId is VARCHAR(64), ProductId VARCHAR(128).
     private const int MaxStationIdLength = 64;
@@ -28,6 +33,44 @@ public sealed class AiVerificationController(IAiVerificationService ai, AutoVeri
         if (request.KeyIds is null || request.KeyIds.Count == 0) return BadRequest(new { error = "KEY_IDS_REQUIRED" });
         if (request.KeyIds.Count > 500) return BadRequest(new { error = "TOO_MANY_KEYS", max = 500 });
         return Ok(await ai.SubmitProductsAsync(request.KeyIds, request.Resubmit, cancellationToken));
+    }
+
+    /// <summary>Settings in effect, what the automatic sender did last, and how many verdicts are in each state (last 24 h).</summary>
+    [HttpGet("status")]
+    public async Task<IActionResult> GetStatus(CancellationToken cancellationToken)
+    {
+        var o = options.Value;
+        var since = DateTimeOffset.UtcNow.AddHours(-24);
+        var counts = await db.AiVerdicts.AsNoTracking().Where(v => v.SubmittedAtUtc >= since)
+            .GroupBy(v => v.Status).Select(g => new { Status = g.Key, Count = g.Count() })
+            .ToListAsync(cancellationToken);
+        int Count(string status) => counts.FirstOrDefault(c => c.Status == status)?.Count ?? 0;
+        return Ok(new
+        {
+            configured = master.IsConfigured,
+            enabled = o.Enabled,
+            autoSubmit = o.AutoSubmit,
+            pollIntervalSeconds = o.PollIntervalSeconds,
+            maxProductsPerTick = o.AutoSubmitMaxProductsPerTick,
+            lookbackHours = o.AutoSubmitLookbackHours,
+            dispatch = dispatch.Snapshot(),
+            last24h = new
+            {
+                submitted = Count(AiVerdictStatus.Submitted),
+                done = Count(AiVerdictStatus.Done),
+                rejected = Count(AiVerdictStatus.Rejected),
+                unavailable = Count(AiVerdictStatus.Unavailable)
+            }
+        });
+    }
+
+    /// <summary>Combined AI status for many products at once, so a list does not call the API once per row.</summary>
+    [HttpPost("products/status")]
+    public async Task<IActionResult> GetProductStatuses([FromBody] AiProductStatusRequest request, CancellationToken cancellationToken)
+    {
+        if (request.KeyIds is null || request.KeyIds.Count == 0) return Ok(Array.Empty<AiProductSummary>());
+        if (request.KeyIds.Count > 500) return BadRequest(new { error = "TOO_MANY_KEYS", max = 500 });
+        return Ok(await ai.GetProductSummariesAsync(request.KeyIds, cancellationToken));
     }
 
     [HttpPost("poll")]

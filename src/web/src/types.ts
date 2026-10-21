@@ -1561,6 +1561,7 @@ export type TabId =
   | 'classifier-rules'
   | 'storage'
   | 'audit'
+  | 'ai-verification'
 
 export type ProductionFeaturePoint = {
   inspectedAtUtc: string
@@ -1612,6 +1613,83 @@ export type ActivePreviewSessionState = {
   sourceUri?: string
   keyId?: string | null
   initialSession?: DefectPreviewSession | null
+}
+
+// AI verification (Master Server / Deeplearning)
+export type MasterConnectionStatus = { reachable: boolean; authorized: boolean; message: string }
+
+export type AiMapping = {
+  id: string
+  machineCode: string
+  lineCode: string
+  modelCode: string
+  stationId: string
+  productId: string
+  enabled: boolean
+  autoSubmit: boolean
+  updatedAtUtc: string
+}
+
+export type AiMappingInput = Omit<AiMapping, 'id' | 'updatedAtUtc'>
+
+export type AiSubmitResult = {
+  submitted: number
+  alreadyJudged: number
+  noMapping: number
+  noImage: number
+  message?: string | null
+  deferred: number
+  transient: boolean
+}
+
+export type AiFinalStatus =
+  | 'OverkillConfirmed'
+  | 'LeakageConfirmed'
+  | 'ConsistentNg'
+  | 'ConsistentOk'
+  | 'AiUnavailable'
+  | 'NoImages'
+  | 'Pending'
+
+export type AiProductSummary = {
+  keyId: string
+  aiStatus: AiFinalStatus
+  done: number
+  ng: number
+  ok: number
+  pending: number
+  unavailable: number
+  maxAnomalyScore?: number | null
+}
+
+export type AiDefectResult = {
+  defectId: string
+  status: string
+  verdict?: string | null
+  anomalyScore?: number | null
+  defectClass?: string | null
+  clientMode?: string | null
+  error?: string | null
+}
+
+export type AiProductResult = { keyId: string; judge: string; aiStatus: AiFinalStatus; defects: AiDefectResult[] }
+
+export type AiVerificationStatus = {
+  configured: boolean
+  enabled: boolean
+  autoSubmit: boolean
+  pollIntervalSeconds: number
+  maxProductsPerTick: number
+  lookbackHours: number
+  dispatch: {
+    lastRunAtUtc?: string | null
+    lastSubmitAtUtc?: string | null
+    lastPicked: number
+    lastSubmitted: number
+    lastError?: string | null
+    pausedUntilUtc?: string | null
+  }
+  last24h: { submitted: number; done: number; rejected: number; unavailable: number }
 }
 
 export type NoticeTone = 'success' | 'error' | 'info'

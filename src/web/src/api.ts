@@ -108,6 +108,13 @@ import type {
   TestPathCrawlRequest,
   TestPathCrawlResponse,
   SampleDefectForTestDto,
+  AiMapping,
+  AiMappingInput,
+  AiProductResult,
+  AiProductSummary,
+  AiSubmitResult,
+  AiVerificationStatus,
+  MasterConnectionStatus,
 } from './types'
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api/v1'
@@ -460,6 +467,21 @@ export const overkillPipelineApi = {
       method: 'POST',
       body: JSON.stringify({ pipelineIds }),
     }),
+}
+
+export const aiVerificationApi = {
+  status: () => api<AiVerificationStatus>('/ai-verification/status'),
+  testConnection: () => api<MasterConnectionStatus>('/master/test-connection', { method: 'POST' }),
+  mappings: () => api<AiMapping[]>('/ai-verification/mappings'),
+  saveMapping: (body: AiMappingInput) =>
+    api<AiMapping>('/ai-verification/mappings', { method: 'PUT', body: JSON.stringify(body) }),
+  deleteMapping: (id: string) => api<void>(`/ai-verification/mappings/${id}`, { method: 'DELETE' }),
+  submit: (keyIds: string[], resubmit = false) =>
+    api<AiSubmitResult>('/ai-verification/submit', { method: 'POST', body: JSON.stringify({ keyIds, resubmit }) }),
+  poll: () => api<{ completed: number }>('/ai-verification/poll', { method: 'POST' }),
+  productStatuses: (keyIds: string[]) =>
+    api<AiProductSummary[]>('/ai-verification/products/status', { method: 'POST', body: JSON.stringify({ keyIds }) }),
+  product: (keyId: string) => api<AiProductResult>(`/ai-verification/products/${encodeURIComponent(keyId)}`),
 }
 
 export const imageCrawlerApi = {

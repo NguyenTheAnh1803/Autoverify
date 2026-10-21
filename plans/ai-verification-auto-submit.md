@@ -1,6 +1,6 @@
 # Kế hoạch: Tự động gửi sản phẩm NG sang Deeplearning (Master Server) để AI xác nhận OK/NG
 
-> Trạng thái: **Đã chốt 3 quyết định (mục 9). Đang làm giai đoạn 1.**
+> Trạng thái: **Đã chốt 3 quyết định (mục 9). Giai đoạn 1 và 2 đã làm; giai đoạn 3 (test đầu-cuối) chưa.**
 > Phạm vi code: `AutoVerify_System` (backend + web). Master Server (`Deeplearning_AutoServer`) **không cần sửa**.
 
 ---
@@ -251,10 +251,15 @@ Các API đã có và sẽ dùng: `POST /master/test-connection`, `GET/PUT/DELET
   | `AiUnavailable`, `NoImages` | xám nhạt, có tooltip lỗi |
 
 ### Tiêu chí hoàn thành giai đoạn 2
-- [ ] Cấu hình mapping và chạy Test connection được hoàn toàn trên giao diện.
-- [ ] Bảng Overkill hiện cột AI, tự cập nhật khi kết quả về (làm mới mỗi 15–30 giây khi còn dòng `Pending`).
-- [ ] Gửi thủ công và gửi lại được từ giao diện.
-- [ ] `npm run build` và `npm run lint` không lỗi, frontend được nhúng lại vào `wwwroot`.
+- [x] Cấu hình mapping và chạy Test connection được hoàn toàn trên giao diện (Configuration & Data → AI Verification).
+- [x] Bảng Products & Defects hiện cột **AI**, tự làm mới mỗi 15 giây khi còn dòng `Pending`.
+- [x] Gửi thủ công (**Send to AI**) và gửi lại (**Resend**, chỉ hiện khi `AiUnavailable`) từ giao diện.
+- [x] Cửa sổ defect của sản phẩm hiện trạng thái AI và cột **AI verdict** cho từng ảnh.
+- [x] `tsc -b`, `vite build` không lỗi; `oxlint` không có cảnh báo mới từ file mới.
+- [ ] Chưa xem trên trình duyệt với dữ liệu thật.
+- [ ] **Chưa làm:** cột AI trong tab Overkill Analysis (`OverkillTab.tsx`, 2.800 dòng). Bảng sản phẩm ở Products & Defects đã đủ để xem kết quả; làm tab Overkill khi cần.
+
+**Đã làm cho giai đoạn 2:** `GET /ai-verification/status` và `POST /ai-verification/products/status` (tối đa 500 khóa mỗi lần); `AiVerificationTab.tsx`, `components/AiStatusBadge.tsx`; `aiVerificationApi` trong `api.ts`. Nút gửi/gửi lại hiện ở cả bảng lẫn cửa sổ defect.
 
 ---
 
