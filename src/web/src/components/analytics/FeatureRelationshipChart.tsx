@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react'
-import ReactECharts from 'echarts-for-react'
+import ReactECharts from '../ReactECharts'
 import type {
   FeatureRelationshipResult,
   FeatureRelationshipPair,
@@ -80,7 +80,7 @@ export const FeatureRelationshipChart: React.FC<FeatureRelationshipChartProps> =
               <div><strong>Pair:</strong> ${fA} \u2194 ${fB}</div>
               <div><strong>${metric.toUpperCase()} Correlation:</strong> ${corrText}</div>
               <div><strong>Overlap Observations:</strong> ${overlap.toLocaleString()}</div>
-              <div style="font-size:10px;color:#94a3b8;margin-top:4px;">(Click cell to select pair for scatter plot)</div>
+              <div style="font-size:12px;color:#94a3b8;margin-top:4px;">(Click cell to select pair for scatter plot)</div>
             </div>
           `
         },
@@ -218,7 +218,7 @@ export const FeatureRelationshipChart: React.FC<FeatureRelationshipChartProps> =
               ${obs.defectFamily ? `<div><strong>Family:</strong> ${obs.defectFamily}</div>` : ''}
               <div style="margin-top:4px;"><strong>${selectedPair.featureA}:</strong> ${value[0].toFixed(4)}</div>
               <div><strong>${selectedPair.featureB}:</strong> ${value[1].toFixed(4)}</div>
-              <div style="font-size:10px;color:#38bdf8;margin-top:4px;">(Click point to drill down in preview grid)</div>
+              <div style="font-size:12px;color:#38bdf8;margin-top:4px;">(Click point to drill down in preview grid)</div>
             </div>
           `
         },

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import { dataSourcesApi, scanExecutionsApi, scanListsApi } from '../api'
 import { formatDate, formString } from '../format'
-import { DataTable, Field, Modal, Pagination, StatusPill } from '../ui'
+import { DataTable, Field, Modal, Pagination, StatusPill, useLoadStatus } from '../ui'
 import type { DataSource, Notice, ScanExecution, ScanList, VerificationResult } from '../types'
 
 export function ScansTab({ onNotice }: { onNotice: (notice: Notice) => void }) {
@@ -19,8 +19,11 @@ export function ScansTab({ onNotice }: { onNotice: (notice: Notice) => void }) {
   const [resultTotalPages, setResultTotalPages] = useState(1)
   const [resultTotal, setResultTotal] = useState(0)
   const [busy, setBusy] = useState(false)
+  const { status, error: loadError, begin, succeed, fail } = useLoadStatus()
+  const resultsLoad = useLoadStatus()
 
   const load = useCallback(async (nextPage = 1) => {
+    begin()
     try {
       const [nextLists, nextSources, nextExecutions] = await Promise.all([
         scanListsApi.list(),
@@ -33,10 +36,12 @@ export function ScansTab({ onNotice }: { onNotice: (notice: Notice) => void }) {
       setPage(nextExecutions.page)
       setTotalPages(nextExecutions.totalPages)
       setTotalCount(nextExecutions.totalCount)
+      succeed()
     } catch (error) {
+      fail(error)
       onNotice({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to load scans.' })
     }
-  }, [onNotice])
+  }, [onNotice, begin, succeed, fail])
 
   useEffect(() => {
     void load(1)
@@ -45,13 +50,16 @@ export function ScansTab({ onNotice }: { onNotice: (notice: Notice) => void }) {
   async function openResults(execution: ScanExecution, nextPage = 1) {
     setSelected(execution)
     setResultsOpen(true)
+    resultsLoad.begin()
     try {
       const payload = await scanExecutionsApi.results(execution.id, nextPage, 25)
       setResults(payload.items)
       setResultPage(payload.page)
       setResultTotalPages(payload.totalPages)
       setResultTotal(payload.totalCount)
+      resultsLoad.succeed()
     } catch (error) {
+      resultsLoad.fail(error)
       onNotice({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to load results.' })
     }
   }
@@ -94,6 +102,9 @@ export function ScansTab({ onNotice }: { onNotice: (notice: Notice) => void }) {
 
       <DataTable
         columns={['Name', 'List', 'Status', 'Processed', 'Failed', 'Anomalies', 'Started']}
+        status={status}
+        error={loadError}
+        onRetry={() => void load(page)}
         rows={executions.map((execution) => ({
           id: execution.id,
           cells: [
@@ -154,6 +165,9 @@ export function ScansTab({ onNotice }: { onNotice: (notice: Notice) => void }) {
       >
         <DataTable
           columns={['Entity', 'Source', 'Status', 'Severity', 'Rule', 'Score', 'Message']}
+          status={resultsLoad.status}
+          error={resultsLoad.error}
+          onRetry={selected ? () => void openResults(selected, resultPage) : undefined}
           rows={results.map((result) => ({
             id: result.id,
             cells: [

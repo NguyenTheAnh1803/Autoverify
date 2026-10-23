@@ -1,23 +1,10 @@
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent } from 'react'
 import './App.css'
 import { authApi } from './api'
-import { AiVerificationTab } from './tabs/AiVerificationTab'
-import { AuditTab } from './tabs/AuditTab'
-import { ClassifierRulesTab } from './tabs/ClassifierRulesTab'
-import { FeatureTrendsTab } from './tabs/FeatureTrendsTab'
-import { HistoryTab } from './tabs/HistoryTab'
-import { ImportTab } from './tabs/ImportTab'
-import { LeakageOpsTab } from './tabs/LeakageOpsTab'
-import { OverkillOpsTab } from './tabs/OverkillOpsTab'
-import { OverkillTab } from './tabs/OverkillTab'
-import { OpInputTab } from './tabs/OpInputTab'
-import { OverviewTab } from './tabs/OverviewTab'
-import { ProductsTab } from './tabs/ProductsTab'
-import { QueriesTab } from './tabs/QueriesTab'
-import { ScansTab } from './tabs/ScansTab'
-import { SourcesTab } from './tabs/SourcesTab'
-import { StorageTab } from './tabs/StorageTab'
-import { Icon, NoticeBanner } from './ui'
+import { TabPane } from './components/TabPane'
+import { ConfirmProvider } from './confirm'
+import { preloadAllTabs, preloadTab } from './tabRegistry'
+import { Button, Icon, NoticeBanner } from './ui'
 import type { Notice, ProductHandoff, TabId, UserProfile } from './types'
 
 export type MainSectionId = 'dashboard' | 'operations' | 'products' | 'settings'
@@ -76,6 +63,30 @@ const SECTIONS: NavSection[] = [
     ],
   },
 ]
+
+const DEFAULT_SUB_TABS: Record<MainSectionId, TabId> = {
+  dashboard: 'overview',
+  operations: 'overkill-ops',
+  products: 'products',
+  settings: 'classifier-rules',
+}
+
+/** Tabs kept mounted (hidden) after their first visit. The oldest-opened one is released past this limit. */
+const MAX_KEPT_TABS = 5
+
+/** `#/operations/leakage-ops` -> section + tab. Anything that is not a known pair returns null. */
+function parseRoute(hash: string): { section: MainSectionId; tab: TabId } | null {
+  const [, sectionId, tabId] = hash.split('/')
+  const section = SECTIONS.find((item) => item.id === sectionId)
+  if (!section) return null
+  if (!section.subTabs) return { section: section.id, tab: DEFAULT_SUB_TABS[section.id] }
+  const tab = section.subTabs.find((item) => item.id === tabId)
+  return { section: section.id, tab: tab ? tab.id : DEFAULT_SUB_TABS[section.id] }
+}
+
+function formatRoute(section: MainSectionId, tab: TabId): string {
+  return section === 'dashboard' ? '#/dashboard' : `#/${section}/${tab}`
+}
 
 function App() {
   const [token, setToken] = useState(() => localStorage.getItem('autoverify.token') ?? '')
@@ -136,7 +147,11 @@ function App() {
     return <LoginScreen loginError={loginError} busy={busy} onLogin={login} />
   }
 
-  return <Workspace user={user} onLogout={() => void logout()} />
+  return (
+    <ConfirmProvider>
+      <Workspace user={user} onLogout={() => void logout()} />
+    </ConfirmProvider>
+  )
 }
 
 function LoginScreen({
@@ -148,6 +163,9 @@ function LoginScreen({
   busy: boolean
   onLogin: (event: FormEvent<HTMLFormElement>) => Promise<void>
 }) {
+  const [showPassword, setShowPassword] = useState(false)
+  // Prefilled credentials exist only for local development; a production build starts with empty fields.
+  const prefill = import.meta.env.DEV
   return (
     <main className="login-page">
       <section className="login-card">
@@ -157,59 +175,148 @@ function LoginScreen({
         <form onSubmit={(event) => void onLogin(event)} className="login-form">
           <label>
             Username
-            <input name="username" defaultValue="admin" autoComplete="username" required />
+            <input name="username" defaultValue={prefill ? 'admin' : ''} autoComplete="username" required />
           </label>
           <label>
             Password
-            <input name="password" defaultValue="admin!" type="password" autoComplete="current-password" required />
+            <span className="password-field">
+              <input
+                name="password"
+                defaultValue={prefill ? 'admin!' : ''}
+                type={showPassword ? 'text' : 'password'}
+                autoComplete="current-password"
+                required
+              />
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setShowPassword((value) => !value)}
+                aria-pressed={showPassword}
+              >
+                {showPassword ? 'Hide' : 'Show'}
+              </button>
+            </span>
           </label>
-          {loginError ? <div className="form-error">{loginError}</div> : null}
-          <button type="submit" disabled={busy}>
+          {loginError ? <div className="form-error" role="alert">{loginError}</div> : null}
+          <Button type="submit" loading={busy}>
             {busy ? 'Signing in…' : 'Log in'}
-          </button>
+          </Button>
         </form>
-        <p className="security-note">Temporary MVP credentials: admin / admin!. Replace before production.</p>
+        {prefill ? <p className="security-note">Development build: sign-in is prefilled with the temporary MVP account.</p> : null}
       </section>
     </main>
   )
 }
 
 function Workspace({ user, onLogout }: { user: UserProfile; onLogout: () => void }) {
-  const [section, setSection] = useState<MainSectionId>('dashboard')
-  const [activeSubTab, setActiveSubTab] = useState<Record<MainSectionId, TabId>>({
-    dashboard: 'overview',
-    operations: 'overkill-ops',
-    products: 'products',
-    settings: 'classifier-rules',
-  })
+  // The address bar decides where to start, so a reload or a shared link lands on the same tab.
+  const [initialRoute] = useState(() => parseRoute(window.location.hash))
+  const [section, setSection] = useState<MainSectionId>(initialRoute?.section ?? 'dashboard')
+  const [activeSubTab, setActiveSubTab] = useState<Record<MainSectionId, TabId>>(() => ({
+    ...DEFAULT_SUB_TABS,
+    ...(initialRoute ? { [initialRoute.section]: initialRoute.tab } : {}),
+  }))
   const [notice, setNotice] = useState<Notice | null>(null)
   const onNotice = useCallback((next: Notice) => setNotice(next), [])
 
-  function handleAnalyzeDefects(_handoff: ProductHandoff) {
-    setSection('products')
-    setActiveSubTab((prev) => ({ ...prev, products: 'feature-trends' }))
-  }
+  const currentTabId = section === 'dashboard' ? 'overview' : activeSubTab[section]
+  const currentTabRef = useRef<TabId>(currentTabId)
+  const scrollByTab = useRef<Partial<Record<TabId, number>>>({})
 
+  const navigate = useCallback((nextSection: MainSectionId, nextTab: TabId) => {
+    scrollByTab.current[currentTabRef.current] = window.scrollY
+    setSection(nextSection)
+    setActiveSubTab((prev) => (prev[nextSection] === nextTab ? prev : { ...prev, [nextSection]: nextTab }))
+  }, [])
+
+  const handleAnalyzeDefects = useCallback(
+    (_handoff: ProductHandoff) => navigate('products', 'feature-trends'),
+    [navigate],
+  )
+
+  // Success and info messages fade after a few seconds. An error stays until it is dismissed or replaced, so it can still be read.
   useEffect(() => {
-    if (!notice) return
+    if (!notice || notice.tone === 'error') return
     const timer = window.setTimeout(() => setNotice(null), 6000)
     return () => window.clearTimeout(timer)
   }, [notice])
 
   const currentSection = useMemo(() => SECTIONS.find((item) => item.id === section) ?? SECTIONS[0], [section])
-  const currentTabId = section === 'dashboard' ? 'overview' : activeSubTab[section]
   const currentSubTab = useMemo(
     () => currentSection.subTabs?.find((sub) => sub.id === currentTabId) ?? null,
     [currentSection, currentTabId],
   )
 
   function handleSectionChange(newSection: MainSectionId) {
-    setSection(newSection)
+    navigate(newSection, newSection === 'dashboard' ? 'overview' : activeSubTab[newSection])
   }
 
-  function handleSubTabChange(newTab: TabId) {
-    setActiveSubTab((prev) => ({ ...prev, [section]: newTab }))
+  // Warm the chunk of a section's current tab as soon as the pointer or keyboard reaches its button.
+  function preloadSection(sectionId: MainSectionId) {
+    preloadTab(sectionId === 'dashboard' ? 'overview' : activeSubTab[sectionId])
   }
+
+  // Once signed in, fetch the remaining tabs in idle time so a later switch is instant.
+  useEffect(() => preloadAllTabs(), [])
+
+  function handleSubTabChange(newTab: TabId) {
+    navigate(section, newTab)
+  }
+
+  // WAI-ARIA tabs: arrow keys move between tabs, Home/End jump to the ends; only the selected tab is a tab stop.
+  function handleTabKeyDown(event: KeyboardEvent<HTMLButtonElement>, index: number) {
+    const tabs = currentSection.subTabs
+    if (!tabs) return
+    let next = -1
+    if (event.key === 'ArrowRight') next = (index + 1) % tabs.length
+    else if (event.key === 'ArrowLeft') next = (index - 1 + tabs.length) % tabs.length
+    else if (event.key === 'Home') next = 0
+    else if (event.key === 'End') next = tabs.length - 1
+    if (next < 0) return
+    event.preventDefault()
+    handleSubTabChange(tabs[next].id)
+    window.requestAnimationFrame(() => document.getElementById(`tab-${tabs[next].id}`)?.focus())
+  }
+
+  // The tab strip scrolls sideways when it does not fit; keep the selected tab in view.
+  useEffect(() => {
+    document.getElementById(`tab-${currentTabId}`)?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+  }, [currentTabId])
+
+  // Keep the address bar in step with the tab, and follow Back/Forward and edited links.
+  useEffect(() => {
+    currentTabRef.current = currentTabId
+    const next = formatRoute(section, currentTabId)
+    if (window.location.hash === next) return
+    if (window.location.hash.startsWith('#/')) window.location.hash = next
+    else window.history.replaceState(null, '', next)
+  }, [section, currentTabId])
+
+  useEffect(() => {
+    function onHashChange() {
+      const route = parseRoute(window.location.hash)
+      if (route) navigate(route.section, route.tab)
+    }
+    window.addEventListener('hashchange', onHashChange)
+    return () => window.removeEventListener('hashchange', onHashChange)
+  }, [navigate])
+
+  // Tabs opened so far stay mounted (hidden): their filters, pages and data are still there when the user returns.
+  const [openedTabs, setOpenedTabs] = useState<TabId[]>([currentTabId])
+  const visibleTabs = useMemo(() => {
+    const kept = openedTabs.includes(currentTabId) ? openedTabs : [...openedTabs, currentTabId]
+    return kept.length > MAX_KEPT_TABS
+      ? kept.filter((id, index) => id === currentTabId || kept.length - index <= MAX_KEPT_TABS)
+      : kept
+  }, [openedTabs, currentTabId])
+  useEffect(() => {
+    setOpenedTabs((prev) => (prev.length === visibleTabs.length && prev.every((id, i) => id === visibleTabs[i]) ? prev : visibleTabs))
+  }, [visibleTabs])
+
+  // Back on a tab: put the page back where it was, or at the top for a tab seen the first time.
+  useEffect(() => {
+    window.scrollTo(0, scrollByTab.current[currentTabId] ?? 0)
+  }, [currentTabId])
 
   return (
     <div className="app-shell-vertical">
@@ -235,6 +342,8 @@ function Workspace({ user, onLogout }: { user: UserProfile; onLogout: () => void
               type="button"
               className={`sidebar-nav-item ${section === sec.id ? 'active' : ''}`}
               onClick={() => handleSectionChange(sec.id)}
+              onPointerEnter={() => preloadSection(sec.id)}
+              onFocus={() => preloadSection(sec.id)}
               aria-current={section === sec.id ? 'page' : undefined}
             >
               <span className="sidebar-nav-icon">
@@ -279,15 +388,21 @@ function Workspace({ user, onLogout }: { user: UserProfile; onLogout: () => void
 
         {/* Horizontal Module Sub-tabs Bar */}
         {currentSection.subTabs ? (
-          <div className="module-tabs-bar">
-            <div className="module-tabs-list" role="tablist">
-              {currentSection.subTabs.map((sub) => (
+          <section className="module-tabs-bar" aria-label={`${currentSection.label} pages`}>
+            <div className="module-tabs-list" role="tablist" aria-label={currentSection.label}>
+              {currentSection.subTabs.map((sub, index) => (
                 <button
                   key={sub.id}
+                  id={`tab-${sub.id}`}
                   type="button"
                   role="tab"
+                  aria-controls={`panel-${sub.id}`}
+                  tabIndex={currentTabId === sub.id ? 0 : -1}
+                  onKeyDown={(event) => handleTabKeyDown(event, index)}
                   className={`module-tab-item ${currentTabId === sub.id ? 'active' : ''}`}
                   onClick={() => handleSubTabChange(sub.id)}
+                  onPointerEnter={() => preloadTab(sub.id)}
+                  onFocus={() => preloadTab(sub.id)}
                   aria-selected={currentTabId === sub.id}
                 >
                   <Icon name={sub.icon} />
@@ -298,40 +413,24 @@ function Workspace({ user, onLogout }: { user: UserProfile; onLogout: () => void
             {currentSubTab?.description ? (
               <span className="module-tab-hint">{currentSubTab.description}</span>
             ) : null}
-          </div>
+          </section>
         ) : null}
 
         {/* Content Presentation Area */}
         <main id="main-content" className="workspace-content">
-          <NoticeBanner notice={notice} />
+          <NoticeBanner notice={notice} onDismiss={() => setNotice(null)} />
 
-          {/* Dynamic Views rendering */}
-          {currentTabId === 'overview' ? <OverviewTab onNotice={onNotice} /> : null}
-          {currentTabId === 'overkill-ops' ? <OverkillOpsTab onNotice={onNotice} /> : null}
-          {currentTabId === 'op-input' ? <OpInputTab onNotice={onNotice} /> : null}
-          {currentTabId === 'leakage-ops' ? <LeakageOpsTab onNotice={onNotice} /> : null}
-          {currentTabId === 'import' ? <ImportTab onNotice={onNotice} /> : null}
-          {currentTabId === 'scans' ? <ScansTab onNotice={onNotice} /> : null}
-          {currentTabId === 'history' ? <HistoryTab onNotice={onNotice} /> : null}
-          {currentTabId === 'products' ? (
-            <ProductsTab onNotice={onNotice} onAnalyzeDefects={handleAnalyzeDefects} />
-          ) : null}
-          {currentTabId === 'overkill' ? (
-            <OverkillTab
+          {/* Each tab is its own chunk (TabPane shows a skeleton while it downloads) and stays mounted once opened. */}
+          {visibleTabs.map((id) => (
+            <TabPane
+              key={id}
+              id={id}
+              active={id === currentTabId}
               onNotice={onNotice}
-              onNavigateTab={(sec, tab) => {
-                setSection(sec)
-                setActiveSubTab((prev) => ({ ...prev, [sec]: tab }))
-              }}
+              onAnalyzeDefects={handleAnalyzeDefects}
+              onNavigateTab={navigate}
             />
-          ) : null}
-          {currentTabId === 'feature-trends' ? <FeatureTrendsTab onNotice={onNotice} /> : null}
-          {currentTabId === 'sources' ? <SourcesTab onNotice={onNotice} /> : null}
-          {currentTabId === 'classifier-rules' ? <ClassifierRulesTab onNotice={onNotice} /> : null}
-          {currentTabId === 'queries' ? <QueriesTab onNotice={onNotice} /> : null}
-          {currentTabId === 'storage' ? <StorageTab onNotice={onNotice} /> : null}
-          {currentTabId === 'ai-verification' ? <AiVerificationTab onNotice={onNotice} /> : null}
-          {currentTabId === 'audit' ? <AuditTab onNotice={onNotice} /> : null}
+          ))}
         </main>
       </div>
     </div>

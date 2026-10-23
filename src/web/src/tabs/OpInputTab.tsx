@@ -1,7 +1,9 @@
-import { useEffect, useMemo, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import { connectionsApi, opReconciliationApi } from '../api'
-import { Field, MetricCard } from '../ui'
-import { OpReconciliationTab } from './OpReconciliationTab'
+import { Button, Field, MetricCard } from '../ui'
+import { TabSkeleton } from '../components/TabSkeleton'
+
+const OpReconciliationTab = lazy(() => import('./OpReconciliationTab').then((m) => ({ default: m.OpReconciliationTab })))
 import type { DatabaseConnection, Notice, UploadOpExcelResponse } from '../types'
 
 type InputMode = 'clipboard' | 'csv' | 'excel' | 'analysis'
@@ -271,9 +273,9 @@ export function OpInputTab({ onNotice }: { onNotice: (notice: Notice) => void })
           )}
 
           <div className="actions" style={{ marginTop: 14 }}>
-            <button type="button" className="primary" disabled={busy || previewRows.length === 0 || !machineCode || !lineCode} onClick={() => void importText()}>
+            <Button loading={busy} disabled={previewRows.length === 0 || !machineCode || !lineCode} onClick={() => void importText()}>
               {busy ? 'Synchronizing Product Reviews...' : `Import ${previewRows.length} OP Reviews`}
-            </button>
+            </Button>
           </div>
         </section>
       )}
@@ -300,7 +302,7 @@ export function OpInputTab({ onNotice }: { onNotice: (notice: Notice) => void })
             </div>
           </div>
           <div className="actions" style={{ marginTop: 16 }}>
-            <button type="button" className="primary" disabled={busy || !file || !machineCode || !lineCode} onClick={() => void importFile()}>{busy ? 'Uploading & Upserting...' : 'Upload and Synchronize'}</button>
+            <Button loading={busy} disabled={!file || !machineCode || !lineCode} onClick={() => void importFile()}>{busy ? 'Uploading & Upserting...' : 'Upload and Synchronize'}</Button>
           </div>
         </section>
       )}
@@ -315,12 +317,14 @@ export function OpInputTab({ onNotice }: { onNotice: (notice: Notice) => void })
       )}
 
       {mode === 'analysis' && (
-        <OpReconciliationTab
-          onNotice={onNotice}
-          initialMachine={machineCode || 'All'}
-          initialLine={lineCode || 'All'}
-          mode="analysis"
-        />
+        <Suspense fallback={<TabSkeleton />}>
+          <OpReconciliationTab
+            onNotice={onNotice}
+            initialMachine={machineCode || 'All'}
+            initialLine={lineCode || 'All'}
+            mode="analysis"
+          />
+        </Suspense>
       )}
     </div>
   )

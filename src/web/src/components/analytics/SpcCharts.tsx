@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react'
-import ReactECharts from 'echarts-for-react'
+import ReactECharts from '../ReactECharts'
 import type { SpcResult } from '../../types'
 
 export type SpcChartsProps = {
@@ -77,7 +77,7 @@ export const SpcCharts: React.FC<SpcChartsProps> = ({
               <div><strong>Value:</strong> ${pt.value.toFixed(4)}</div>
               <div><strong>Grid Row Index:</strong> #${pt.rowIndex}</div>
               ${ruleList}
-              <div style="font-size:10px;color:#94a3b8;margin-top:4px;">(Click point to locate in preview grid)</div>
+              <div style="font-size:12px;color:#94a3b8;margin-top:4px;">(Click point to locate in preview grid)</div>
             </div>
           `
         },
@@ -322,7 +322,7 @@ export const SpcCharts: React.FC<SpcChartsProps> = ({
             marginTop: '12px',
             padding: '10px 14px',
             background: 'rgba(15, 23, 42, 0.9)',
-            border: '1px solid #0284c7',
+            border: '1px solid #0369a1',
             borderRadius: '8px',
             display: 'flex',
             justifyContent: 'space-between',
@@ -336,7 +336,7 @@ export const SpcCharts: React.FC<SpcChartsProps> = ({
               <strong style={{ color: '#38bdf8', fontSize: '12px' }}>
                 Feature Value Preview: <code>{selectedPointPreview.featureName}</code>
               </strong>
-              <span className="tag-badge" style={{ fontSize: '10px', background: '#0369a1', color: '#f0f9ff' }}>
+              <span className="tag-badge" style={{ fontSize: '12px', background: '#0369a1', color: '#f0f9ff' }}>
                 Sample: {selectedPointPreview.sampleName}
               </span>
             </div>
@@ -357,7 +357,7 @@ export const SpcCharts: React.FC<SpcChartsProps> = ({
           <button
             type="button"
             className="compact-button secondary"
-            style={{ fontSize: '11px', padding: '4px 8px' }}
+            style={{ fontSize: '12px', padding: '4px 8px' }}
             onClick={() => onSelectRowIndex(selectedPointPreview.rowIndex)}
           >
             🎯 Locate in Defect Table

@@ -1,8 +1,12 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { defectPreviewApi, storageApi } from '../api'
 import { formatDate } from '../format'
+import { usePolling } from '../lib/usePolling'
 import { Modal } from '../ui'
-import { DefectFeatureAnalyticsDashboard } from './analytics/DefectFeatureAnalyticsDashboard'
+// The analytics dashboard (and its charts) is opened on demand, so it is downloaded the first time it is opened.
+const DefectFeatureAnalyticsDashboard = lazy(() =>
+  import('./analytics/DefectFeatureAnalyticsDashboard').then((m) => ({ default: m.DefectFeatureAnalyticsDashboard })),
+)
 import type {
   DefectPreviewFilterSummary,
   DefectPreviewProgress,
@@ -179,57 +183,50 @@ export function DefectPreviewGrid({
     onClose()
   }, [sessionId, onClose])
 
-  // Progress Polling Effect
+  // Progress polling: runs while the session is still ingesting, and pauses while this tab or the browser tab is hidden.
+  const isCompleted = sessionStatus === 'Ready' || sessionStatus === 'Failed' || sessionStatus === 'Expired'
+  const unmountedRef = useRef(false)
   useEffect(() => {
-    let active = true
-    const isCompleted =
-      sessionStatus === 'Ready' || sessionStatus === 'Failed' || sessionStatus === 'Expired'
-
-    if (isCompleted) {
-      return
-    }
-
-    const poll = async () => {
-      try {
-        const prog = await defectPreviewApi.getProgress(sessionId)
-        if (!active) return
-
-        setProgress(prog)
-        setSessionStatus(prog.status)
-
-        if (prog.status === 'Ready') {
-          // Trigger reload of rows when ingestion completes
-          setRefreshTrigger((v) => v + 1)
-          if (onNotice) {
-            onNotice({
-              tone: 'success',
-              message: `Defect preview ready: ${prog.processedRecords.toLocaleString()} records indexed.`,
-            })
-          }
-        } else if (prog.status === 'Failed') {
-          setProgressError(prog.errorMessage || 'Defect stream ingestion failed on server.')
-        } else if (prog.status === 'Expired') {
-          setProgressError('Preview session has expired.')
-        }
-      } catch (err) {
-        if (!active) return
-        // Don't treat transient poll error as fatal unless persistent
-        console.warn('Progress poll error:', err)
-      }
-    }
-
-    // Initial check
-    void poll()
-
-    const intervalId = window.setInterval(() => {
-      void poll()
-    }, 1500)
-
+    unmountedRef.current = false
     return () => {
-      active = false
-      window.clearInterval(intervalId)
+      unmountedRef.current = true
     }
-  }, [sessionId, sessionStatus, onNotice])
+  }, [])
+
+  const pollProgress = useCallback(async () => {
+    try {
+      const prog = await defectPreviewApi.getProgress(sessionId)
+      if (unmountedRef.current) return
+
+      setProgress(prog)
+      setSessionStatus(prog.status)
+
+      if (prog.status === 'Ready') {
+        // Trigger reload of rows when ingestion completes
+        setRefreshTrigger((v) => v + 1)
+        if (onNotice) {
+          onNotice({
+            tone: 'success',
+            message: `Defect preview ready: ${prog.processedRecords.toLocaleString()} records indexed.`,
+          })
+        }
+      } else if (prog.status === 'Failed') {
+        setProgressError(prog.errorMessage || 'Defect stream ingestion failed on server.')
+      } else if (prog.status === 'Expired') {
+        setProgressError('Preview session has expired.')
+      }
+    } catch (err) {
+      if (unmountedRef.current) return
+      // Don't treat transient poll error as fatal unless persistent
+      console.warn('Progress poll error:', err)
+    }
+  }, [sessionId, onNotice])
+
+  useEffect(() => {
+    if (!isCompleted) void pollProgress()
+  }, [isCompleted, pollProgress])
+
+  usePolling(pollProgress, 1500, !isCompleted)
 
   // Query Rows Effect (Server-side)
   useEffect(() => {
@@ -1062,46 +1059,48 @@ export function DefectPreviewGrid({
       )}
 
       {showAnalyticsModal && (
-        <DefectFeatureAnalyticsDashboard
-          sessionId={sessionId}
-          initialTab={analyticsInitialTab}
-          onClose={() => setShowAnalyticsModal(false)}
-          onSelectRowIndex={(rowIndex) => {
-            console.debug(`[DrillDown Diagnostic] targetRowIndex=${rowIndex}, pageSize=${pageSize}, current page=${page}`)
-            const targetPage = Math.floor((rowIndex - 1) / pageSize) + 1
+        <Suspense fallback={null}>
+          <DefectFeatureAnalyticsDashboard
+            sessionId={sessionId}
+            initialTab={analyticsInitialTab}
+            onClose={() => setShowAnalyticsModal(false)}
+            onSelectRowIndex={(rowIndex) => {
+              console.debug(`[DrillDown Diagnostic] targetRowIndex=${rowIndex}, pageSize=${pageSize}, current page=${page}`)
+              const targetPage = Math.floor((rowIndex - 1) / pageSize) + 1
 
-            // If active sorting or filtering is applied, natural rowIndex-to-page mapping
-            // is misleading because the server-side query orders/filters rows differently.
-            // Reset sort and filters to default so the target page accurately displays the row.
-            const hasActiveFilterOrCustomSort =
-              judgeFilter !== 'ALL' ||
-              severityFilter !== 'ALL' ||
-              Boolean(defectTableFilter) ||
-              Boolean(debouncedKeyword) ||
-              sorting.some((s) => s.id !== 'rowIndex' || s.desc)
+              // If active sorting or filtering is applied, natural rowIndex-to-page mapping
+              // is misleading because the server-side query orders/filters rows differently.
+              // Reset sort and filters to default so the target page accurately displays the row.
+              const hasActiveFilterOrCustomSort =
+                judgeFilter !== 'ALL' ||
+                severityFilter !== 'ALL' ||
+                Boolean(defectTableFilter) ||
+                Boolean(debouncedKeyword) ||
+                sorting.some((s) => s.id !== 'rowIndex' || s.desc)
 
-            if (hasActiveFilterOrCustomSort) {
-              setJudgeFilter('ALL')
-              setSeverityFilter('ALL')
-              setDefectTableFilter('')
-              setSearchInput('')
-              setDebouncedKeyword('')
-              setSorting([{ id: 'rowIndex', desc: false }])
-            }
+              if (hasActiveFilterOrCustomSort) {
+                setJudgeFilter('ALL')
+                setSeverityFilter('ALL')
+                setDefectTableFilter('')
+                setSearchInput('')
+                setDebouncedKeyword('')
+                setSorting([{ id: 'rowIndex', desc: false }])
+              }
 
-            if (page !== targetPage) {
-              setPage(targetPage)
-            }
-            setHighlightedRowIndex(rowIndex)
-            setShowAnalyticsModal(false)
-            onNotice?.({
-              tone: 'info',
-              message: hasActiveFilterOrCustomSort
-                ? `Navigated to defect record at row #${rowIndex} (Page ${targetPage}, filters/sort reset to natural sequence).`
-                : `Navigated to defect record at row #${rowIndex} (Page ${targetPage}).`,
-            })
-          }}
-        />
+              if (page !== targetPage) {
+                setPage(targetPage)
+              }
+              setHighlightedRowIndex(rowIndex)
+              setShowAnalyticsModal(false)
+              onNotice?.({
+                tone: 'info',
+                message: hasActiveFilterOrCustomSort
+                  ? `Navigated to defect record at row #${rowIndex} (Page ${targetPage}, filters/sort reset to natural sequence).`
+                  : `Navigated to defect record at row #${rowIndex} (Page ${targetPage}).`,
+              })
+            }}
+          />
+        </Suspense>
       )}
     </section>
   )

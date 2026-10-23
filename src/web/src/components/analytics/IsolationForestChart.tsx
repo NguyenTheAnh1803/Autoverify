@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react'
-import ReactECharts from 'echarts-for-react'
+import ReactECharts from '../ReactECharts'
 import type { IsolationForestResult, TopAnomalyItem } from '../../types'
 
 export type IsolationForestChartProps = {
@@ -95,7 +95,7 @@ export const IsolationForestChart: React.FC<IsolationForestChartProps> = ({
               ${obs.defectFamily ? `<div><strong>Family:</strong> ${obs.defectFamily}</div>` : ''}
               <div style="margin-top:4px;"><strong>Anomaly Score:</strong> ${value[1].toFixed(4)}</div>
               <div><strong style="color:${isAbove ? '#ef4444' : '#10b981'};">${isAbove ? 'Flagged Anomaly' : 'Nominal Distribution'}</strong></div>
-              <div style="font-size:10px;color:#38bdf8;margin-top:4px;">(Click point to drill down in preview grid)</div>
+              <div style="font-size:12px;color:#38bdf8;margin-top:4px;">(Click point to drill down in preview grid)</div>
             </div>
           `
         },

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react
 import { connectionsApi, dataSourcesApi } from '../api'
 import { formatDate, formNumber, formString, paginate } from '../format'
 import { BatchConnectionsModal } from '../components/BatchConnectionsModal'
-import { DataTable, Field, Modal, Pagination, StatusPill } from '../ui'
+import { DataTable, DebouncedInput, Field, Icon, Modal, Pagination, StatusPill, useLoadStatus } from '../ui'
 import type { CreateDatabaseConnectionRequest, DatabaseConnection, DataSource, Notice } from '../types'
 
 function connectionCredentialHint(status: string) {
@@ -43,18 +43,27 @@ export function SourcesTab({ onNotice }: { onNotice: (notice: Notice) => void })
     return [...set].sort()
   }, [connections])
 
+  const sourcesLoad = useLoadStatus()
+  const connectionsLoad = useLoadStatus()
+  const { begin: beginSources, succeed: succeedSources, fail: failSources } = sourcesLoad
+  const { begin: beginConnections, succeed: succeedConnections, fail: failConnections } = connectionsLoad
+
   const loadSources = useCallback(async () => {
+    beginSources()
     try {
       setSources(await dataSourcesApi.list({
         machineCode: appliedSources.machineCode || undefined,
         verificationCategory: appliedSources.verificationCategory || undefined,
       }))
+      succeedSources()
     } catch (error) {
+      failSources(error)
       onNotice({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to load data sources.' })
     }
-  }, [appliedSources, onNotice])
+  }, [appliedSources, onNotice, beginSources, succeedSources, failSources])
 
   const loadConnections = useCallback(async (nextPage = 1) => {
+    beginConnections()
     try {
       const payload = await connectionsApi.list({
         search: appliedConnections.search || undefined,
@@ -66,10 +75,12 @@ export function SourcesTab({ onNotice }: { onNotice: (notice: Notice) => void })
       setPage(payload.page)
       setTotalPages(payload.totalPages)
       setTotalCount(payload.totalCount)
+      succeedConnections()
     } catch (error) {
+      failConnections(error)
       onNotice({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to load connections.' })
     }
-  }, [appliedConnections, onNotice])
+  }, [appliedConnections, onNotice, beginConnections, succeedConnections, failConnections])
 
   useEffect(() => {
     void loadSources()
@@ -194,6 +205,9 @@ export function SourcesTab({ onNotice }: { onNotice: (notice: Notice) => void })
 
       <DataTable
         columns={['Name', 'Type', 'Machine', 'Category', 'Health', 'Latency', 'Enabled', '']}
+        status={sourcesLoad.status}
+        error={sourcesLoad.error}
+        onRetry={() => void loadSources()}
         rows={pagedSources.items.map((source) => ({
           id: source.id,
           cells: [
@@ -225,7 +239,7 @@ export function SourcesTab({ onNotice }: { onNotice: (notice: Notice) => void })
             onClick={() => setBatchOpen(true)}
             title="Batch register database connections for 80+ lines using Multi-Path paste with preview"
           >
-            🚀 Batch Add Connections (Multi-Path)
+            <Icon name="play" className="icon inline-icon" />Batch Add Connections (Multi-Path)
           </button>
           <button
             type="button"
@@ -247,7 +261,7 @@ export function SourcesTab({ onNotice }: { onNotice: (notice: Notice) => void })
         }}
       >
         <Field label="Search" className="filter-search">
-          <input value={search} onChange={(event) => setSearch(event.target.value)} />
+          <DebouncedInput value={search} onValueChange={setSearch} />
         </Field>
         <Field label="Engine">
           <input value={engine} onChange={(event) => setEngine(event.target.value)} placeholder="MariaDB" />
@@ -261,6 +275,9 @@ export function SourcesTab({ onNotice }: { onNotice: (notice: Notice) => void })
         eyebrow="GET /database-connections"
         title="Database Connections (Machine / Line mapping)"
         columns={['Name', 'Model', 'Machine', 'Line', 'Engine', 'Database / Host', 'PC Image API', 'Health', 'Secret', 'Updated', '']}
+        status={connectionsLoad.status}
+        error={connectionsLoad.error}
+        onRetry={() => void loadConnections(page)}
         rows={connections.map((connection) => ({
           id: connection.id,
           cells: [
@@ -270,7 +287,7 @@ export function SourcesTab({ onNotice }: { onNotice: (notice: Notice) => void })
             <span key="l" className="line-pill">{connection.lineCode}</span>,
             connection.engine,
             `${connection.databaseName || '—'} (${connection.host}:${connection.port})`,
-            <code key="api" style={{ fontSize: '11px', color: '#7c3aed', background: 'rgba(124, 58, 237, 0.08)', padding: '2px 6px', borderRadius: '4px' }}>
+            <code key="api" style={{ fontSize: '12px', color: '#7c3aed', background: 'rgba(124, 58, 237, 0.08)', padding: '2px 6px', borderRadius: '4px' }}>
               {connection.imageCrawlerApiUrl || connection.apiBaseUrl || '—'}
             </code>,
             <StatusPill key="h" value={connection.health} />,
@@ -422,7 +439,7 @@ export function SourcesTab({ onNotice }: { onNotice: (notice: Notice) => void })
                 defaultValue={editing?.imageCrawlerVpMode ?? 'all'}
                 style={{ fontSize: '12px', fontWeight: 600 }}
               >
-                <option value="all">⚡ All VPs (Auto-try VP 0 & other VPs)</option>
+                <option value="all">All VPs (Auto-try VP 0 & other VPs)</option>
                 <option value="0">VP = 0 (Prefer Thumbnail)</option>
                 <option value="auto">Auto VP (Feature G010_VpID / Path)</option>
                 <option value="1">VP = 1</option>

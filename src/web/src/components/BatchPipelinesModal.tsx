@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react'
 import { imageCrawlerApi, overkillPipelineApi, storageApi } from '../api'
-import { Field, Modal } from '../ui'
+import { Field, Icon, Modal } from '../ui'
 import type {
   BatchGeneratePipelinesForConnectionsRequest,
   BatchProvisionResponse,
@@ -454,7 +454,7 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
 
   return (
     <Modal
-      title="🚀 Batch Configure Overkill Pipelines for Lines & Machines"
+      title="Batch Configure Overkill Pipelines for Lines & Machines"
       description="Configure master Product query parameters and automated multi-defect table mappings for all your registered line connections in one click."
       open={open}
       onClose={onClose}
@@ -469,7 +469,7 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
             borderRadius: '6px',
             padding: '10px 14px',
             fontSize: '13px',
-            color: '#93c5fd',
+            color: '#1d4ed8',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
@@ -502,10 +502,10 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '8px', marginBottom: '10px' }}>
             <div>
-              <span className="eyebrow" style={{ color: '#818cf8', fontWeight: 700 }}>
-                📦 PRIMARY PRODUCT TABLE CONFIGURATION
+              <span className="eyebrow" style={{ color: '#4f46e5', fontWeight: 700 }}>
+                <Icon name="package" className="icon inline-icon" />PRIMARY PRODUCT TABLE CONFIGURATION
               </span>
-              <h3 style={{ margin: '2px 0 0', fontSize: '14px', color: '#e2e8f0' }}>
+              <h3 style={{ margin: '2px 0 0', fontSize: '14px', color: '#475569' }}>
                 Master Product Schema & Inspection Parameters
               </h3>
             </div>
@@ -513,31 +513,31 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
               <button
                 type="button"
                 className="secondary compact"
-                style={{ fontSize: '11px', padding: '3px 10px', background: 'rgba(99, 102, 241, 0.15)', borderColor: 'rgba(99, 102, 241, 0.3)' }}
+                style={{ fontSize: '12px', padding: '3px 10px', background: 'rgba(99, 102, 241, 0.15)', borderColor: 'rgba(99, 102, 241, 0.3)' }}
                 onClick={() => setQuickFillOpen(!quickFillOpen)}
               >
-                {quickFillOpen ? '▲ Hide Quick-Fill' : '⚡ Quick-Fill / Paste Row'}
+                {quickFillOpen ? '▲ Hide Quick-Fill' : 'Quick-Fill / Paste Row'}
               </button>
             </div>
           </div>
 
           {/* Quick Preset Selector Buttons */}
           <div style={{ marginBottom: '12px', display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-            <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 600 }}>Schema Presets:</span>
+            <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 600 }}>Schema Presets:</span>
             {PRODUCT_PRESETS.map((preset) => (
               <button
                 key={preset.name}
                 type="button"
                 className="secondary compact"
                 style={{
-                  fontSize: '11px',
+                  fontSize: '12px',
                   padding: '3px 8px',
-                  borderColor: productTableName === preset.values.productTableName ? '#6366f1' : undefined,
+                  borderColor: productTableName === preset.values.productTableName ? '#4f46e5' : undefined,
                 }}
                 onClick={() => applyProductPreset(preset)}
                 title={preset.desc}
               >
-                <span style={{ color: '#818cf8', marginRight: '4px' }}>●</span>
+                <span style={{ color: '#4f46e5', marginRight: '4px' }}>●</span>
                 {preset.name}
               </button>
             ))}
@@ -554,20 +554,20 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
                 marginBottom: '12px',
               }}
             >
-              <div style={{ fontSize: '11px', color: '#c7d2fe', marginBottom: '6px' }}>
-                <strong>⚡ Quick-Fill Text Shorthand or Excel Paste:</strong> Paste a tab/comma-separated row or key-value pairs (e.g. <code>table=Product; id=ID; fk=fk_prod_id; judge=Judge; values=N,NG; time=datetime_inspection</code>).
+              <div style={{ fontSize: '12px', color: '#c7d2fe', marginBottom: '6px' }}>
+                <strong><Icon name="operations" className="icon inline-icon" />Quick-Fill Text Shorthand or Excel Paste:</strong> Paste a tab/comma-separated row or key-value pairs (e.g. <code>table=Product; id=ID; fk=fk_prod_id; judge=Judge; values=N,NG; time=datetime_inspection</code>).
               </div>
               <div style={{ display: 'flex', gap: '8px' }}>
                 <input
                   value={quickFillText}
                   onChange={(e) => setQuickFillText(e.target.value)}
                   placeholder="Product, ID, fk_prod_id, Judge, N, NG, datetime_inspection, zone, defect_name"
-                  style={{ flex: 1, fontFamily: 'monospace', fontSize: '11px', background: '#090d16', color: '#e2e8f0', padding: '6px 10px' }}
+                  style={{ flex: 1, fontFamily: 'monospace', fontSize: '12px', background: '#090d16', color: '#e2e8f0', padding: '6px 10px' }}
                 />
                 <button
                   type="button"
                   className="primary compact"
-                  style={{ padding: '6px 14px', fontSize: '11px', background: '#4f46e5' }}
+                  style={{ padding: '6px 14px', fontSize: '12px', background: '#4f46e5' }}
                   onClick={handleQuickFillProduct}
                 >
                   Apply
@@ -583,7 +583,7 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
                 value={productTableName}
                 onChange={(e) => setProductTableName(e.target.value)}
                 placeholder="Product"
-                style={{ fontFamily: 'monospace', fontWeight: 600, color: '#818cf8' }}
+                style={{ fontFamily: 'monospace', fontWeight: 600, color: '#4f46e5' }}
                 required
               />
             </Field>
@@ -603,7 +603,7 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
                 value={fkColumnName}
                 onChange={(e) => setFkColumnName(e.target.value)}
                 placeholder="fk_prod_id or Fk_ID"
-                style={{ fontFamily: 'monospace', color: '#34d399' }}
+                style={{ fontFamily: 'monospace', color: '#047857' }}
                 required
               />
             </Field>
@@ -660,15 +660,15 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
           {/* Judge Filter Values with Quick-Add Chips */}
           <div style={{ marginTop: '10px', background: 'rgba(0, 0, 0, 0.2)', padding: '10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.05)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px', flexWrap: 'wrap', gap: '6px' }}>
-              <label style={{ fontSize: '12px', fontWeight: 600, color: '#e2e8f0' }}>
+              <label style={{ fontSize: '12px', fontWeight: 600, color: '#475569' }}>
                 Judge Filter Values (Target products to scan):
               </label>
               <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                <span style={{ fontSize: '11px', color: '#94a3b8' }}>Quick values:</span>
+                <span style={{ fontSize: '12px', color: '#475569' }}>Quick values:</span>
                 <button
                   type="button"
                   className="secondary compact"
-                  style={{ fontSize: '10px', padding: '1px 6px' }}
+                  style={{ fontSize: '12px', padding: '1px 6px' }}
                   onClick={() => setJudgeFilterStr('N, NG')}
                 >
                   N, NG (Suspects)
@@ -676,7 +676,7 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
                 <button
                   type="button"
                   className="secondary compact"
-                  style={{ fontSize: '10px', padding: '1px 6px' }}
+                  style={{ fontSize: '12px', padding: '1px 6px' }}
                   onClick={() => setJudgeFilterStr('N, NG, G, OK')}
                 >
                   N, NG, G, OK (All)
@@ -684,7 +684,7 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
                 <button
                   type="button"
                   className="secondary compact"
-                  style={{ fontSize: '10px', padding: '1px 6px' }}
+                  style={{ fontSize: '12px', padding: '1px 6px' }}
                   onClick={() => setJudgeFilterStr('NG, REJECT')}
                 >
                   NG, REJECT
@@ -692,7 +692,7 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
                 <button
                   type="button"
                   className="secondary compact"
-                  style={{ fontSize: '10px', padding: '1px 6px' }}
+                  style={{ fontSize: '12px', padding: '1px 6px' }}
                   onClick={() => setJudgeFilterStr('FAIL')}
                 >
                   FAIL
@@ -711,9 +711,9 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
                   <span
                     key={val}
                     style={{
-                      background: val.toUpperCase().includes('OK') || val.toUpperCase() === 'G' ? '#059669' : '#dc2626',
+                      background: val.toUpperCase().includes('OK') || val.toUpperCase() === 'G' ? '#047857' : '#dc2626',
                       color: '#fff',
-                      fontSize: '11px',
+                      fontSize: '12px',
                       fontWeight: 700,
                       padding: '2px 6px',
                       borderRadius: '4px',
@@ -730,10 +730,10 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
           {/* Live MariaDB Query Preview */}
           <div style={{ marginTop: '10px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-              <span style={{ fontSize: '11px', fontWeight: 600, color: '#94a3b8' }}>
-                🔍 MariaDB Product Query Preview:
+              <span style={{ fontSize: '12px', fontWeight: 600, color: '#64748b' }}>
+                <Icon name="search" className="icon inline-icon" />MariaDB Product Query Preview:
               </span>
-              <span style={{ fontSize: '10px', color: '#64748b' }}>
+              <span style={{ fontSize: '12px', color: '#64748b' }}>
                 Executed automatically on each connection during scheduled scan
               </span>
             </div>
@@ -744,7 +744,7 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
                 border: '1px solid rgba(255,255,255,0.08)',
                 borderRadius: '6px',
                 padding: '8px 12px',
-                fontSize: '11px',
+                fontSize: '12px',
                 fontFamily: 'monospace',
                 color: '#a5b4fc',
                 whiteSpace: 'pre-wrap',
@@ -762,8 +762,8 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
         <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(16, 185, 129, 0.25)', borderRadius: '8px', padding: '14px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
             <div>
-              <span className="eyebrow" style={{ color: '#34d399', fontWeight: 700 }}>🔗 DEFECT DETAIL TABLES MAPPING</span>
-              <h3 style={{ margin: '2px 0 0', fontSize: '14px', color: '#e2e8f0' }}>
+              <span className="eyebrow" style={{ color: '#047857', fontWeight: 700 }}><Icon name="link" className="icon inline-icon" />DEFECT DETAIL TABLES MAPPING</span>
+              <h3 style={{ margin: '2px 0 0', fontSize: '14px', color: '#475569' }}>
                 Paste Defect Tables List (Joined via {fkColumnName || 'fk_prod_id'} = {productTableName || 'Product'}.{idColumnName || 'ID'})
               </h3>
             </div>
@@ -771,7 +771,7 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
               <button
                 type="button"
                 className="secondary compact"
-                style={{ fontSize: '10px', padding: '2px 8px' }}
+                style={{ fontSize: '12px', padding: '2px 8px' }}
                 onClick={() => setDefectTablesText('mcl_defect\naoi_defect\nspi_defect')}
               >
                 Preset: SMT Multi-Station
@@ -779,12 +779,12 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
               <button
                 type="button"
                 className="secondary compact"
-                style={{ fontSize: '10px', padding: '2px 8px' }}
+                style={{ fontSize: '12px', padding: '2px 8px' }}
                 onClick={() => setDefectTablesText('AOI_DEFECTS\nSPI_DEFECTS')}
               >
                 Preset: Uppercase Tables
               </button>
-              <span className="tag-badge" style={{ background: '#059669', color: '#fff', fontWeight: 700, fontSize: '11px' }}>
+              <span className="tag-badge" style={{ background: '#047857', color: '#fff', fontWeight: 700, fontSize: '12px' }}>
                 {parsedDefectTables.length} Tables Detected
               </span>
             </div>
@@ -812,12 +812,12 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
           {parsedDefectTables.length > 0 && (
             <div style={{ marginTop: '10px', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', overflow: 'hidden' }}>
               <div style={{ background: 'rgba(255,255,255,0.04)', padding: '6px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span className="text-xs font-bold" style={{ color: '#34d399' }}>
+                <span className="text-xs font-bold" style={{ color: '#047857' }}>
                   Live Preview: {parsedDefectTables.length} Defect Tables Schema Mapping
                 </span>
                 <span className="text-xs text-muted">Joined with {productTableName}.{idColumnName} via FK {fkColumnName}</span>
               </div>
-              <div style={{ maxHeight: '130px', overflowY: 'auto' }}>
+              <div tabIndex={0} aria-label="Selected lines" role="group" style={{ maxHeight: '130px', overflowY: 'auto' }}>
                 <table className="analytics-data-table" role="table" style={{ margin: 0 }}>
                   <thead>
                     <tr>
@@ -835,7 +835,7 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
                     {parsedDefectTables.map((t, idx) => (
                       <tr key={idx}>
                         <td className="font-mono text-muted text-xs">{idx + 1}</td>
-                        <td><strong className="mono-code" style={{ color: '#34d399' }}>{t.tableName}</strong></td>
+                        <td><strong className="mono-code" style={{ color: '#047857' }}>{t.tableName}</strong></td>
                         <td className="text-xs">{t.displayName}</td>
                         <td className="font-mono text-xs" style={{ color: '#60a5fa' }}>{t.fkColumnName}</td>
                         <td className="font-mono text-xs text-muted">{t.judgeColumn}</td>
@@ -857,8 +857,8 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
         <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(168, 85, 247, 0.25)', borderRadius: '8px', padding: '14px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '8px', marginBottom: '8px' }}>
             <div>
-              <span className="eyebrow" style={{ color: '#c084fc', fontWeight: 700 }}>🖼️ PC IMAGE CRAWLER API CONFIGURATION</span>
-              <h3 style={{ margin: '2px 0 0', fontSize: '14px', color: '#e2e8f0' }}>
+              <span className="eyebrow" style={{ color: '#c084fc', fontWeight: 700 }}><Icon name="image" className="icon inline-icon" />PC IMAGE CRAWLER API CONFIGURATION</span>
+              <h3 style={{ margin: '2px 0 0', fontSize: '14px', color: '#475569' }}>
                 Per-PC Defect Thumbnail Image Crawler API
               </h3>
             </div>
@@ -866,7 +866,7 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
               <button
                 type="button"
                 className="secondary compact"
-                style={{ fontSize: '10px', padding: '2px 8px' }}
+                style={{ fontSize: '12px', padding: '2px 8px' }}
                 onClick={() => setImageCrawlerApiUrl('http://10.121.45.43:336/api/image/get')}
               >
                 AnywherePix API
@@ -874,7 +874,7 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
               <button
                 type="button"
                 className="secondary compact"
-                style={{ fontSize: '10px', padding: '2px 8px' }}
+                style={{ fontSize: '12px', padding: '2px 8px' }}
                 onClick={() => setImageCrawlerApiUrl('http://{host}:8080/crawl')}
               >
                 Template: http://{'{host}'}:8080/crawl
@@ -882,7 +882,7 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
               <button
                 type="button"
                 className="secondary compact"
-                style={{ fontSize: '10px', padding: '2px 8px' }}
+                style={{ fontSize: '12px', padding: '2px 8px' }}
                 onClick={() => setImageCrawlerApiUrl('')}
               >
                 Disable Crawler
@@ -902,7 +902,7 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
               lineHeight: 1.5,
             }}
           >
-            <strong>💡 How Image Crawling Works for Engineers:</strong>
+            <strong><Icon name="info" className="icon inline-icon" />How Image Crawling Works for Engineers:</strong>
             <ul style={{ margin: '4px 0 0 16px', padding: 0 }}>
               <li><strong>Local File Path:</strong> MariaDB defect tables store local PC paths in column <code>image_path</code> (e.g. <code>D:\AOI_Data\20260916\img_01.jpg</code>).</li>
               <li><strong>Per-PC API:</strong> Because images reside on industrial PCs, AutoVerify calls each PC's Image API separately. Using <code>{'{host}'}</code> automatically substitutes that connection's PC IP/Host.</li>
@@ -936,7 +936,7 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
                 }}
                 style={{ fontSize: '12px', fontWeight: 600 }}
               >
-                <option value="all">⚡ All VPs (VP 0 & other VPs - Default)</option>
+                <option value="all">All VPs (VP 0 & other VPs - Default)</option>
                 <option value="0">VP = 0 (Thumbnail defectimage)</option>
                 <option value="auto">Auto VP (Feature G010_VpID / Path)</option>
                 <option value="1">VP = 1</option>
@@ -958,7 +958,7 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
                   onChange={(e) => setAutoCrawlImages(e.target.checked)}
                 />
                 <span style={{ fontSize: '13px', fontWeight: 600 }}>
-                  ⚡ Proactively crawl defect images during scan
+                  <Icon name="operations" className="icon inline-icon" />Proactively crawl defect images during scan
                 </span>
               </label>
             </div>
@@ -967,8 +967,8 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
           <div style={{ marginTop: '12px', padding: '12px', border: '1px solid rgba(56, 189, 248, 0.3)', borderRadius: '8px', background: 'rgba(14, 165, 233, 0.06)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: '8px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '8px' }}>
               <div>
-                <strong style={{ color: '#7dd3fc', fontSize: '13px' }}>🧪 Image Crawl Test Tool (Verify Image Retrieval)</strong>
-                <div style={{ color: '#94a3b8', fontSize: '11px', marginTop: '2px' }}>
+                <strong style={{ color: '#7dd3fc', fontSize: '13px' }}><Icon name="flask" className="icon inline-icon" />Image Crawl Test Tool (Verify Image Retrieval)</strong>
+                <div style={{ color: '#64748b', fontSize: '12px', marginTop: '2px' }}>
                   Send AnywherePix payload to API <code>{imageCrawlerApiUrl || 'http://10.121.45.43:336/api/image/get'}</code> and preview image directly.
                 </div>
               </div>
@@ -976,24 +976,24 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
                 <button
                   type="button"
                   className={`ghost-button compact ${testMode === 'defectId' ? 'active' : ''}`}
-                  style={{ fontSize: '11px', fontWeight: testMode === 'defectId' ? 700 : 400 }}
+                  style={{ fontSize: '12px', fontWeight: testMode === 'defectId' ? 700 : 400 }}
                   onClick={() => setTestMode('defectId')}
                 >
-                  🎯 Test by Defect ID
+                  <Icon name="target" className="icon inline-icon" />Test by Defect ID
                 </button>
                 <button
                   type="button"
                   className={`ghost-button compact ${testMode === 'rawPath' ? 'active' : ''}`}
-                  style={{ fontSize: '11px', fontWeight: testMode === 'rawPath' ? 700 : 400 }}
+                  style={{ fontSize: '12px', fontWeight: testMode === 'rawPath' ? 700 : 400 }}
                   onClick={() => setTestMode('rawPath')}
                 >
-                  🔗 Test by image_path
+                  <Icon name="link" className="icon inline-icon" />Test by image_path
                 </button>
                 {testImageResult && (
                   <span
                     className="tag-badge"
                     style={{
-                      background: testImageResult.success ? '#059669' : '#dc2626',
+                      background: testImageResult.success ? '#047857' : '#dc2626',
                       borderColor: 'transparent',
                       color: '#fff',
                       fontWeight: 700,
@@ -1018,34 +1018,34 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
                   <button
                     type="button"
                     className="secondary compact"
-                    style={{ fontSize: '11px', padding: '6px 10px' }}
+                    style={{ fontSize: '12px', padding: '6px 10px' }}
                     onClick={() => void handleLoadSamples()}
                     disabled={loadingSamples}
                     title="Fetch 5 latest defects with image_path from DB"
                   >
-                    {loadingSamples ? 'Fetching...' : '📋 Select Sample from DB'}
+                    {loadingSamples ? 'Fetching...' : 'Select Sample from DB'}
                   </button>
                   <button
                     type="button"
                     className="primary compact"
                     disabled={testingImage || !testDefectId.trim()}
                     onClick={() => void handleTestDefectImage()}
-                    style={{ background: '#0284c7', padding: '6px 14px', fontWeight: 700 }}
+                    style={{ background: '#0369a1', padding: '6px 14px', fontWeight: 700 }}
                   >
-                    {testingImage ? 'Crawling...' : '⚡ Test Crawl & View'}
+                    {testingImage ? 'Crawling...' : 'Test Crawl & View'}
                   </button>
                 </div>
 
                 {/* Sample Defect Chips */}
                 {sampleDefects.length > 0 && (
                   <div style={{ marginTop: '8px', display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: '10px', color: '#94a3b8' }}>DB Samples:</span>
+                    <span style={{ fontSize: '12px', color: '#64748b' }}>DB Samples:</span>
                     {sampleDefects.map((s) => (
                       <button
                         key={s.id}
                         type="button"
                         className="secondary compact"
-                        style={{ fontSize: '10px', padding: '2px 8px', borderColor: testDefectId === s.id ? '#38bdf8' : undefined }}
+                        style={{ fontSize: '12px', padding: '2px 8px', borderColor: testDefectId === s.id ? '#38bdf8' : undefined }}
                         onClick={() => {
                           setTestDefectId(s.id)
                           if (s.imagePath) setTestRawPath(s.imagePath)
@@ -1068,31 +1068,31 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
                     value={testRawPath}
                     onChange={(e) => setTestRawPath(e.target.value)}
                     placeholder="Paste image_path (e.g. 2026/07/25/CP-AOI #301-A/.../VP02_...jpg)"
-                    style={{ fontFamily: 'monospace', fontSize: '11px' }}
+                    style={{ fontFamily: 'monospace', fontSize: '12px' }}
                   />
                   <input
                     value={testRawVp}
                     onChange={(e) => setTestRawVp(e.target.value)}
                     placeholder="VP (e.g. 2)"
                     title="G010_VpID / Camera VP"
-                    style={{ fontFamily: 'monospace', fontSize: '11px', textAlign: 'center' }}
+                    style={{ fontFamily: 'monospace', fontSize: '12px', textAlign: 'center' }}
                   />
                   <button
                     type="button"
                     className="primary compact"
                     disabled={testingImage || !testRawPath.trim()}
                     onClick={() => void handleTestRawPath()}
-                    style={{ background: '#0284c7', padding: '6px 14px', fontWeight: 700 }}
+                    style={{ background: '#0369a1', padding: '6px 14px', fontWeight: 700 }}
                   >
-                    {testingImage ? 'Crawling...' : '⚡ Test Crawl & View'}
+                    {testingImage ? 'Crawling...' : 'Test Crawl & View'}
                   </button>
                 </div>
                 <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                  <span style={{ fontSize: '10px', color: '#94a3b8' }}>Quick sample:</span>
+                  <span style={{ fontSize: '12px', color: '#64748b' }}>Quick sample:</span>
                   <button
                     type="button"
                     className="secondary compact"
-                    style={{ fontSize: '10px', padding: '1px 6px' }}
+                    style={{ fontSize: '12px', padding: '1px 6px' }}
                     onClick={() => {
                       setTestRawPath('2026/07/25/CP-AOI #301-A/P1EF650120BA27311SDA/VP02/P1EF650120BA27311SDA_164426_A_2/VP02_P1EF650120BA27311SDA_164426_A_2_2183_.jpg')
                       setTestRawVp('2')
@@ -1116,12 +1116,12 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
                         style={{ width: '200px', height: '150px', objectFit: 'contain', background: '#020617', border: '1px solid #38bdf8', borderRadius: '6px', display: 'block' }}
                       />
                     </a>
-                    <a href={testImagePreviewUrl} target="_blank" rel="noreferrer" style={{ color: '#38bdf8', fontSize: '11px', fontWeight: 700 }}>
-                      🔍 Open full-size image
+                    <a href={testImagePreviewUrl} target="_blank" rel="noreferrer" style={{ color: '#0369a1', fontSize: '12px', fontWeight: 700 }}>
+                      <Icon name="search" className="icon inline-icon" />Open full-size image
                     </a>
                   </div>
                 )}
-                <div style={{ fontSize: '11px', color: '#cbd5e1', lineHeight: 1.6, overflow: 'hidden' }}>
+                <div style={{ fontSize: '12px', color: '#475569', lineHeight: 1.6, overflow: 'hidden' }}>
                   <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '4px' }}>
                     <div><strong>Result:</strong> <span style={{ color: testImageResult.success ? '#34d399' : '#f87171', fontWeight: 700 }}>{testImageResult.success ? 'Success (200 OK)' : 'Failed'}</span></div>
                     <div><strong>Response Time:</strong> {testImageResult.latencyMs} ms</div>
@@ -1131,8 +1131,8 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
 
                   {testImageResult.imagePath && (
                     <div style={{ marginBottom: '4px' }}>
-                      <strong style={{ color: '#94a3b8' }}>Original Path (image_path):</strong>
-                      <code style={{ display: 'block', fontSize: '10px', color: '#7dd3fc', background: '#090d16', padding: '3px 6px', borderRadius: '4px', wordBreak: 'break-all', marginTop: '2px' }}>
+                      <strong style={{ color: '#64748b' }}>Original Path (image_path):</strong>
+                      <code style={{ display: 'block', fontSize: '12px', color: '#7dd3fc', background: '#090d16', padding: '3px 6px', borderRadius: '4px', wordBreak: 'break-all', marginTop: '2px' }}>
                         {testImageResult.imagePath}
                       </code>
                     </div>
@@ -1140,8 +1140,8 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
 
                   {testPayloadPreview && (
                     <div style={{ marginBottom: '4px' }}>
-                      <strong style={{ color: '#94a3b8' }}>JSON Payload sent to AnywherePix API:</strong>
-                      <pre style={{ margin: '2px 0 0', background: '#090d16', padding: '6px 8px', borderRadius: '4px', fontSize: '10px', color: '#a5b4fc', fontFamily: 'monospace', whiteSpace: 'pre-wrap', maxHeight: '100px', overflowY: 'auto' }}>
+                      <strong style={{ color: '#64748b' }}>JSON Payload sent to AnywherePix API:</strong>
+                      <pre style={{ margin: '2px 0 0', background: '#090d16', padding: '6px 8px', borderRadius: '4px', fontSize: '12px', color: '#a5b4fc', fontFamily: 'monospace', whiteSpace: 'pre-wrap', maxHeight: '100px', overflowY: 'auto' }}>
                         {JSON.stringify(testPayloadPreview, null, 2)}
                       </pre>
                     </div>
@@ -1162,7 +1162,7 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
         {/* 5. PIPELINE AUTOMATION & STORAGE OPTIONS */}
         {/* ========================================================================= */}
         <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(245, 158, 11, 0.25)', borderRadius: '8px', padding: '14px' }}>
-          <span className="eyebrow" style={{ color: '#f59e0b', fontWeight: 700 }}>⏱️ SCAN SCHEDULE & STORAGE OPTIONS</span>
+          <span className="eyebrow" style={{ color: '#b45309', fontWeight: 700 }}>⏱️ SCAN SCHEDULE & STORAGE OPTIONS</span>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', alignItems: 'center', marginTop: '6px' }}>
             <label style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
               <input
@@ -1238,7 +1238,7 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
           >
             {submitting
               ? 'Configuring Pipelines...'
-              : `🚀 Create/Update Pipelines for ${targetConnections.length} Lines Now`}
+              : `Create/Update Pipelines for ${targetConnections.length} Lines Now`}
           </button>
         </div>
       </div>

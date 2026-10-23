@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import { storageApi } from '../api'
 import { formatBytes, formatDate, formString, paginate } from '../format'
-import { DataTable, Field, Modal, Pagination } from '../ui'
+import { DataTable, Field, Icon, Modal, Pagination, useLoadStatus } from '../ui'
 import type {
   DefectStoragePreviewItem,
   Notice,
@@ -58,13 +58,21 @@ export function StorageTab({ onNotice }: { onNotice: (notice: Notice) => void })
   const [packPurgeInline, setPackPurgeInline] = useState(true)
 
   // Load existing stored objects
+  const objectsLoad = useLoadStatus()
+  const defectsLoad = useLoadStatus()
+  const { begin: beginObjects, succeed: succeedObjects, fail: failObjects } = objectsLoad
+  const { begin: beginDefects, succeed: succeedDefects, fail: failDefects } = defectsLoad
+
   const loadObjects = useCallback(async () => {
+    beginObjects()
     try {
       setObjects(await storageApi.list())
+      succeedObjects()
     } catch (error) {
+      failObjects(error)
       onNotice({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to load storage objects.' })
     }
-  }, [onNotice])
+  }, [onNotice, beginObjects, succeedObjects, failObjects])
 
   // Load SeaweedFS config
   const loadConfig = useCallback(async () => {
@@ -79,6 +87,7 @@ export function StorageTab({ onNotice }: { onNotice: (notice: Notice) => void })
   // Load Defects preview
   const loadDefects = useCallback(async () => {
     setSearchingDefects(true)
+    beginDefects()
     try {
       const list = await storageApi.previewDefects({
         keyword: searchKeyword || undefined,
@@ -86,12 +95,14 @@ export function StorageTab({ onNotice }: { onNotice: (notice: Notice) => void })
         limit: searchLimit,
       })
       setDefects(list)
+      succeedDefects()
     } catch (error) {
+      failDefects(error)
       onNotice({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to load defects preview.' })
     } finally {
       setSearchingDefects(false)
     }
-  }, [searchKeyword, storageFilter, searchLimit, onNotice])
+  }, [searchKeyword, storageFilter, searchLimit, onNotice, beginDefects, succeedDefects, failDefects])
 
   const loadSharding = useCallback(async () => {
     try {
@@ -317,7 +328,7 @@ export function StorageTab({ onNotice }: { onNotice: (notice: Notice) => void })
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <span style={{ fontSize: '22px' }}>🛡️</span>
+            <span style={{ fontSize: '22px' }}><Icon name="overkill" className="icon inline-icon" /></span>
             <div>
               <strong style={{ fontSize: '15px', letterSpacing: '0.2px' }}>
                 Deep Compression & 4-Tier Path Sharding Architecture
@@ -328,13 +339,13 @@ export function StorageTab({ onNotice }: { onNotice: (notice: Notice) => void })
             </div>
           </div>
           <div style={{ display: 'flex', gap: '8px' }}>
-            <span style={{ background: '#0284c7', color: '#ffffff', padding: '3px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 600 }}>
+            <span style={{ background: '#0369a1', color: '#ffffff', padding: '3px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 600 }}>
               GZIP Compression (Optimal)
             </span>
-            <span style={{ background: '#0d9488', color: '#ffffff', padding: '3px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 600 }}>
+            <span style={{ background: '#0f766e', color: '#ffffff', padding: '3px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 600 }}>
               Product ZIP Bundling
             </span>
-            <span style={{ background: '#6366f1', color: '#ffffff', padding: '3px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 600 }}>
+            <span style={{ background: '#4f46e5', color: '#ffffff', padding: '3px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 600 }}>
               On-Demand Streaming
             </span>
           </div>
@@ -391,7 +402,7 @@ export function StorageTab({ onNotice }: { onNotice: (notice: Notice) => void })
               onClick={() => void handleTestConnection()}
               style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
             >
-              {testingConnection ? '⏳ Testing Connection...' : '🔌 Test Connection'}
+              {testingConnection ? 'Testing Connection...' : 'Test Connection'}
             </button>
             <button
               type="button"
@@ -399,7 +410,7 @@ export function StorageTab({ onNotice }: { onNotice: (notice: Notice) => void })
               onClick={(e) => void handleSaveConfig(e)}
               style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
             >
-              {configBusy ? '💾 Saving...' : '💾 Save Settings'}
+              {configBusy ? 'Saving...' : 'Save Settings'}
             </button>
           </div>
         </div>
@@ -469,12 +480,12 @@ export function StorageTab({ onNotice }: { onNotice: (notice: Notice) => void })
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '16px' }}>{testResult.success ? '✅' : '⚠️'}</span>
+                <span style={{ fontSize: '16px' }}>{testResult.success ? '' : ''}</span>
                 <strong style={{ color: testResult.success ? '#166534' : '#92400e', fontSize: '14px' }}>
                   {testResult.statusMessage}
                 </strong>
               </div>
-              <span style={{ fontSize: '11px', color: '#64748b' }}>
+              <span style={{ fontSize: '12px', color: '#64748b' }}>
                 Probe Latency: <strong>{testResult.writeReadDeleteTest.responseTimeMs} ms</strong>
               </span>
             </div>
@@ -497,14 +508,14 @@ export function StorageTab({ onNotice }: { onNotice: (notice: Notice) => void })
                     <strong style={{ fontSize: '12px', color: '#1e293b' }}>{chk.name}</strong>
                     <span
                       className={`judge-badge ${chk.reachable ? 'ok' : 'ng'}`}
-                      style={{ fontSize: '9px', padding: '1px 6px' }}
+                      style={{ fontSize: '12px', padding: '1px 6px' }}
                     >
                       {chk.reachable ? 'PASS' : 'FAIL'}
                     </span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
-                    <span style={{ fontSize: '11px', color: chk.reachable ? '#15803d' : '#b91c1c' }}>{chk.details}</span>
-                    <span style={{ fontSize: '10px', color: '#94a3b8' }}>{chk.responseTimeMs}ms</span>
+                    <span style={{ fontSize: '12px', color: chk.reachable ? '#15803d' : '#b91c1c' }}>{chk.details}</span>
+                    <span style={{ fontSize: '12px', color: '#94a3b8' }}>{chk.responseTimeMs}ms</span>
                   </div>
                 </div>
               ))}
@@ -528,33 +539,33 @@ export function StorageTab({ onNotice }: { onNotice: (notice: Notice) => void })
               disabled={searchingDefects}
               style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
             >
-              {searchingDefects ? '🔄 Refreshing...' : '🔍 Search / Refresh'}
+              {searchingDefects ? 'Refreshing...' : 'Search / Refresh'}
             </button>
             <button
               type="button"
               onClick={() => setBundleModalOpen(true)}
               style={{
-                background: '#0d9488',
-                borderColor: '#0d9488',
+                background: '#0f766e',
+                borderColor: '#0f766e',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '6px',
               }}
             >
-              📦 Pack Product Bundles (ZIP)
+              <Icon name="package" className="icon inline-icon" />Pack Product Bundles (ZIP)
             </button>
             <button
               type="button"
               onClick={() => setBatchModalOpen(true)}
               style={{
-                background: '#0284c7',
-                borderColor: '#0284c7',
+                background: '#0369a1',
+                borderColor: '#0369a1',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '6px',
               }}
             >
-              ⚡ Batch Offload (GZIP)
+              <Icon name="operations" className="icon inline-icon" />Batch Offload (GZIP)
             </button>
           </div>
         </div>
@@ -608,6 +619,9 @@ export function StorageTab({ onNotice }: { onNotice: (notice: Notice) => void })
         {/* Defects Data Table */}
         <DataTable
           columns={['Key ID / Product', 'Defect / Table', 'Judge / Severity', 'Storage State', 'JSON Size', 'SeaweedFS URI', 'Action']}
+          status={defectsLoad.status}
+          error={defectsLoad.error}
+          onRetry={() => void loadDefects()}
           rows={defects.map((defect) => {
             const isMigrating = migratingSingleId === defect.id
             return {
@@ -616,17 +630,17 @@ export function StorageTab({ onNotice }: { onNotice: (notice: Notice) => void })
                 <div key="key">
                   <strong style={{ fontSize: '12px', color: '#1e293b' }}>{defect.keyId}</strong>
                   {defect.productName && (
-                    <div style={{ fontSize: '11px', color: '#64748b' }}>{defect.productName}</div>
+                    <div style={{ fontSize: '12px', color: '#64748b' }}>{defect.productName}</div>
                   )}
                 </div>,
                 <div key="defect">
                   <span style={{ fontWeight: 600 }}>{defect.defectName}</span>
-                  <div style={{ fontSize: '10px', color: '#64748b' }}>{defect.defectTable}</div>
+                  <div style={{ fontSize: '12px', color: '#64748b' }}>{defect.defectTable}</div>
                 </div>,
                 <div key="judge" style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
                   <span className={`judge-badge ${(defect.judge || 'review').toLowerCase()}`}>{defect.judge || 'N/A'}</span>
                   {defect.severity && (
-                    <span className="severity-tag" style={{ fontSize: '9px', background: '#e2e8f0', color: '#334155' }}>
+                    <span className="severity-tag" style={{ fontSize: '12px', background: '#e2e8f0', color: '#334155' }}>
                       {defect.severity}
                     </span>
                   )}
@@ -640,11 +654,11 @@ export function StorageTab({ onNotice }: { onNotice: (notice: Notice) => void })
                       border: '1px solid #fde68a',
                       borderRadius: '4px',
                       padding: '2px 6px',
-                      fontSize: '10px',
+                      fontSize: '12px',
                       fontWeight: 700,
                     }}
                   >
-                    💾 Local DB JSON
+                    <Icon name="save" className="icon inline-icon" />Local DB JSON
                   </span>
                 ) : (
                   <span
@@ -655,52 +669,52 @@ export function StorageTab({ onNotice }: { onNotice: (notice: Notice) => void })
                       border: '1px solid #bbf7d0',
                       borderRadius: '4px',
                       padding: '2px 6px',
-                      fontSize: '10px',
+                      fontSize: '12px',
                       fontWeight: 700,
                     }}
                   >
-                    🌊 SeaweedFS Stored
+                    <Icon name="leakage" className="icon inline-icon" />SeaweedFS Stored
                   </span>
                 ),
-                <span key="size" style={{ fontFamily: 'monospace', fontSize: '11px', color: '#475569' }}>
+                <span key="size" style={{ fontFamily: 'monospace', fontSize: '12px', color: '#475569' }}>
                   {defect.hasInlineFeatureJson ? formatBytes(defect.featureJsonBytes) : 'Offloaded'}
                 </span>,
                 defect.featureUrl || defect.customFeatureUrl ? (
                   <div key="uri" style={{ display: 'flex', flexDirection: 'column', gap: '3px', maxWidth: '240px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
                       {((defect.featureUrl || '').includes('_defects.json.gz#') || (defect.customFeatureUrl || '').includes('_defects.json.gz#')) && (
-                        <span style={{ background: '#f5f3ff', color: '#6d28d9', border: '1px solid #ddd6fe', borderRadius: '3px', padding: '1px 4px', fontSize: '9px', fontWeight: 700 }}>
-                          📦 DEFECT PACK
+                        <span style={{ background: '#f5f3ff', color: '#6d28d9', border: '1px solid #ddd6fe', borderRadius: '3px', padding: '1px 4px', fontSize: '12px', fontWeight: 700 }}>
+                          <Icon name="package" className="icon inline-icon" />DEFECT PACK
                         </span>
                       )}
                       {((defect.featureUrl || '').includes('.zip#') || (defect.customFeatureUrl || '').includes('.zip#')) && (
-                        <span style={{ background: '#ccfbf1', color: '#0f766e', border: '1px solid #99f6e4', borderRadius: '3px', padding: '1px 4px', fontSize: '9px', fontWeight: 700 }}>
-                          📦 ZIP BUNDLE
+                        <span style={{ background: '#ccfbf1', color: '#0f766e', border: '1px solid #99f6e4', borderRadius: '3px', padding: '1px 4px', fontSize: '12px', fontWeight: 700 }}>
+                          <Icon name="package" className="icon inline-icon" />ZIP BUNDLE
                         </span>
                       )}
                       {((defect.featureUrl || '').endsWith('.gz') || (defect.customFeatureUrl || '').endsWith('.gz')) && !((defect.featureUrl || '').includes('_defects.json.gz#')) && (
-                        <span style={{ background: '#e0e7ff', color: '#4338ca', border: '1px solid #c7d2fe', borderRadius: '3px', padding: '1px 4px', fontSize: '9px', fontWeight: 700 }}>
-                          🗜️ GZIP
+                        <span style={{ background: '#e0e7ff', color: '#4338ca', border: '1px solid #c7d2fe', borderRadius: '3px', padding: '1px 4px', fontSize: '12px', fontWeight: 700 }}>
+                          <Icon name="package" className="icon inline-icon" />GZIP
                         </span>
                       )}
                       <a
                         href={storageApi.defectFileUrl(defect.id, 'feature')}
                         target="_blank"
                         rel="noreferrer"
-                        style={{ fontSize: '10px', color: '#0284c7', textDecoration: 'underline', fontWeight: 600 }}
+                        style={{ fontSize: '12px', color: '#0369a1', textDecoration: 'underline', fontWeight: 600 }}
                         title="Stream & decompress payload directly from SeaweedFS on-demand"
                       >
-                        ⚡ Stream File
+                        <Icon name="operations" className="icon inline-icon" />Stream File
                       </a>
                       {defect.keyId && (
                         <a
                           href={storageApi.productDefectPackUrl(defect.keyId)}
                           target="_blank"
                           rel="noreferrer"
-                          style={{ fontSize: '10px', color: '#7c3aed', textDecoration: 'underline', fontWeight: 600 }}
+                          style={{ fontSize: '12px', color: '#7c3aed', textDecoration: 'underline', fontWeight: 600 }}
                           title="Stream & decompress full defect pack for this Product ID"
                         >
-                          📦 Pack JSON
+                          <Icon name="package" className="icon inline-icon" />Pack JSON
                         </a>
                       )}
                     </div>
@@ -709,7 +723,7 @@ export function StorageTab({ onNotice }: { onNotice: (notice: Notice) => void })
                       target="_blank"
                       rel="noreferrer"
                       style={{
-                        fontSize: '11px',
+                        fontSize: '12px',
                         color: '#2563eb',
                         textDecoration: 'underline',
                         wordBreak: 'break-all',
@@ -720,7 +734,7 @@ export function StorageTab({ onNotice }: { onNotice: (notice: Notice) => void })
                     </a>
                   </div>
                 ) : (
-                  <span key="uri" style={{ fontSize: '11px', color: '#94a3b8' }}>None</span>
+                  <span key="uri" style={{ fontSize: '12px', color: '#94a3b8' }}>None</span>
                 ),
                 defect.hasInlineFeatureJson ? (
                   <button
@@ -730,19 +744,19 @@ export function StorageTab({ onNotice }: { onNotice: (notice: Notice) => void })
                     disabled={isMigrating || batchMigrating}
                     onClick={() => void handleMigrateSingle(defect.id)}
                     style={{
-                      fontSize: '11px',
+                      fontSize: '12px',
                       fontWeight: 700,
-                      color: '#0284c7',
+                      color: '#0369a1',
                       borderColor: '#bae6fd',
                       display: 'flex',
                       alignItems: 'center',
                       gap: '4px',
                     }}
                   >
-                    {isMigrating ? '⏳ Offloading...' : '🚀 Offload'}
+                    {isMigrating ? 'Offloading...' : 'Offload'}
                   </button>
                 ) : (
-                  <span key="act" style={{ fontSize: '11px', color: '#16a34a', fontWeight: 600 }}>✓ Migrated</span>
+                  <span key="act" style={{ fontSize: '12px', color: '#16a34a', fontWeight: 600 }}>✓ Migrated</span>
                 ),
               ],
             }
@@ -781,6 +795,9 @@ export function StorageTab({ onNotice }: { onNotice: (notice: Notice) => void })
 
         <DataTable
           columns={['Bucket', 'Object', 'Type', 'Size', 'Backend', 'Created', 'URI', 'Actions']}
+          status={objectsLoad.status}
+          error={objectsLoad.error}
+          onRetry={() => void loadObjects()}
           rows={paged.items.map((object) => ({
             id: object.id,
             cells: [
@@ -849,9 +866,9 @@ export function StorageTab({ onNotice }: { onNotice: (notice: Notice) => void })
               type="button"
               disabled={batchMigrating}
               onClick={() => void handleMigrateBatch(true)}
-              style={{ background: '#0284c7', borderColor: '#0284c7' }}
+              style={{ background: '#0369a1', borderColor: '#0369a1' }}
             >
-              {batchMigrating ? '⚡ Offloading in progress...' : '🚀 Start Batch Offload'}
+              {batchMigrating ? 'Offloading in progress...' : 'Start Batch Offload'}
             </button>
           </div>
         </div>
@@ -876,7 +893,7 @@ export function StorageTab({ onNotice }: { onNotice: (notice: Notice) => void })
               lineHeight: 1.5,
             }}
           >
-            <strong>🛡️ Inode & Deep Compression Optimization:</strong>
+            <strong><Icon name="overkill" className="icon inline-icon" />Inode & Deep Compression Optimization:</strong>
             <br />
             Defects belonging to the same product key are assembled into a single ZIP archive:{' '}
             <code style={{ background: '#ccfbf1', padding: '2px 4px', borderRadius: '3px' }}>
@@ -919,9 +936,9 @@ export function StorageTab({ onNotice }: { onNotice: (notice: Notice) => void })
               type="button"
               disabled={bundlePackaging}
               onClick={() => void handleMigrateBundles()}
-              style={{ background: '#0d9488', borderColor: '#0d9488' }}
+              style={{ background: '#0f766e', borderColor: '#0f766e' }}
             >
-              {bundlePackaging ? '⏳ Packaging ZIP Archives...' : '📦 Start Bundle Packaging'}
+              {bundlePackaging ? 'Packaging ZIP Archives...' : 'Start Bundle Packaging'}
             </button>
           </div>
         </div>
@@ -936,7 +953,7 @@ export function StorageTab({ onNotice }: { onNotice: (notice: Notice) => void })
       >
         <div style={{ display: 'grid', gap: '16px', padding: '4px 0' }}>
           <div style={{ background: '#faf5ff', border: '1px solid #e9d5ff', borderRadius: '8px', padding: '12px 14px', fontSize: '13px', color: '#581c87', lineHeight: 1.5 }}>
-            <strong style={{ display: 'block', marginBottom: '4px' }}>📦 Unified Defect Pack Strategy</strong>
+            <strong style={{ display: 'block', marginBottom: '4px' }}><Icon name="package" className="icon inline-icon" />Unified Defect Pack Strategy</strong>
             Rather than creating separate JSON files for each individual defect, this groups all defects of each Product ID into a single compressed JSON pack:
             <br />
             <code style={{ background: '#f3e8ff', padding: '2px 4px', borderRadius: '3px' }}>
@@ -982,7 +999,7 @@ export function StorageTab({ onNotice }: { onNotice: (notice: Notice) => void })
               onClick={() => void handleMigratePacks()}
               style={{ background: '#7e22ce', borderColor: '#7e22ce', color: '#fff' }}
             >
-              {packConsolidating ? '⏳ Consolidating Defect Packs...' : '📦 Start Defect Pack Consolidation'}
+              {packConsolidating ? 'Consolidating Defect Packs...' : 'Start Defect Pack Consolidation'}
             </button>
           </div>
         </div>

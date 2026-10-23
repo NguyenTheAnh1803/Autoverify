@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react'
-import ReactECharts from 'echarts-for-react'
+import ReactECharts from '../ReactECharts'
 import type { MsaResult } from '../../types'
 
 export type MsaChartProps = {
@@ -76,7 +76,7 @@ export const MsaChart: React.FC<MsaChartProps> = ({ result }) => {
           name: '% Contribution (Variance)',
           type: 'bar',
           data: pctContrib,
-          itemStyle: { color: '#0284c7' },
+          itemStyle: { color: '#0369a1' },
         },
         {
           name: '% Study Variation (SD)',

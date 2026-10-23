@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react'
-import ReactECharts from 'echarts-for-react'
+import ReactECharts from '../ReactECharts'
 import type { PcaResult } from '../../types'
 
 export type PcaChartsProps = {
@@ -96,7 +96,7 @@ export const PcaCharts: React.FC<PcaChartsProps> = ({ result, onSelectRowIndex }
           name: 'Explained Variance (%)',
           type: 'bar',
           data: varData,
-          itemStyle: { color: '#0284c7' },
+          itemStyle: { color: '#0369a1' },
         },
         {
           name: 'Cumulative Variance (%)',
@@ -155,7 +155,7 @@ export const PcaCharts: React.FC<PcaChartsProps> = ({ result, onSelectRowIndex }
           if (pt.isSpeOutlier) outlierStatus.push('SPE/Q Outlier')
           const badge = outlierStatus.length > 0
             ? `<div style="color:#f87171;font-weight:bold;margin-top:4px;">[Outlier] ${outlierStatus.join(' + ')}</div>`
-            : '<div style="color:#10b981;font-size:11px;">Within Normal Boundaries</div>'
+            : '<div style="color:#10b981;font-size:12px;">Within Normal Boundaries</div>'
 
           return `
             <div style="font-family:monospace;">
@@ -165,7 +165,7 @@ export const PcaCharts: React.FC<PcaChartsProps> = ({ result, onSelectRowIndex }
               <div><strong>Hotelling T²:</strong> ${pt.hotellingT2.toFixed(2)} (Thresh: ${hotellingT2Threshold.toFixed(2)})</div>
               <div><strong>SPE / Q:</strong> ${pt.speQ.toFixed(2)} (Thresh: ${speQThreshold.toFixed(2)})</div>
               ${badge}
-              <div style="font-size:10px;color:#94a3b8;margin-top:4px;">(Click point to locate in preview grid)</div>
+              <div style="font-size:12px;color:#94a3b8;margin-top:4px;">(Click point to locate in preview grid)</div>
             </div>
           `
         },
@@ -242,7 +242,7 @@ export const PcaCharts: React.FC<PcaChartsProps> = ({ result, onSelectRowIndex }
           name: 'PC1 Loading',
           type: 'bar',
           data: categories.map((k) => pc1Loadings[k]?.toFixed(3) ?? 0),
-          itemStyle: { color: '#0284c7' },
+          itemStyle: { color: '#0369a1' },
         },
         ...(components.length > 1
           ? [

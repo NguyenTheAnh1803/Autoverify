@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react'
-import ReactECharts from 'echarts-for-react'
+import ReactECharts from '../ReactECharts'
 import { defectAnalyticsApi } from '../../api'
 import type {
   ScriptConditionResult,

@@ -1,9 +1,12 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import ReactECharts from 'echarts-for-react'
+import { lazy, Suspense, useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react'
+import { LazyImage } from '../components/LazyImage'
+import ReactECharts from '../components/ReactECharts'
 import { connectionsApi, productsApi, verificationApi, imageCrawlerApi } from '../api'
 import { formatDateTime, formatPercent, paginate } from '../format'
-import { OpReconciliationTab } from './OpReconciliationTab'
-import { DataTable, DefectFeatureInspector, Field, ImageViewer, JudgeBadge, MetricCard, Modal, Pagination, StatusPill } from '../ui'
+import { TabSkeleton } from '../components/TabSkeleton'
+import { Button, ChartSkeleton, DataTable, DefectFeatureInspector, Field, Icon, ImageViewer, JudgeBadge, LoadFailure, MetricCard, Modal, Pagination, StatusPill } from '../ui'
+const OpReconciliationTab = lazy(() => import('./OpReconciliationTab').then((m) => ({ default: m.OpReconciliationTab })))
+
 import type {
   AnomalyThumbnailItem,
   DatabaseConnection,
@@ -41,12 +44,17 @@ export function OverkillTab({
   const [period, setPeriod] = useState<TimePeriod>('all')
   const [periodOffset, setPeriodOffset] = useState<number>(0)
   const [lineChartHeight, setLineChartHeight] = useState(420)
+  // While the slider is dragged the label follows at once; the chart resizes when the drag catches up.
+  const chartHeight = useDeferredValue(lineChartHeight)
   const [showLineCounts, setShowLineCounts] = useState(true)
   const [showLineRates, setShowLineRates] = useState(true)
 
   // Trend & Classifier Breakdown state
   const [trendData, setTrendData] = useState<OverkillTrendResponse | null>(null)
   const [loadingTrend, setLoadingTrend] = useState(false)
+  const [trendError, setTrendError] = useState<string | null>(null)
+  const [analysisError, setAnalysisError] = useState<string | null>(null)
+  const [thumbnailError, setThumbnailError] = useState<string | null>(null)
 
   // Anomaly Thumbnails state
   const [thumbnailItems, setThumbnailItems] = useState<AnomalyThumbnailItem[]>([])
@@ -203,6 +211,7 @@ export function OverkillTab({
   // Load Overkill & Real NG Trend Data
   const loadTrendData = useCallback(async () => {
     setLoadingTrend(true)
+    setTrendError(null)
     try {
       const data = await verificationApi.overkillTrend({
         machineCode: machineCode === 'All' ? undefined : machineCode,
@@ -214,6 +223,7 @@ export function OverkillTab({
       })
       setTrendData(data)
     } catch (error) {
+      setTrendError(error instanceof Error ? error.message : 'Failed to load Overkill trend analysis.')
       onNotice({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to load Overkill trend analysis.' })
     } finally {
       setLoadingTrend(false)
@@ -223,6 +233,7 @@ export function OverkillTab({
   // Load Anomaly Thumbnails
   const loadThumbnails = useCallback(async () => {
     setLoadingThumbnails(true)
+    setThumbnailError(null)
     try {
         const res = await verificationApi.anomalyThumbnails({
         category: thumbnailCategory,
@@ -239,6 +250,7 @@ export function OverkillTab({
       setThumbnailTotalCount(res.totalCount ?? 0)
       setThumbnailTotalPages(res.totalPages ?? 1)
     } catch (error) {
+      setThumbnailError(error instanceof Error ? error.message : 'Failed to load anomaly thumbnails.')
       onNotice({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to load anomaly thumbnails.' })
     } finally {
       setLoadingThumbnails(false)
@@ -248,6 +260,7 @@ export function OverkillTab({
   // Load Legacy Analysis
   const loadAnalysis = useCallback(async () => {
     setBusy(true)
+    setAnalysisError(null)
     try {
       const [nextAnalysis, nextCandidates] = await Promise.all([
         verificationApi.overkillAnalysis({
@@ -262,6 +275,7 @@ export function OverkillTab({
       setSelected(nextAnalysis.systems[0] ?? null)
       setPage(1)
     } catch (error) {
+      setAnalysisError(error instanceof Error ? error.message : 'Failed to load Overkill system analysis.')
       onNotice({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to load Overkill system analysis.' })
     } finally {
       setBusy(false)
@@ -910,7 +924,7 @@ export function OverkillTab({
             <h2>Anomaly Verification: Real NG vs Overkill & Leakage</h2>
             {detectedMachine && (
               <span className="tag-badge" style={{ display: 'inline-flex', marginTop: 6, background: '#eff6ff', color: '#1d4ed8' }}>
-                ⚡ Auto machine: {detectedMachine}{machineCode === detectedMachine ? ' (Active)' : ''}
+                <Icon name="operations" className="icon inline-icon" />Auto machine: {detectedMachine}{machineCode === detectedMachine ? ' (Active)' : ''}
               </span>
             )}
           </div>
@@ -920,7 +934,7 @@ export function OverkillTab({
               className="secondary"
               onClick={() => setDashboardScopeOpen(true)}
             >
-              🎛️ Scope: Model / Line / Defect
+              <Icon name="settings" className="icon inline-icon" />Scope: Model / Line / Defect
             </button>
             {onNavigateTab && (
               <button
@@ -930,12 +944,12 @@ export function OverkillTab({
                 onClick={() => onNavigateTab('settings', 'classifier-rules')}
                 title="Configure and test classifier rules (Import JSON, test script logic)"
               >
-                ⚙️ Classifier Rules & Tester
+                <Icon name="settings" className="icon inline-icon" />Classifier Rules & Tester
               </button>
             )}
-            <button type="button" disabled={loadingTrend} onClick={() => void loadTrendData()}>
+            <Button type="button" onClick={() => void loadTrendData()} loading={loadingTrend}>
               {loadingTrend ? 'Analyzing...' : 'Refresh Analysis'}
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -973,7 +987,7 @@ export function OverkillTab({
                   }}
                   title="Auto-select required machine"
                 >
-                  ⚡ Auto
+                  <Icon name="operations" className="icon inline-icon" />Auto
                 </button>
               )}
             </div>
@@ -1032,7 +1046,7 @@ export function OverkillTab({
                       type="button"
                       style={{
                         padding: '3px 9px',
-                        fontSize: '11px',
+                        fontSize: '12px',
                         fontWeight: isActive ? 700 : 500,
                         height: '24px',
                         lineHeight: '18px',
@@ -1061,7 +1075,7 @@ export function OverkillTab({
                   <button
                     type="button"
                     className="ghost-button"
-                    style={{ padding: '2px 8px', fontSize: '11px', height: '26px' }}
+                    style={{ padding: '2px 8px', fontSize: '12px', height: '26px' }}
                     onClick={() => setPeriodOffset((prev) => prev - 1)}
                     title="Previous Period"
                   >
@@ -1070,7 +1084,7 @@ export function OverkillTab({
                   <button
                     type="button"
                     className="ghost-button"
-                    style={{ padding: '2px 8px', fontSize: '11px', height: '26px' }}
+                    style={{ padding: '2px 8px', fontSize: '12px', height: '26px' }}
                     onClick={() => setPeriodOffset((prev) => prev + 1)}
                     disabled={periodOffset >= 0}
                     title="Next Period"
@@ -1081,7 +1095,7 @@ export function OverkillTab({
                     <button
                       type="button"
                       className="ghost-button"
-                      style={{ padding: '2px 7px', fontSize: '10px', height: '26px', color: '#2563eb', fontWeight: 600 }}
+                      style={{ padding: '2px 7px', fontSize: '12px', height: '26px', color: '#2563eb', fontWeight: 600 }}
                       onClick={() => setPeriodOffset(0)}
                       title="Reset to current period"
                     >
@@ -1099,7 +1113,7 @@ export function OverkillTab({
         </form>
         {period !== 'all' && (
           <div style={{ padding: '4px 8px', fontSize: '12px', color: '#2563eb', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span>📅 <strong>Time Window:</strong> {periodLabel}</span>
+            <span><Icon name="clock" className="icon inline-icon" /><strong>Time Window:</strong> {periodLabel}</span>
           </div>
         )}
       </section>
@@ -1184,7 +1198,7 @@ export function OverkillTab({
             className={`module-tab-item ${activeView === 'trend' ? 'active' : ''}`}
             onClick={() => setActiveView('trend')}
           >
-            <span>⚡ Trend Analysis: Real NG vs Overkill</span>
+            <span><Icon name="operations" className="icon inline-icon" />Trend Analysis: Real NG vs Overkill</span>
           </button>
           <button
             type="button"
@@ -1192,9 +1206,9 @@ export function OverkillTab({
             className={`module-tab-item ${activeView === 'lines' ? 'active' : ''}`}
             onClick={() => setActiveView('lines')}
           >
-            <span>📊 Line Comparison</span>
+            <span><Icon name="analysis" className="icon inline-icon" />Line Comparison</span>
             {trendData?.lineComparison && trendData.lineComparison.length > 0 ? (
-              <span className="tag-badge" style={{ background: '#3b82f6', color: '#fff', marginLeft: '6px', fontSize: '10px' }}>
+              <span className="tag-badge" style={{ background: '#3b82f6', color: '#fff', marginLeft: '6px', fontSize: '12px' }}>
                 {trendData.lineComparison.length} lines
               </span>
             ) : null}
@@ -1205,7 +1219,7 @@ export function OverkillTab({
             className={`module-tab-item ${activeView === 'reconciliation' ? 'active' : ''}`}
             onClick={() => setActiveView('reconciliation')}
           >
-            <span>📑 OP Reconciliation Dashboard & Deep-Dive</span>
+            <span><Icon name="clipboard" className="icon inline-icon" />OP Reconciliation Dashboard & Deep-Dive</span>
           </button>
           <button
             type="button"
@@ -1213,9 +1227,9 @@ export function OverkillTab({
             className={`module-tab-item ${activeView === 'thumbnails' ? 'active' : ''}`}
             onClick={() => setActiveView('thumbnails')}
           >
-            <span>🖼️ Image View</span>
+            <span><Icon name="image" className="icon inline-icon" />Image View</span>
             {trendData?.summary.stationNgCount ? (
-              <span className="tag-badge" style={{ background: '#ef4444', color: '#fff', marginLeft: '6px', fontSize: '10px' }}>
+              <span className="tag-badge" style={{ background: '#ef4444', color: '#fff', marginLeft: '6px', fontSize: '12px' }}>
                 {trendData.summary.stationNgCount.toLocaleString()} NG
               </span>
             ) : null}
@@ -1226,9 +1240,9 @@ export function OverkillTab({
             className={`module-tab-item ${activeView === 'leakage' ? 'active' : ''}`}
             onClick={() => setActiveView('leakage')}
           >
-            <span>🛡️ Defect Escape Investigation (Leakage)</span>
+            <span><Icon name="overkill" className="icon inline-icon" />Defect Escape Investigation (Leakage)</span>
             {trendData && trendData.summary.leakageCount > 0 ? (
-              <span className="tag-badge" style={{ background: '#ef4444', color: '#fff', marginLeft: '6px', fontSize: '10px' }}>
+              <span className="tag-badge" style={{ background: '#ef4444', color: '#fff', marginLeft: '6px', fontSize: '12px' }}>
                 {trendData.summary.leakageCount}
               </span>
             ) : null}
@@ -1239,7 +1253,7 @@ export function OverkillTab({
             className={`module-tab-item ${activeView === 'systems' ? 'active' : ''}`}
             onClick={() => setActiveView('systems')}
           >
-            <span>📋 Defect Systems & Suspects</span>
+            <span><Icon name="clipboard" className="icon inline-icon" />Defect Systems & Suspects</span>
           </button>
         </div>
       </div>
@@ -1255,6 +1269,10 @@ export function OverkillTab({
                 style={{ height: 380, width: '100%' }}
                 opts={{ renderer: 'canvas' }}
               />
+            ) : trendError ? (
+              <LoadFailure title="The trend analysis could not be loaded" error={trendError} onRetry={() => void loadTrendData()} />
+            ) : loadingTrend && !trendData ? (
+              <ChartSkeleton height={380} />
             ) : (
               <div className="dashboard-report-empty">
                 <strong>No trend data available</strong>
@@ -1275,7 +1293,7 @@ export function OverkillTab({
               <ul className="guidance-list">
                 {(trendData?.recommendations ?? ['No recommendations yet. Run synchronization to evaluate.']).map((item, idx) => (
                   <li key={idx}>
-                    <strong>💡 </strong> {item}
+                    <strong><Icon name="info" className="icon inline-icon" /></strong> {item}
                   </li>
                 ))}
               </ul>
@@ -1436,9 +1454,9 @@ export function OverkillTab({
                 type="button"
                 className="secondary compact"
                 onClick={() => setActiveView('lines')}
-                style={{ fontSize: '11px' }}
+                style={{ fontSize: '12px' }}
               >
-                📊 View Full Line Comparison & Chart →
+                <Icon name="analysis" className="icon inline-icon" />View Full Line Comparison & Chart →
               </button>
             </div>
 
@@ -1634,9 +1652,13 @@ export function OverkillTab({
             {lineComparisonChartOption ? (
               <ReactECharts
                 option={lineComparisonChartOption}
-                style={{ height: lineChartHeight, width: '100%' }}
+                style={{ height: chartHeight, width: '100%' }}
                 opts={{ renderer: 'canvas' }}
               />
+            ) : trendError ? (
+              <LoadFailure title="The line comparison could not be loaded" error={trendError} onRetry={() => void loadTrendData()} />
+            ) : loadingTrend && !trendData ? (
+              <ChartSkeleton height={380} />
             ) : (
               <div className="dashboard-report-empty">
                 <strong>No line comparison data available</strong>
@@ -1760,14 +1782,14 @@ export function OverkillTab({
                         <button
                           type="button"
                           className="ghost-button compact"
-                          style={{ fontSize: '11px', whiteSpace: 'nowrap' }}
+                          style={{ fontSize: '12px', whiteSpace: 'nowrap' }}
                           onClick={() => {
                             setLineCode(l.lineCode)
                             setActiveView('trend')
                           }}
                           title={`Filter trend analysis for line ${l.lineCode}`}
                         >
-                          🔍 Inspect Line
+                          <Icon name="search" className="icon inline-icon" />Inspect Line
                         </button>
                       </td>
                     </tr>
@@ -1804,19 +1826,14 @@ export function OverkillTab({
               </div>
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                 <button type="button" className="secondary" onClick={() => setGalleryScopeOpen(true)}>
-                  🎯 Scope: Model / Line / Defect
+                  <Icon name="target" className="icon inline-icon" />Scope: Model / Line / Defect
                 </button>
-                <button
-                  type="button"
-                  className="secondary"
-                  disabled={loadingThumbnails}
-                  onClick={() => {
+                <Button type="button" onClick={() => {
                     setThumbnailPage(1)
                     void loadThumbnails()
-                  }}
-                >
-                  {loadingThumbnails ? 'Loading thumbnails...' : '🔄 Refresh Gallery (Latest)'}
-                </button>
+                  }} variant="secondary" loading={loadingThumbnails}>
+                  {loadingThumbnails ? 'Loading thumbnails...' : 'Refresh Gallery (Latest)'}
+                </Button>
               </div>
             </div>
 
@@ -1879,7 +1896,7 @@ export function OverkillTab({
                   setThumbnailPage(1)
                 }}
               >
-                ❓ Unclassified / N/A ({categoryBadgeCounts.na})
+                <Icon name="help" className="icon inline-icon" />Unclassified / N/A ({categoryBadgeCounts.na})
               </button>
               <button
                 type="button"
@@ -1894,7 +1911,7 @@ export function OverkillTab({
                   setThumbnailPage(1)
                 }}
               >
-                🚨 Defect Escapes / Leakage ({categoryBadgeCounts.leakage})
+                <Icon name="warning" className="icon inline-icon" />Defect Escapes / Leakage ({categoryBadgeCounts.leakage})
               </button>
               <button
                 type="button"
@@ -1947,6 +1964,8 @@ export function OverkillTab({
               <div className="spinner" />
               <span>Fetching images and evaluating classifier rules...</span>
             </div>
+          ) : thumbnailError && thumbnailItems.length === 0 ? (
+            <LoadFailure title="The thumbnails could not be loaded" error={thumbnailError} onRetry={() => void loadThumbnails()} />
           ) : thumbnailItems.length === 0 ? (
             <div className="dashboard-report-empty">
               <strong>No anomaly thumbnail records found</strong>
@@ -2033,21 +2052,17 @@ export function OverkillTab({
                     >
                       {isCardLoading ? (
                         <div style={{ color: '#60a5fa', textAlign: 'center', fontSize: '12px' }}>
-                          <div>⌛ Loading image...</div>
-                          <div style={{ fontSize: '10px', color: '#94a3b8' }}>VP{cardLoadingVp[itemKey]} from PC</div>
+                          <div><Icon name="clock" className="icon inline-icon" />Loading image...</div>
+                          <div style={{ fontSize: '12px', color: '#94a3b8' }}>VP{cardLoadingVp[itemKey]} from PC</div>
                         </div>
                       ) : activeImgSrc ? (
-                        <img
+                        <LazyImage
                           src={activeImgSrc}
                           alt={item.defectName ?? 'Defect'}
                           style={{
                             maxWidth: '100%',
                             maxHeight: '100%',
                             objectFit: 'contain',
-                          }}
-                          onError={(e) => {
-                            // Fallback on image load error
-                            ;(e.target as HTMLImageElement).style.display = 'none'
                           }}
                         />
                       ) : (
@@ -2071,7 +2086,7 @@ export function OverkillTab({
                           background: badgeBg,
                           color: badgeColor,
                           fontWeight: 700,
-                          fontSize: '11px',
+                          fontSize: '12px',
                           padding: '3px 8px',
                           border: `1px solid ${badgeColor}`,
                           borderRadius: '4px',
@@ -2092,7 +2107,7 @@ export function OverkillTab({
                             color: '#fff',
                             border: '1px solid rgba(255,255,255,.45)',
                             fontWeight: 700,
-                            fontSize: '10px',
+                            fontSize: '12px',
                           }}
                         >
                           OP: {item.opReviewMark}
@@ -2109,7 +2124,7 @@ export function OverkillTab({
                           background: 'rgba(124, 58, 237, 0.9)',
                           color: '#fff',
                           fontWeight: 700,
-                          fontSize: '10px',
+                          fontSize: '12px',
                           padding: '2px 7px',
                           borderRadius: '4px',
                           backdropFilter: 'blur(4px)',
@@ -2136,7 +2151,7 @@ export function OverkillTab({
                           style={{
                             background: item.stationJudge === 'NG' ? 'rgba(239, 68, 68, 0.85)' : 'rgba(34, 197, 94, 0.85)',
                             color: '#fff',
-                            fontSize: '10px',
+                            fontSize: '12px',
                             fontWeight: 700,
                           }}
                         >
@@ -2147,7 +2162,7 @@ export function OverkillTab({
                           style={{
                             background: item.ruleVerdict === 'TrueDefect' || item.ruleVerdict === 'RealNG' ? 'rgba(168, 85, 247, 0.85)' : 'rgba(245, 158, 11, 0.85)',
                             color: '#fff',
-                            fontSize: '10px',
+                            fontSize: '12px',
                             fontWeight: 700,
                           }}
                         >
@@ -2219,7 +2234,7 @@ export function OverkillTab({
                                   background: 'rgba(255,255,255,0.05)',
                                   padding: '1px 6px',
                                   borderRadius: '3px',
-                                  fontSize: '10px',
+                                  fontSize: '12px',
                                   color: '#cbd5e1',
                                 }}
                               >
@@ -2232,7 +2247,7 @@ export function OverkillTab({
                       {/* Camera Angle Selector Bar */}
                       {item.defectId && (
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '4px', flexWrap: 'wrap', padding: '6px 0', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-                          <span style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 600 }}>Camera Angle:</span>
+                          <span style={{ fontSize: '12px', color: '#94a3b8', fontWeight: 600 }}>Camera Angle:</span>
                           <div style={{ display: 'flex', gap: '3px', alignItems: 'center', flexWrap: 'wrap' }}>
                             <button
                               type="button"
@@ -2240,7 +2255,7 @@ export function OverkillTab({
                               disabled={cardLoadingVp[itemKey] === '0'}
                               style={{
                                 padding: '2px 6px',
-                                fontSize: '10px',
+                                fontSize: '12px',
                                 fontWeight: activeVp === '0' ? 700 : 500,
                                 borderRadius: '4px',
                                 cursor: 'pointer',
@@ -2259,7 +2274,7 @@ export function OverkillTab({
                               disabled={cardLoadingVp[itemKey] === originalVp}
                               style={{
                                 padding: '2px 8px',
-                                fontSize: '10px',
+                                fontSize: '12px',
                                 fontWeight: 700,
                                 borderRadius: '4px',
                                 cursor: 'pointer',
@@ -2274,7 +2289,7 @@ export function OverkillTab({
                             >
                               <span>VP{originalVp} (Path original)</span>
                               {cardLoadingVp[itemKey] === originalVp ? (
-                                <span style={{ fontSize: '9px' }}>⌛</span>
+                                <span style={{ fontSize: '12px' }}><Icon name="clock" className="icon inline-icon" /></span>
                               ) : cardVpImages[itemKey]?.original ? (
                                 <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#4ade80', display: 'inline-block' }} />
                               ) : null}
@@ -2288,7 +2303,7 @@ export function OverkillTab({
                                 disabled={cardLoadingVp[itemKey] === vp}
                                 style={{
                                   padding: '2px 5px',
-                                  fontSize: '10px',
+                                  fontSize: '12px',
                                   fontWeight: activeVp === vp ? 700 : 500,
                                   borderRadius: '4px',
                                   cursor: 'pointer',
@@ -2318,17 +2333,17 @@ export function OverkillTab({
                         <button
                           type="button"
                           className="ghost-button compact"
-                          style={{ fontSize: '11px', flex: 1 }}
+                          style={{ fontSize: '12px', flex: 1 }}
                           onClick={() => openZoomModal(item, activeVp)}
                         >
-                          🔍 Zoom
+                          <Icon name="search" className="icon inline-icon" />Zoom
                         </button>
                         {item.defectId && (
                           <button
                             type="button"
                             className="secondary compact"
                             style={{
-                              fontSize: '11px',
+                              fontSize: '12px',
                               padding: '3px 8px',
                               background: activeVp === 'original' ? 'rgba(168, 85, 247, 0.25)' : 'rgba(168, 85, 247, 0.15)',
                               borderColor: 'rgba(168, 85, 247, 0.4)',
@@ -2337,17 +2352,17 @@ export function OverkillTab({
                             onClick={() => void handleCrawlThumbnailVp(item, activeVp === 'original' ? originalVp : activeVp, activeVp === 'original')}
                             title={activeVp === 'original' ? `Force crawl path original VP${originalVp}` : `Force crawl angle VP${activeVp} from PC API`}
                           >
-                            ⚡ Crawl {activeVp === 'original' ? `Path VP${originalVp}` : `VP${activeVp}`}
+                            <Icon name="operations" className="icon inline-icon" />Crawl {activeVp === 'original' ? `Path VP${originalVp}` : `VP${activeVp}`}
                           </button>
                         )}
                         <button
                           type="button"
                           className="secondary compact"
-                          style={{ fontSize: '11px', flex: 1 }}
+                          style={{ fontSize: '12px', flex: 1 }}
                           onClick={() => void handleInspectDefect(item, activeVp)}
                           disabled={loadingDefectInspect}
                         >
-                          🔬 Inspect
+                          <Icon name="search" className="icon inline-icon" />Inspect
                         </button>
                       </div>
                     </div>
@@ -2462,12 +2477,14 @@ export function OverkillTab({
 
       {/* VIEW: OP EXCEL RECONCILIATION & OVERKILL DEEP-DIVE */}
       {activeView === 'reconciliation' && (
-        <OpReconciliationTab
-          onNotice={onNotice}
-          initialMachine={machineCode}
-          initialLine={lineCode}
-          mode="records"
-        />
+        <Suspense fallback={<TabSkeleton />}>
+          <OpReconciliationTab
+            onNotice={onNotice}
+            initialMachine={machineCode}
+            initialLine={lineCode}
+            mode="records"
+          />
+        </Suspense>
       )}
 
       {/* VIEW 4: LEGACY SYSTEMS & SUSPECT CANDIDATES */}
@@ -2514,6 +2531,9 @@ export function OverkillTab({
             eyebrow="Defect systems"
             title="NG share by defect system"
             columns={['System', 'Type', 'Defects', 'NG defects', 'NG share', 'Suspects', 'Guidance']}
+            status={analysisError ? 'error' : busy && !analysis ? 'loading' : 'ready'}
+            error={analysisError ?? undefined}
+            onRetry={() => void loadAnalysis()}
             selectedRow={selected?.systemName}
             onRowClick={(id) => setSelected(filteredSystems.find((item) => item.systemName === id) ?? null)}
             rows={paged.items.map((system) => ({
@@ -2536,6 +2556,9 @@ export function OverkillTab({
             eyebrow="GET /products/overkill-candidates"
             title="Overkill Candidate List (Station NG with clean defect tables)"
             columns={['Key ID', 'Judge', 'Zone', 'Defect Name', 'Panel judge', 'Machine', 'Line', 'Inspection Time']}
+            status={analysisError ? 'error' : busy && !analysis ? 'loading' : 'ready'}
+            error={analysisError ?? undefined}
+            onRetry={() => void loadAnalysis()}
             rows={pagedCandidates.items.map((item) => ({
               id: item.keyId,
               cells: [
@@ -2666,14 +2689,14 @@ export function OverkillTab({
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                  <span style={{ fontSize: '11px', fontWeight: 700, color: '#94a3b8' }}>Camera Angle:</span>
+                  <span style={{ fontSize: '12px', fontWeight: 700, color: '#94a3b8' }}>Camera Angle:</span>
                   <button
                     type="button"
                     disabled={zoomLoading && zoomVp === 'original'}
                     onClick={() => void handleSelectZoomVp(zoomedItem, zoomOriginalVp, true)}
                     style={{
                       padding: '4px 12px',
-                      fontSize: '11px',
+                      fontSize: '12px',
                       fontWeight: 700,
                       borderRadius: '6px',
                       cursor: 'pointer',
@@ -2687,7 +2710,7 @@ export function OverkillTab({
                     title={`Load original VP from image_path (VP${zoomOriginalVp})`}
                   >
                     <span>Load Path Original VP (VP{zoomOriginalVp})</span>
-                    {zoomLoading && zoomVp === 'original' ? <span>⌛</span> : null}
+                    {zoomLoading && zoomVp === 'original' ? <span><Icon name="clock" className="icon inline-icon" /></span> : null}
                   </button>
 
                   <span style={{ width: '1px', height: '16px', background: 'rgba(255,255,255,0.15)', margin: '0 2px' }} />
@@ -2702,7 +2725,7 @@ export function OverkillTab({
                         onClick={() => void handleSelectZoomVp(zoomedItem, vp, false)}
                         style={{
                           padding: '4px 9px',
-                          fontSize: '11px',
+                          fontSize: '12px',
                           fontWeight: isSelected ? 700 : 500,
                           borderRadius: '6px',
                           cursor: 'pointer',
@@ -2720,11 +2743,11 @@ export function OverkillTab({
                 <button
                   type="button"
                   className="secondary compact"
-                  style={{ fontSize: '11px', padding: '4px 10px', background: 'rgba(255,255,255,0.08)' }}
+                  style={{ fontSize: '12px', padding: '4px 10px', background: 'rgba(255,255,255,0.08)' }}
                   disabled={zoomLoading}
                   onClick={() => void handleForceRefreshZoomVp(zoomedItem)}
                 >
-                  {zoomLoading ? 'Loading...' : zoomVp === 'original' ? `⚡ Force Crawl Path Original VP${zoomOriginalVp}` : `⚡ Force Crawl VP${zoomVp}`}
+                  {zoomLoading ? 'Loading...' : zoomVp === 'original' ? `Force Crawl Path Original VP${zoomOriginalVp}` : `Force Crawl VP${zoomVp}`}
                 </button>
               </div>
             )}
@@ -2781,7 +2804,7 @@ export function OverkillTab({
                   void handleInspectDefect(it, zoomVp)
                 }}
               >
-                🔬 Inspect Features & JSON
+                <Icon name="search" className="icon inline-icon" />Inspect Features & JSON
               </button>
               <button type="button" className="ghost-button" onClick={() => setZoomedItem(null)}>
                 Close

@@ -1,9 +1,12 @@
-import { useCallback, useEffect, useState, type FormEvent } from 'react'
+import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
 import { aiVerificationApi, connectionsApi, defectsApi, productsApi, storageApi } from '../api'
 import { AiDefectVerdict, AiStatusBadge } from '../components/AiStatusBadge'
 import { formatDateTime, formNumber, formString, paginate } from '../format'
-import { DataTable, DefectFeatureInspector, extractOriginalDefectVp, Field, JudgeBadge, Modal, Pagination, StatusPill } from '../ui'
+import { usePolling } from '../lib/usePolling'
+import { DataTable, DebouncedInput, DefectFeatureInspector, extractOriginalDefectVp, Field, Icon, JudgeBadge, Modal, Pagination, StatusPill, useLoadStatus } from '../ui'
 import type { AiProductResult, AiProductSummary, AiSubmitResult, DatabaseConnection, DefectRecord, MultiTableScanResponse, Notice, ProductFilterOptions, ProductHandoff, ProductRecord } from '../types'
+
+const PRODUCT_COLUMNS = ['Key ID', 'Judge', 'AI', 'OP Marking', 'OP Defect / Note', 'Zone', 'Defect Name', 'Panel', 'Panel judge', 'Machine', 'Line', 'DateTime Inspection', 'Defect Pack']
 
 export function ProductsTab({
   onNotice,
@@ -44,7 +47,11 @@ export function ProductsTab({
   const pagedScan = paginate(scanResult?.items ?? [], scanPage)
   const pagedDefects = paginate(defects, defectPage)
 
+  const catalogLoad = useLoadStatus()
+  const { begin: beginCatalog, succeed: succeedCatalog, fail: failCatalog } = catalogLoad
+
   const load = useCallback(async (nextPage = 1) => {
+    beginCatalog()
     try {
       const [payload, connectionPage, options] = await Promise.all([
         productsApi.list({ search: applied.search, judge: applied.judge, machineCode: applied.machineFilter, lineCode: applied.lineFilter, zone: applied.zoneFilter, defectName: applied.defectFilter, page: nextPage, pageSize: 25 }),
@@ -57,10 +64,12 @@ export function ProductsTab({
       setTotalCount(payload.totalCount)
       setConnections(connectionPage.items)
       setFilterOptions(options)
+      succeedCatalog()
     } catch (error) {
+      failCatalog(error)
       onNotice({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to load products.' })
     }
-  }, [applied, machineFilter, lineFilter, onNotice])
+  }, [applied, machineFilter, lineFilter, onNotice, beginCatalog, succeedCatalog, failCatalog])
 
   useEffect(() => {
     void load(1)
@@ -85,11 +94,7 @@ export function ProductsTab({
   }, [products, loadAiStatuses])
 
   const hasPendingAi = Object.values(aiStatuses).some((item) => item.aiStatus === 'Pending')
-  useEffect(() => {
-    if (!hasPendingAi) return
-    const timer = window.setInterval(() => void loadAiStatuses(products.map((product) => product.keyId)), 15000)
-    return () => window.clearInterval(timer)
-  }, [hasPendingAi, products, loadAiStatuses])
+  usePolling(() => loadAiStatuses(products.map((product) => product.keyId)), 15000, hasPendingAi)
 
   function describeAiSubmit(result: AiSubmitResult): string {
     if (result.message) return result.message
@@ -233,6 +238,107 @@ export function ProductsTab({
     }
   }
 
+  // Rebuilt only when the data or the AI state changes, so typing in the filter box does not redraw every row.
+  /* eslint-disable react-hooks/exhaustive-deps */
+  const productRows = useMemo(
+    () =>
+      products.map((product) => ({
+                  id: product.id,
+                  cells: [
+                    <button key="id" type="button" className="link-button" onClick={() => void openDefects(product.keyId)}>
+                      {product.keyId}
+                    </button>,
+                    <JudgeBadge key="j" value={product.judge} />,
+                    <div key="ai" style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                      <AiStatusBadge summary={aiStatuses[product.keyId]} />
+                      {aiActions(product.keyId)}
+                    </div>,
+                    product.opReviewMark ? (
+                      <span
+                        key="op"
+                        className="tag-badge"
+                        style={product.opReviewMark === 'Overkill'
+                          ? { background: '#fef3c7', color: '#b45309', borderColor: '#fcd34d', fontWeight: 700 }
+                          : { background: '#ede9fe', color: '#6d28d9', borderColor: '#c4b5fd', fontWeight: 700 }}
+                      >
+                        {product.opReviewMark}
+                      </span>
+                    ) : (
+                      <span key="op" />
+                    ),
+                    product.opReviewDefectName || product.opReviewNote ? (
+                      <div key="op-detail" title={product.opReviewNote || undefined}>
+                        <div>{product.opReviewDefectName || ''}</div>
+                        {product.opReviewMappedDefect && <div className="text-xs text-muted">→ {product.opReviewMappedDefect}</div>}
+                      </div>
+                    ) : <span key="op-detail" />,
+                    product.zone ? (
+                      <span key="z" className="tag-badge" style={{ background: '#f0fdf4', color: '#15803d', borderColor: '#bbf7d0' }}>
+                        {product.zone}
+                      </span>
+                    ) : (
+                      <span key="z" className="muted">—</span>
+                    ),
+                    product.defectName ? (
+                      <span key="d" className="tag-badge" style={{ background: '#fef2f2', color: '#b91c1c', borderColor: '#fecaca' }}>
+                        {product.defectName}
+                      </span>
+                    ) : product.nameDefect && product.nameDefect !== 'None' ? (
+                      <span key="d">{product.nameDefect}</span>
+                    ) : (
+                      <span key="d" className="muted">—</span>
+                    ),
+                    product.panelId,
+                    product.panelJudge,
+                    product.machineCode,
+                    product.lineCode,
+                    formatDateTime(product.inspectedAtUtc),
+                    product.defectPackUrl ? (
+                      <div key="pack" style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                        <a
+                          href={storageApi.productDefectPackUrl(product.keyId)}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="tag-badge"
+                          style={{ background: '#f5f3ff', color: '#6d28d9', borderColor: '#ddd6fe', fontWeight: 600, textDecoration: 'none' }}
+                          title="Download/View unified defect pack JSON"
+                        >
+                          <Icon name="package" className="icon inline-icon" />Defect Pack
+                        </a>
+                        {onAnalyzeDefects && (
+                          <button
+                            type="button"
+                            className="compact-button secondary"
+                            onClick={() => onAnalyzeDefects({ keyId: product.keyId, sourceUri: product.defectPackUrl ?? undefined })}
+                            title="Decompress & parse defect records in Defect & Feature Analysis"
+                            style={{ fontSize: '12px', padding: '2px 8px' }}
+                          >
+                            Analyze Defects
+                          </button>
+                        )}
+                      </div>
+                    ) : (
+                      <div key="pack" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span className="muted" style={{ fontSize: '12px' }}>—</span>
+                        {onAnalyzeDefects && (
+                          <button
+                            type="button"
+                            className="compact-button secondary"
+                            onClick={() => onAnalyzeDefects({ keyId: product.keyId })}
+                            title="Analyze defects by Key ID in Defect & Feature Analysis"
+                            style={{ fontSize: '12px', padding: '1px 6px' }}
+                          >
+                            Analyze Defects
+                          </button>
+                        )}
+                      </div>
+                    ),
+                  ],
+                })),
+    [products, aiStatuses, aiBusy, selectedKey, onAnalyzeDefects],
+  )
+  /* eslint-enable react-hooks/exhaustive-deps */
+
   return (
     <div className="tab-stack">
       <div className="workspace-pane-tabs" role="tablist" aria-label="Products sections">
@@ -274,9 +380,9 @@ export function ProductsTab({
         }}
       >
         <Field label="Search" className="filter-search">
-          <input
+          <DebouncedInput
             value={search}
-            onChange={(event) => setSearch(event.target.value)}
+            onValueChange={setSearch}
             placeholder="Key ID, Zone, Defect..."
           />
         </Field>
@@ -333,100 +439,11 @@ export function ProductsTab({
       </form>
 
       <DataTable
-        columns={['Key ID', 'Judge', 'AI', 'OP Marking', 'OP Defect / Note', 'Zone', 'Defect Name', 'Panel', 'Panel judge', 'Machine', 'Line', 'DateTime Inspection', 'Defect Pack']}
-        rows={products.map((product) => ({
-            id: product.id,
-            cells: [
-              <button key="id" type="button" className="link-button" onClick={() => void openDefects(product.keyId)}>
-                {product.keyId}
-              </button>,
-              <JudgeBadge key="j" value={product.judge} />,
-              <div key="ai" style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                <AiStatusBadge summary={aiStatuses[product.keyId]} />
-                {aiActions(product.keyId)}
-              </div>,
-              product.opReviewMark ? (
-                <span
-                  key="op"
-                  className="tag-badge"
-                  style={product.opReviewMark === 'Overkill'
-                    ? { background: '#fef3c7', color: '#b45309', borderColor: '#fcd34d', fontWeight: 700 }
-                    : { background: '#ede9fe', color: '#6d28d9', borderColor: '#c4b5fd', fontWeight: 700 }}
-                >
-                  {product.opReviewMark}
-                </span>
-              ) : (
-                <span key="op" />
-              ),
-              product.opReviewDefectName || product.opReviewNote ? (
-                <div key="op-detail" title={product.opReviewNote || undefined}>
-                  <div>{product.opReviewDefectName || ''}</div>
-                  {product.opReviewMappedDefect && <div className="text-xs text-muted">→ {product.opReviewMappedDefect}</div>}
-                </div>
-              ) : <span key="op-detail" />,
-              product.zone ? (
-                <span key="z" className="tag-badge" style={{ background: '#f0fdf4', color: '#15803d', borderColor: '#bbf7d0' }}>
-                  {product.zone}
-                </span>
-              ) : (
-                <span key="z" className="muted">—</span>
-              ),
-              product.defectName ? (
-                <span key="d" className="tag-badge" style={{ background: '#fef2f2', color: '#b91c1c', borderColor: '#fecaca' }}>
-                  {product.defectName}
-                </span>
-              ) : product.nameDefect && product.nameDefect !== 'None' ? (
-                <span key="d">{product.nameDefect}</span>
-              ) : (
-                <span key="d" className="muted">—</span>
-              ),
-              product.panelId,
-              product.panelJudge,
-              product.machineCode,
-              product.lineCode,
-              formatDateTime(product.inspectedAtUtc),
-              product.defectPackUrl ? (
-                <div key="pack" style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                  <a
-                    href={storageApi.productDefectPackUrl(product.keyId)}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="tag-badge"
-                    style={{ background: '#f5f3ff', color: '#6d28d9', borderColor: '#ddd6fe', fontWeight: 600, textDecoration: 'none' }}
-                    title="Download/View unified defect pack JSON"
-                  >
-                    📦 Defect Pack
-                  </a>
-                  {onAnalyzeDefects && (
-                    <button
-                      type="button"
-                      className="compact-button secondary"
-                      onClick={() => onAnalyzeDefects({ keyId: product.keyId, sourceUri: product.defectPackUrl ?? undefined })}
-                      title="Decompress & parse defect records in Defect & Feature Analysis"
-                      style={{ fontSize: '11px', padding: '2px 8px' }}
-                    >
-                      Analyze Defects
-                    </button>
-                  )}
-                </div>
-              ) : (
-                <div key="pack" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span className="muted" style={{ fontSize: '11px' }}>—</span>
-                  {onAnalyzeDefects && (
-                    <button
-                      type="button"
-                      className="compact-button secondary"
-                      onClick={() => onAnalyzeDefects({ keyId: product.keyId })}
-                      title="Analyze defects by Key ID in Defect & Feature Analysis"
-                      style={{ fontSize: '10px', padding: '1px 6px' }}
-                    >
-                      Analyze Defects
-                    </button>
-                  )}
-                </div>
-              ),
-            ],
-          }))}
+        columns={PRODUCT_COLUMNS}
+        rows={productRows}
+        status={catalogLoad.status}
+        error={catalogLoad.error}
+        onRetry={() => void load(page)}
       />
       <Pagination page={page} totalPages={totalPages} totalCount={totalCount} onPage={(next) => void load(next)} />
       </>
@@ -636,7 +653,7 @@ export function ProductsTab({
                   gap: '4px',
                 }}
               >
-                📦 Open Full Product Defect Pack (.json.gz)
+                <Icon name="package" className="icon inline-icon" />Open Full Product Defect Pack (.json.gz)
               </a>
               {onAnalyzeDefects && (
                 <button
@@ -649,7 +666,7 @@ export function ProductsTab({
                       sourceUri: storageApi.productDefectPackUrl(selectedKey),
                     })
                   }}
-                  style={{ fontSize: '11px', padding: '2px 8px' }}
+                  style={{ fontSize: '12px', padding: '2px 8px' }}
                   title="Decompress & parse defect records in Defect & Feature Analysis"
                 >
                   Analyze Defects
@@ -669,7 +686,7 @@ export function ProductsTab({
                 <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', alignItems: 'center' }}>
                   {defect.defectType && <span className="tag-badge">{defect.defectType}</span>}
                   {defect.modelCode && defect.modelCode !== 'UNASSIGNED' && (
-                    <span className="tag-badge" style={{ background: '#f0fdf4', color: '#166534', borderColor: '#bbf7d0', fontSize: '10px' }}>
+                    <span className="tag-badge" style={{ background: '#f0fdf4', color: '#166534', borderColor: '#bbf7d0', fontSize: '12px' }}>
                       {defect.modelCode}
                     </span>
                   )}
@@ -682,10 +699,10 @@ export function ProductsTab({
                     <span className={`severity-tag ${defect.severity.toLowerCase()}`}>{defect.severity}</span>
                   )}
                 </div>
-                {defect.reason && <span style={{ fontSize: '11px', color: '#dc2626' }}>{defect.reason}</span>}
+                {defect.reason && <span style={{ fontSize: '12px', color: '#dc2626' }}>{defect.reason}</span>}
               </div>,
               <AiDefectVerdict key="ai" result={aiDetail?.defects.find((item) => item.defectId.toLowerCase() === defect.id.toLowerCase())} />,
-              <div key="spec" style={{ fontSize: '11px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+              <div key="spec" style={{ fontSize: '12px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
                 {defect.specName ? (
                   <span>
                     Spec: <strong>{defect.specName}</strong> {defect.specJudge ? `(${defect.specJudge})` : ''}
@@ -707,7 +724,7 @@ export function ProductsTab({
                 <button
                   type="button"
                   className="secondary compact-button"
-                  style={{ fontSize: '10px', padding: '2px 6px', fontWeight: 700, background: '#eff6ff', borderColor: '#93c5fd', color: '#1d4ed8' }}
+                  style={{ fontSize: '12px', padding: '2px 6px', fontWeight: 700, background: '#eff6ff', borderColor: '#93c5fd', color: '#1d4ed8' }}
                   title="Open default VP0 thumbnail"
                   onClick={() => {
                     setJsonOpenVp('0')
@@ -719,7 +736,7 @@ export function ProductsTab({
                 <button
                   type="button"
                   className="compact-button"
-                  style={{ fontSize: '10px', padding: '2px 6px', fontWeight: 700, background: '#f5f3ff', borderColor: '#c4b5fd', color: '#6d28d9' }}
+                  style={{ fontSize: '12px', padding: '2px 6px', fontWeight: 700, background: '#f5f3ff', borderColor: '#c4b5fd', color: '#6d28d9' }}
                   title={`Click to open original VP from image_path (VP${extractOriginalDefectVp(defect)})`}
                   onClick={() => {
                     setJsonOpenVp(extractOriginalDefectVp(defect))
@@ -733,7 +750,7 @@ export function ProductsTab({
                     key={vp}
                     type="button"
                     className="compact-button"
-                    style={{ fontSize: '10px', padding: '2px 5px', background: '#f8fafc', borderColor: '#cbd5e1', color: '#475569' }}
+                    style={{ fontSize: '12px', padding: '2px 5px', background: '#f8fafc', borderColor: '#cbd5e1', color: '#475569' }}
                     title={`Click to open angle VP${vp}`}
                     onClick={() => {
                       setJsonOpenVp(vp)
@@ -753,7 +770,7 @@ export function ProductsTab({
                   setJsonOpen(defect)
                 }}
               >
-                🔍 Inspect Features & JSON
+                <Icon name="search" className="icon inline-icon" />Inspect Features & JSON
               </button>,
             ],
           }))}

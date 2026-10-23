@@ -4,11 +4,31 @@ export function formatPercent(value?: number) {
   return `${Math.round((value ?? 0) * 1000) / 10}%`
 }
 
+/**
+ * The API stores times in UTC. A value without a zone designator ("2026-10-21T08:00:00", which is what a database
+ * DateTime of unspecified kind serialises to) would be read by `new Date()` as the viewer's local time and be hours off,
+ * so it is read as UTC here. A value that carries a zone ("Z", "+07:00") is used as it is, and a plain date ("2026-10-21") stays a date.
+ */
+export function parseServerTime(value?: string | null): number | null {
+  if (!value) return null
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return null
+  const hasZone = /(Z|[+-]\d{2}:?\d{2})$/i.test(value)
+  const ms = Date.parse(hasZone ? value : `${value.replace(' ', 'T')}Z`)
+  return Number.isNaN(ms) ? null : ms
+}
+
+const pad = (n: number) => String(n).padStart(2, '0')
+
+/**
+ * One timestamp format everywhere: 24-hour `YYYY-MM-DD HH:mm:ss` in the viewer's own time zone.
+ * A missing value is `—`; a value that is not a time (or only a date) is shown as it came.
+ */
 export function formatDate(value?: string | null) {
   if (!value) return '—'
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return value
-  return date.toLocaleString()
+  const ms = parseServerTime(value)
+  if (ms === null) return value
+  const d = new Date(ms)
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
 }
 
 export function formatDateTime(value?: string | null) {

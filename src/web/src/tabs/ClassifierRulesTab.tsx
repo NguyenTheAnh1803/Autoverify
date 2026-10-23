@@ -1,8 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 import { classifierRulesApi } from '../api'
+import { useConfirm } from '../confirm'
 import { formatDateTime } from '../format'
-import { RuleOptimizerModal } from '../components/RuleOptimizerModal'
-import { Field, Modal, StatusPill } from '../ui'
+// Opened on demand, so its code is downloaded only when a rule is first optimised.
+const RuleOptimizerModal = lazy(() => import('../components/RuleOptimizerModal').then((m) => ({ default: m.RuleOptimizerModal })))
+import { Button, DebouncedInput, Field, Icon, Modal, StatusPill } from '../ui'
 import type {
   ClassifierRuleDto,
   CreateClassifierRuleRequest,
@@ -84,14 +86,18 @@ export function ClassifierRulesTab({ onNotice }: { onNotice: (notice: Notice) =>
     isActive: true,
   })
 
+  const [loadError, setLoadError] = useState<string | null>(null)
+
   const loadRules = useCallback(async () => {
     setLoading(true)
+    setLoadError(null)
     try {
       const items = await classifierRulesApi.listRules()
       // Sort by Priority ASC, then Name
       items.sort((a, b) => (a.priority ?? 0) - (b.priority ?? 0) || a.ruleName.localeCompare(b.ruleName))
       setRules(items)
     } catch (err) {
+      setLoadError(err instanceof Error ? err.message : 'Failed to load classifier rules.')
       onNotice({ tone: 'error', message: err instanceof Error ? err.message : 'Failed to load classifier rules.' })
     } finally {
       setLoading(false)
@@ -209,8 +215,16 @@ export function ClassifierRulesTab({ onNotice }: { onNotice: (notice: Notice) =>
   }
 
   // Delete rule
+  const confirm = useConfirm()
+
   async function handleDeleteRule(rule: ClassifierRuleDto) {
-    if (!window.confirm(`Are you sure you want to delete Rule [${rule.ruleCode}]?`)) return
+    const ok = await confirm({
+      title: `Delete rule ${rule.ruleCode}?`,
+      message: 'The rule stops being applied to new inspections. This cannot be undone.',
+      confirmLabel: 'Delete rule',
+      tone: 'danger',
+    })
+    if (!ok) return
     try {
       await classifierRulesApi.deleteRule(rule.id)
       onNotice({ tone: 'success', message: `✓ Deleted Rule ${rule.ruleCode} successfully!` })
@@ -239,15 +253,15 @@ export function ClassifierRulesTab({ onNotice }: { onNotice: (notice: Notice) =>
               style={{ background: '#2563eb', borderColor: '#3b82f6', fontWeight: 600 }}
               onClick={() => handleOpenTester()}
             >
-              ⚡ Interactive Rule Tester
+              <Icon name="operations" className="icon inline-icon" />Interactive Rule Tester
             </button>
             <button
               type="button"
               className="secondary"
-              style={{ background: '#059669', borderColor: '#10b981', color: '#fff', fontWeight: 600 }}
+              style={{ background: '#047857', borderColor: '#10b981', color: '#fff', fontWeight: 600 }}
               onClick={() => setShowImportJsonModal(true)}
             >
-              📥 Import AOI Rules JSON
+              <Icon name="import" className="icon inline-icon" />Import AOI Rules JSON
             </button>
             <button
               type="button"
@@ -277,11 +291,11 @@ export function ClassifierRulesTab({ onNotice }: { onNotice: (notice: Notice) =>
 
         {/* Filter bar */}
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginTop: '14px' }}>
-          <input
+          <DebouncedInput
             type="text"
             placeholder="Search by rule code, name, family, script..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onValueChange={setSearch}
             style={{ maxWidth: 360, fontSize: '13px', padding: '6px 12px' }}
           />
           <span className="text-xs text-muted">
@@ -320,7 +334,7 @@ export function ClassifierRulesTab({ onNotice }: { onNotice: (notice: Notice) =>
                           background: rule.priority === 0 ? 'rgba(245, 158, 11, 0.2)' : 'rgba(96, 165, 250, 0.15)',
                           color: rule.priority === 0 ? '#f59e0b' : '#60a5fa',
                           fontWeight: 700,
-                          fontSize: '11px',
+                          fontSize: '12px',
                         }}
                       >
                         Priority {rule.priority ?? 0}
@@ -351,7 +365,7 @@ export function ClassifierRulesTab({ onNotice }: { onNotice: (notice: Notice) =>
                             background: 'rgba(34, 197, 94, 0.15)',
                             color: '#22c55e',
                             fontWeight: 600,
-                            fontSize: '11px',
+                            fontSize: '12px',
                             cursor: 'pointer',
                           }}
                           onClick={() => setInspectingRule(rule)}
@@ -360,7 +374,7 @@ export function ClassifierRulesTab({ onNotice }: { onNotice: (notice: Notice) =>
                           ✓ Script Present ({rule.scriptContent?.split('\n').length} lines)
                         </span>
                       ) : (
-                        <span className="tag-badge" style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', fontSize: '11px' }}>
+                        <span className="tag-badge" style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', fontSize: '12px' }}>
                           No Script (N/A)
                         </span>
                       )}
@@ -373,25 +387,25 @@ export function ClassifierRulesTab({ onNotice }: { onNotice: (notice: Notice) =>
                         <button
                           type="button"
                           className="ghost-button compact"
-                          style={{ fontSize: '11px', color: '#10b981', fontWeight: 600 }}
+                          style={{ fontSize: '12px', color: '#10b981', fontWeight: 600 }}
                           onClick={() => setOptimizingRule(rule)}
                           title="Auto-calculate Gold Thresholds and run What-If simulations"
                         >
-                          🎯 Optimize
+                          <Icon name="target" className="icon inline-icon" />Optimize
                         </button>
                         <button
                           type="button"
                           className="ghost-button compact"
-                          style={{ fontSize: '11px', color: '#38bdf8' }}
+                          style={{ fontSize: '12px', color: '#38bdf8' }}
                           onClick={() => handleOpenTester(rule)}
                           title="Run script tester for this rule"
                         >
-                          ⚡ Test
+                          <Icon name="operations" className="icon inline-icon" />Test
                         </button>
                         <button
                           type="button"
                           className="ghost-button compact"
-                          style={{ fontSize: '11px' }}
+                          style={{ fontSize: '12px' }}
                           onClick={() => {
                             setEditingRule(rule)
                             setFormData({
@@ -412,25 +426,41 @@ export function ClassifierRulesTab({ onNotice }: { onNotice: (notice: Notice) =>
                             setShowCreateModal(true)
                           }}
                         >
-                          ✏️ Edit
+                          <Icon name="edit" className="icon inline-icon" />Edit
                         </button>
-                        <button
-                          type="button"
-                          className="ghost-button compact"
-                          style={{ fontSize: '11px', color: '#ef4444' }}
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          aria-label={`Delete rule ${rule.ruleCode}`}
                           onClick={() => void handleDeleteRule(rule)}
                         >
-                          🗑️
-                        </button>
+                          Delete
+                        </Button>
                       </div>
                     </td>
                   </tr>
                 )
               })}
-              {filteredRules.length === 0 && (
+              {filteredRules.length === 0 && loading && rules.length === 0 && (
+                <tr aria-hidden="true">
+                  <td colSpan={7} style={{ padding: '24px' }}><span className="skeleton-line" /></td>
+                </tr>
+              )}
+              {filteredRules.length === 0 && !loading && loadError && rules.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="error-cell" role="alert" style={{ padding: '28px', textAlign: 'center' }}>
+                    <strong>The rules could not be loaded.</strong>
+                    <span className="error-cell-detail">{loadError}</span>
+                    <Button size="sm" variant="secondary" onClick={() => void loadRules()}>Try again</Button>
+                  </td>
+                </tr>
+              )}
+              {filteredRules.length === 0 && !loading && !loadError && (
                 <tr>
                   <td colSpan={7} className="text-center text-muted" style={{ padding: '36px' }}>
-                    No Classifier Rules found. Click <strong>Import AOI Rules JSON</strong> to load rules from AOI machines.
+                    {rules.length > 0
+                      ? 'No rule matches this search.'
+                      : <>No Classifier Rules found. Click <strong>Import AOI Rules JSON</strong> to load rules from AOI machines.</>}
                   </td>
                 </tr>
               )}
@@ -442,7 +472,7 @@ export function ClassifierRulesTab({ onNotice }: { onNotice: (notice: Notice) =>
       {/* MODAL 1: INTERACTIVE SCRIPT TESTER (SIMULATOR) */}
       {showTestModal && (
         <Modal
-          title="⚡ Interactive AOI Script Tester"
+          title="Interactive AOI Script Tester"
           description="Test classifier scripts against simulated or sampled feature values to inspect True/False decisions and individual condition breakdowns."
           open={showTestModal}
           onClose={() => setShowTestModal(false)}
@@ -584,7 +614,7 @@ export function ClassifierRulesTab({ onNotice }: { onNotice: (notice: Notice) =>
                 onClick={() => void handleRunTest()}
                 disabled={testingBusy || !testScriptText.trim()}
               >
-                {testingBusy ? 'Testing...' : '⚡ Run Script Test'}
+                {testingBusy ? 'Testing...' : 'Run Script Test'}
               </button>
             </div>
 
@@ -633,7 +663,7 @@ export function ClassifierRulesTab({ onNotice }: { onNotice: (notice: Notice) =>
                           style={{
                             padding: '4px 10px',
                             borderRadius: '4px',
-                            fontSize: '11px',
+                            fontSize: '12px',
                             fontWeight: 600,
                             fontFamily: 'monospace',
                             background: val ? 'rgba(34, 197, 94, 0.2)' : 'rgba(239, 68, 68, 0.2)',
@@ -689,7 +719,7 @@ export function ClassifierRulesTab({ onNotice }: { onNotice: (notice: Notice) =>
                             padding: '2px 6px',
                             background: 'rgba(255,255,255,0.03)',
                             borderRadius: '3px',
-                            fontSize: '11px',
+                            fontSize: '12px',
                           }}
                         >
                           <span style={{ color: '#94a3b8' }}>{k}</span>
@@ -708,7 +738,7 @@ export function ClassifierRulesTab({ onNotice }: { onNotice: (notice: Notice) =>
       {/* MODAL 2: BATCH IMPORT RULES JSON */}
       {showImportJsonModal && (
         <Modal
-          title="📥 Import Classifier Rules from AOI Machine JSON"
+          title="Import Classifier Rules from AOI Machine JSON"
           description='Paste the JSON exported from the AOI machine (containing "Rules": [{ "Priority": 0, "Name": "...", "Script": "..." }]). All rules will be persisted to the database.'
           open={showImportJsonModal}
           onClose={() => setShowImportJsonModal(false)}
@@ -719,6 +749,7 @@ export function ClassifierRulesTab({ onNotice }: { onNotice: (notice: Notice) =>
               value={importJsonText}
               onChange={(e) => setImportJsonText(e.target.value)}
               rows={16}
+              aria-label="AOI rules JSON"
               style={{
                 fontFamily: 'monospace',
                 fontSize: '12px',
@@ -739,7 +770,7 @@ export function ClassifierRulesTab({ onNotice }: { onNotice: (notice: Notice) =>
               <button
                 type="button"
                 className="primary"
-                style={{ background: '#059669', borderColor: '#10b981' }}
+                style={{ background: '#047857', borderColor: '#10b981' }}
                 onClick={() => void handleImportJson()}
                 disabled={importingBusy || !importJsonText.trim()}
               >
@@ -886,7 +917,7 @@ export function ClassifierRulesTab({ onNotice }: { onNotice: (notice: Notice) =>
                   handleOpenTester(r)
                 }}
               >
-                ⚡ Open in Script Tester
+                <Icon name="operations" className="icon inline-icon" />Open in Script Tester
               </button>
               <button type="button" className="ghost-button" onClick={() => setInspectingRule(null)}>
                 Close
@@ -898,13 +929,15 @@ export function ClassifierRulesTab({ onNotice }: { onNotice: (notice: Notice) =>
 
       {/* MODAL 5: RULE OPTIMIZER & WHAT-IF SIMULATOR */}
       {optimizingRule && (
-        <RuleOptimizerModal
-          rule={optimizingRule}
-          open={Boolean(optimizingRule)}
-          onClose={() => setOptimizingRule(null)}
-          onNotice={onNotice}
-          onRuleUpdated={() => void loadRules()}
-        />
+        <Suspense fallback={null}>
+          <RuleOptimizerModal
+            rule={optimizingRule}
+            open={Boolean(optimizingRule)}
+            onClose={() => setOptimizingRule(null)}
+            onNotice={onNotice}
+            onRuleUpdated={() => void loadRules()}
+          />
+        </Suspense>
       )}
     </div>
   )

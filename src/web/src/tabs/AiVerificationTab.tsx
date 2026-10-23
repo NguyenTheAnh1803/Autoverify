@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import { aiVerificationApi } from '../api'
-import { formatDateTime } from '../format'
-import { DataTable, Field, MetricCard, StatusPill } from '../ui'
+import { useConfirm } from '../confirm'
+import { formatDateTime, parseServerTime } from '../format'
+import { usePolling } from '../lib/usePolling'
+import { Button, DataTable, Field, MetricCard, StatusPill, useLoadStatus } from '../ui'
 import type { AiMapping, AiMappingInput, AiVerificationStatus, MasterConnectionStatus, Notice } from '../types'
 
 const EMPTY_FORM: AiMappingInput = {
@@ -16,16 +18,27 @@ const EMPTY_FORM: AiMappingInput = {
 
 const MASTER_ID = /^[A-Za-z0-9._-]+$/
 
-function validateIds(form: AiMappingInput): string | null {
-  if (!form.machineCode.trim() || !form.lineCode.trim() || !form.modelCode.trim() || !form.stationId.trim() || !form.productId.trim())
-    return 'Every field is required.'
+type FieldKey = 'machineCode' | 'lineCode' | 'modelCode' | 'stationId' | 'productId'
+type FieldErrors = Partial<Record<FieldKey, string>>
+
+/** One message per field, so each is shown under the box that needs fixing. Empty object = valid. */
+function validateIds(form: AiMappingInput): FieldErrors {
+  const errors: FieldErrors = {}
+  const required: [FieldKey, string][] = [
+    ['machineCode', 'Enter the machine code.'],
+    ['lineCode', 'Enter the line code.'],
+    ['modelCode', 'Enter the model code.'],
+    ['stationId', 'Enter the master station ID.'],
+    ['productId', 'Enter the master product ID.'],
+  ]
+  for (const [key, message] of required) if (!form[key].trim()) errors[key] = message
   const station = form.stationId.trim()
   const product = form.productId.trim()
-  if (!MASTER_ID.test(station) || station.length > 64)
-    return 'Station ID must be 1-64 characters: letters, digits, "-", "_" or ".".'
-  if (!MASTER_ID.test(product) || product.length > 128)
-    return 'Product ID must be 1-128 characters: letters, digits, "-", "_" or ".".'
-  return null
+  if (station && (!MASTER_ID.test(station) || station.length > 64))
+    errors.stationId = 'Use 1-64 characters: letters, digits, "-", "_" or ".".'
+  if (product && (!MASTER_ID.test(product) || product.length > 128))
+    errors.productId = 'Use 1-128 characters: letters, digits, "-", "_" or ".".'
+  return errors
 }
 
 export function AiVerificationTab({ onNotice }: { onNotice: (notice: Notice) => void }) {
@@ -36,23 +49,30 @@ export function AiVerificationTab({ onNotice }: { onNotice: (notice: Notice) => 
   const [form, setForm] = useState<AiMappingInput>(EMPTY_FORM)
   const [editingId, setEditingId] = useState('')
   const [formError, setFormError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
   const [saving, setSaving] = useState(false)
 
+  const list = useLoadStatus()
+  const { begin, succeed, fail } = list
+
   const load = useCallback(async () => {
+    begin()
     try {
       const [nextStatus, nextMappings] = await Promise.all([aiVerificationApi.status(), aiVerificationApi.mappings()])
       setStatus(nextStatus)
       setMappings(nextMappings)
+      succeed()
     } catch (error) {
+      fail(error)
       onNotice({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to load AI verification settings.' })
     }
   }, [onNotice])
 
   useEffect(() => {
     void load()
-    const timer = window.setInterval(() => void load(), 15000)
-    return () => window.clearInterval(timer)
   }, [load])
+
+  usePolling(load, 15000)
 
   async function testConnection() {
     setTesting(true)
@@ -67,9 +87,15 @@ export function AiVerificationTab({ onNotice }: { onNotice: (notice: Notice) => 
 
   async function saveMapping(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    const problem = validateIds(form)
-    setFormError(problem ?? '')
-    if (problem) return
+    const problems = validateIds(form)
+    setFieldErrors(problems)
+    setFormError('')
+    if (Object.keys(problems).length > 0) {
+      // Move to the first box that needs fixing.
+      const first = (['machineCode', 'lineCode', 'modelCode', 'stationId', 'productId'] as FieldKey[]).find((key) => problems[key])
+      if (first) window.requestAnimationFrame(() => document.querySelector<HTMLElement>(`[data-field="${first}"]`)?.focus())
+      return
+    }
     setSaving(true)
     try {
       await aiVerificationApi.saveMapping({
@@ -91,8 +117,16 @@ export function AiVerificationTab({ onNotice }: { onNotice: (notice: Notice) => 
     }
   }
 
+  const confirm = useConfirm()
+
   async function removeMapping(mapping: AiMapping) {
-    if (!window.confirm(`Delete the mapping for ${mapping.machineCode} / ${mapping.lineCode} / ${mapping.modelCode}?`)) return
+    const ok = await confirm({
+      title: `Delete the mapping for ${mapping.machineCode} / ${mapping.lineCode} / ${mapping.modelCode}?`,
+      message: 'Images from this station will no longer be sent to the AI.',
+      confirmLabel: 'Delete mapping',
+      tone: 'danger',
+    })
+    if (!ok) return
     try {
       await aiVerificationApi.deleteMapping(mapping.id)
       if (editingId === mapping.id) {
@@ -108,6 +142,7 @@ export function AiVerificationTab({ onNotice }: { onNotice: (notice: Notice) => 
   function editMapping(mapping: AiMapping) {
     setEditingId(mapping.id)
     setFormError('')
+    setFieldErrors({})
     setForm({
       machineCode: mapping.machineCode,
       lineCode: mapping.lineCode,
@@ -119,8 +154,13 @@ export function AiVerificationTab({ onNotice }: { onNotice: (notice: Notice) => 
     })
   }
 
-  const paused = status?.dispatch.pausedUntilUtc && new Date(status.dispatch.pausedUntilUtc) > new Date()
-  const setField = <K extends keyof AiMappingInput>(key: K, value: AiMappingInput[K]) => setForm((prev) => ({ ...prev, [key]: value }))
+  const pausedUntil = parseServerTime(status?.dispatch.pausedUntilUtc)
+  const paused = pausedUntil !== null && pausedUntil > Date.now()
+  const setField = <K extends keyof AiMappingInput>(key: K, value: AiMappingInput[K]) => {
+    setForm((prev) => ({ ...prev, [key]: value }))
+    // The message goes away as soon as the box is edited.
+    setFieldErrors((prev) => (key in prev ? { ...prev, [key]: undefined } : prev))
+  }
 
   return (
     <div className="tab-stack">
@@ -157,9 +197,9 @@ export function AiVerificationTab({ onNotice }: { onNotice: (notice: Notice) => 
             <p className="eyebrow">POST /master/test-connection</p>
             <h2>Connection to Master Server</h2>
           </div>
-          <button type="button" onClick={() => void testConnection()} disabled={testing}>
+          <Button type="button" onClick={() => void testConnection()} loading={testing}>
             {testing ? 'Testing…' : 'Test connection'}
-          </button>
+          </Button>
         </div>
         {connection ? (
           <p>
@@ -191,7 +231,7 @@ export function AiVerificationTab({ onNotice }: { onNotice: (notice: Notice) => 
             <h2>{editingId ? 'Edit station mapping' : 'Add station mapping'}</h2>
           </div>
           {editingId ? (
-            <button type="button" className="ghost-button" onClick={() => { setForm(EMPTY_FORM); setEditingId(''); setFormError('') }}>
+            <button type="button" className="ghost-button" onClick={() => { setForm(EMPTY_FORM); setEditingId(''); setFormError(''); setFieldErrors({}) }}>
               Cancel edit
             </button>
           ) : null}
@@ -201,20 +241,20 @@ export function AiVerificationTab({ onNotice }: { onNotice: (notice: Notice) => 
         </p>
         <form className="modal-form" onSubmit={(event) => void saveMapping(event)}>
           <div className="query-form-grid">
-            <Field label="Machine code" required>
-              <input value={form.machineCode} onChange={(e) => setField('machineCode', e.target.value)} disabled={!!editingId} />
+            <Field label="Machine code" required error={fieldErrors.machineCode}>
+              <input data-field="machineCode" value={form.machineCode} onChange={(e) => setField('machineCode', e.target.value)} disabled={!!editingId} />
             </Field>
-            <Field label="Line code" required>
-              <input value={form.lineCode} onChange={(e) => setField('lineCode', e.target.value)} disabled={!!editingId} />
+            <Field label="Line code" required error={fieldErrors.lineCode}>
+              <input data-field="lineCode" value={form.lineCode} onChange={(e) => setField('lineCode', e.target.value)} disabled={!!editingId} />
             </Field>
-            <Field label="Model code" required>
-              <input value={form.modelCode} onChange={(e) => setField('modelCode', e.target.value)} disabled={!!editingId} />
+            <Field label="Model code" required error={fieldErrors.modelCode}>
+              <input data-field="modelCode" value={form.modelCode} onChange={(e) => setField('modelCode', e.target.value)} disabled={!!editingId} />
             </Field>
-            <Field label="Master station ID" required hint="Station with an Edge Predict node, e.g. L01">
-              <input value={form.stationId} onChange={(e) => setField('stationId', e.target.value)} />
+            <Field label="Master station ID" required hint="Station with an Edge Predict node, e.g. L01" error={fieldErrors.stationId}>
+              <input data-field="stationId" value={form.stationId} onChange={(e) => setField('stationId', e.target.value)} />
             </Field>
-            <Field label="Master product ID" required hint="Product the models were trained for">
-              <input value={form.productId} onChange={(e) => setField('productId', e.target.value)} />
+            <Field label="Master product ID" required hint="Product the models were trained for" error={fieldErrors.productId}>
+              <input data-field="productId" value={form.productId} onChange={(e) => setField('productId', e.target.value)} />
             </Field>
             <Field label="Enabled">
               <select value={String(form.enabled)} onChange={(e) => setField('enabled', e.target.value === 'true')}>
@@ -231,7 +271,7 @@ export function AiVerificationTab({ onNotice }: { onNotice: (notice: Notice) => 
           </div>
           {formError ? <p className="notice error" role="alert">{formError}</p> : null}
           <div className="actions">
-            <button type="submit" disabled={saving}>{saving ? 'Saving…' : editingId ? 'Update mapping' : 'Save mapping'}</button>
+            <Button type="submit" loading={saving}>{saving ? 'Saving…' : editingId ? 'Update mapping' : 'Save mapping'}</Button>
           </div>
         </form>
       </section>
@@ -241,6 +281,9 @@ export function AiVerificationTab({ onNotice }: { onNotice: (notice: Notice) => 
         title="Station mappings"
         columns={['Machine', 'Line', 'Model', 'Station', 'Product', 'Enabled', 'Auto-submit', 'Updated', '']}
         empty="No mappings yet. Add one above before any image can be sent to the AI."
+        status={list.status}
+        error={list.error}
+        onRetry={() => void load()}
         rows={mappings.map((m) => ({
           id: m.id,
           selected: m.id === editingId,
@@ -255,7 +298,7 @@ export function AiVerificationTab({ onNotice }: { onNotice: (notice: Notice) => 
             formatDateTime(m.updatedAtUtc),
             <div key="act" className="actions">
               <button type="button" className="secondary compact-button" onClick={() => editMapping(m)}>Edit</button>
-              <button type="button" className="ghost-button compact" onClick={() => void removeMapping(m)}>Delete</button>
+              <Button variant="danger" size="sm" onClick={() => void removeMapping(m)}>Delete</Button>
             </div>,
           ],
         }))}

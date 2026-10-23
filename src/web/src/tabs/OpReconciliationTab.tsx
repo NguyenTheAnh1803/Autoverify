@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import ReactECharts from 'echarts-for-react'
+import { memo, useCallback, useEffect, useMemo, useState } from 'react'
+import ReactECharts from '../components/ReactECharts'
 import { opReconciliationApi } from '../api'
+import { useConfirm } from '../confirm'
 import { formatDateTime, formatPercent } from '../format'
-import { Field, MetricCard, Modal, StatusPill } from '../ui'
+import { Button, DebouncedInput, Field, Icon, MetricCard, Modal, StatusPill } from '../ui'
 import type {
   Notice,
   OpDefectMappingDto,
@@ -25,6 +26,74 @@ A0D9670P15B134314228\tFOP bonding dent\tNG
 A0B7670P15B134314228\tFOP bonding dent\tNG
 A0B6670P15B134314228\tFOP bonding dent\tNG
 A0E5670P15B134314228\tFOP bonding dent\tNG`
+
+type OpRecord = NonNullable<OpReconciliationRecordsResponse['items']>[number]
+
+function classificationStyle(value: string) {
+  switch (value) {
+    case 'Real Defect': return { background: '#ede9fe', color: '#6d28d9', border: '1px solid #c4b5fd' }
+    case 'Overkill': return { background: '#fef3c7', color: '#b45309', border: '1px solid #fcd34d' }
+    case 'Leakage': return { background: '#fee2e2', color: '#b91c1c', border: '1px solid #fca5a5' }
+    case 'Consistent OK': return { background: '#d1fae5', color: '#047857', border: '1px solid #6ee7b7' }
+    case 'No Detect': return { background: '#e0f2fe', color: '#0369a1', border: '1px solid #7dd3fc' }
+    default: return { background: '#e2e8f0', color: '#475569', border: '1px solid #cbd5e1' }
+  }
+}
+
+/** The ledger rows. Memoised: typing in the search box or changing a filter does not redraw a hundred rows. */
+const RecordRows = memo(function RecordRows({ items, offset }: { items?: OpRecord[]; offset: number }) {
+  return (
+    <>
+      {(items ?? []).map((row, index) => (
+                        <tr key={row.id}>
+                          <td className="text-muted">{offset + index + 1}</td>
+                          <td className="font-mono" style={{ fontWeight: 700 }}>{row.keyId}</td>
+                          <td>
+                            <div>{row.opDefectName || '—'}</div>
+                            {row.mappedMachineDefect && (
+                              <div className="text-xs text-muted">→ {row.mappedMachineDefect} · {row.mappedDefectFamily || 'Unclassified'}</div>
+                            )}
+                          </td>
+                          <td><StatusPill value={row.opJudge} /></td>
+                          <td>{row.productFound ? <StatusPill value={row.productJudge || 'Unknown'} /> : <span className="text-muted">Not Found</span>}</td>
+                          <td style={{ minWidth: 160 }}>
+                            <div>{row.productNameDefect || ''}</div>
+                            {row.productDefectName && row.productDefectName !== row.productNameDefect && (
+                              <div className="text-xs text-muted">DefectName: {row.productDefectName}</div>
+                            )}
+                          </td>
+                          <td style={{ minWidth: 260 }}>
+                            {row.defects.length > 0 ? (
+                              <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                                {row.defects.map((defect) => (
+                                  <span
+                                    key={defect.id}
+                                    className="tag-badge"
+                                    title={`Type: ${defect.defectType || '—'} · Table: ${defect.defectTable || '—'} · Severity: ${defect.severity || '—'}`}
+                                  >
+                                    {defect.defectName}
+                                    <span className="text-muted"> · {defect.defectType || defect.defectTable}</span>
+                                  </span>
+                                ))}
+                              </div>
+                            ) : null}
+                          </td>
+                          <td>
+                            <span className="tag-badge" style={{ ...classificationStyle(row.classification), fontWeight: 700 }}>
+                              {row.classification}
+                            </span>
+                          </td>
+                          <td>
+                            <div>{row.productMachineCode || row.machineCode || '—'}</div>
+                            <div className="text-xs text-muted">{row.productLineCode || row.lineCode || '—'}</div>
+                          </td>
+                          <td className="text-xs">{formatDateTime(row.opInspectedAtUtc)}</td>
+                          <td className="font-mono text-xs" title={row.batchId}>{row.batchId.slice(0, 8)}</td>
+                        </tr>
+      ))}
+    </>
+  )
+})
 
 export function OpReconciliationTab({
   onNotice,
@@ -399,8 +468,16 @@ export function OpReconciliationTab({
   }
 
   // Handle Delete Mapping
+  const confirm = useConfirm()
+
   async function handleDeleteMapping(id: string, name: string) {
-    if (!window.confirm(`Are you sure you want to delete defect mapping [${name}]?`)) return
+    const ok = await confirm({
+      title: `Delete defect mapping ${name}?`,
+      message: 'Reconciliation will no longer use this mapping. This cannot be undone.',
+      confirmLabel: 'Delete mapping',
+      tone: 'danger',
+    })
+    if (!ok) return
     try {
       await opReconciliationApi.deleteMapping(id)
       onNotice({ tone: 'success', message: `✓ Deleted defect mapping [${name}].` })
@@ -505,7 +582,7 @@ export function OpReconciliationTab({
       { value: overkill, name: 'Overkill', itemStyle: { color: '#f59e0b' } },
       { value: leakage, name: 'Leakage', itemStyle: { color: '#ef4444' } },
       { value: consistentOk, name: 'Consistent OK', itemStyle: { color: '#10b981' } },
-      { value: noDetect, name: 'No Detect', itemStyle: { color: '#0284c7' } },
+      { value: noDetect, name: 'No Detect', itemStyle: { color: '#0369a1' } },
       { value: notFound, name: 'Product Not Found', itemStyle: { color: '#64748b' } },
     ].filter((s) => s.value > 0)
 
@@ -624,7 +701,7 @@ export function OpReconciliationTab({
         label: 'No Detect',
         count: records?.noDetectCount ?? 0,
         rate: (records?.noDetectCount ?? 0) / safeTotal,
-        color: '#0284c7',
+        color: '#0369a1',
         bg: '#e0f2fe',
         border: '#7dd3fc',
         textColor: '#0369a1',
@@ -644,17 +721,6 @@ export function OpReconciliationTab({
     ]
   }, [records])
 
-  const classificationStyle = (value: string) => {
-    switch (value) {
-      case 'Real Defect': return { background: '#ede9fe', color: '#6d28d9', border: '1px solid #c4b5fd' }
-      case 'Overkill': return { background: '#fef3c7', color: '#b45309', border: '1px solid #fcd34d' }
-      case 'Leakage': return { background: '#fee2e2', color: '#b91c1c', border: '1px solid #fca5a5' }
-      case 'Consistent OK': return { background: '#d1fae5', color: '#047857', border: '1px solid #6ee7b7' }
-      case 'No Detect': return { background: '#e0f2fe', color: '#0369a1', border: '1px solid #7dd3fc' }
-      default: return { background: '#e2e8f0', color: '#475569', border: '1px solid #cbd5e1' }
-    }
-  }
-
   return (
     <div className="tab-stack">
       {/* Top Banner & File Upload Section */}
@@ -672,14 +738,9 @@ export function OpReconciliationTab({
             <span className="tag-badge" style={{ background: '#dbeafe', color: '#1d4ed8' }}>
               Input managed at Operations → OP Review Input
             </span>
-            <button
-              type="button"
-              className="ghost-button"
-              onClick={() => void loadAnalysis()}
-              disabled={loading}
-            >
+            <Button type="button" onClick={() => void loadAnalysis()} variant="ghost" loading={loading}>
               {loading ? 'Calculating...' : 'Refresh'}
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -788,8 +849,8 @@ export function OpReconciliationTab({
             className={`module-tab-item ${subView === 'records' ? 'active' : ''}`}
             onClick={() => setSubView('records')}
           >
-            <span>📋 All OP + Product Records</span>
-            <span className="tag-badge" style={{ background: '#2563eb', color: '#fff', marginLeft: '6px', fontSize: '10px' }}>
+            <span><Icon name="clipboard" className="icon inline-icon" />All OP + Product Records</span>
+            <span className="tag-badge" style={{ background: '#2563eb', color: '#fff', marginLeft: '6px', fontSize: '12px' }}>
               {records?.totalCount ?? 0}
             </span>
           </button>}
@@ -799,7 +860,7 @@ export function OpReconciliationTab({
             className={`module-tab-item ${subView === 'breakdown' ? 'active' : ''}`}
             onClick={() => setSubView('breakdown')}
           >
-            <span>📊 Defect Breakdown: Real Defect vs Overkill</span>
+            <span><Icon name="analysis" className="icon inline-icon" />Defect Breakdown: Real Defect vs Overkill</span>
           </button>
           <button
             type="button"
@@ -807,9 +868,9 @@ export function OpReconciliationTab({
             className={`module-tab-item ${subView === 'deepdive' ? 'active' : ''}`}
             onClick={() => setSubView('deepdive')}
           >
-            <span>🔬 Overkill Deep-Dive & Gold Thresholds</span>
+            <span><Icon name="search" className="icon inline-icon" />Overkill Deep-Dive & Gold Thresholds</span>
             {analysis?.deepDive?.overkillCount ? (
-              <span className="tag-badge" style={{ background: '#f59e0b', color: '#000', marginLeft: '6px', fontSize: '10px' }}>
+              <span className="tag-badge" style={{ background: '#f59e0b', color: '#000', marginLeft: '6px', fontSize: '12px' }}>
                 {analysis.deepDive.overkillCount} Overkill
               </span>
             ) : null}
@@ -820,8 +881,8 @@ export function OpReconciliationTab({
             className={`module-tab-item ${subView === 'mapping' ? 'active' : ''}`}
             onClick={() => setSubView('mapping')}
           >
-            <span>📖 Defect Mapping Dictionary (OP → Machine AOI)</span>
-            <span className="tag-badge" style={{ background: '#3b82f6', color: '#fff', marginLeft: '6px', fontSize: '10px' }}>
+            <span><Icon name="book" className="icon inline-icon" />Defect Mapping Dictionary (OP → Machine AOI)</span>
+            <span className="tag-badge" style={{ background: '#3b82f6', color: '#fff', marginLeft: '6px', fontSize: '12px' }}>
               {mappings.length || 'Dictionary'}
             </span>
           </button>
@@ -886,7 +947,7 @@ export function OpReconciliationTab({
                     type="button"
                     style={{
                       padding: '3px 10px',
-                      fontSize: '11px',
+                      fontSize: '12px',
                       fontWeight: donutView === 'all' ? 700 : 500,
                       height: '26px',
                       borderRadius: '5px',
@@ -898,13 +959,13 @@ export function OpReconciliationTab({
                     }}
                     onClick={() => setDonutView('all')}
                   >
-                    🍩 All Categories
+                    <Icon name="analysis" className="icon inline-icon" />All Categories
                   </button>
                   <button
                     type="button"
                     style={{
                       padding: '3px 10px',
-                      fontSize: '11px',
+                      fontSize: '12px',
                       fontWeight: donutView === 'overkill' ? 700 : 500,
                       height: '26px',
                       borderRadius: '5px',
@@ -916,12 +977,12 @@ export function OpReconciliationTab({
                     }}
                     onClick={() => setDonutView('overkill')}
                   >
-                    🎯 Machine NG (Overkill vs Real)
+                    <Icon name="target" className="icon inline-icon" />Machine NG (Overkill vs Real)
                   </button>
                 </div>
-                <button type="button" className="ghost-button" onClick={() => void loadRecords()} disabled={recordsLoading}>
+                <Button type="button" onClick={() => void loadRecords()} variant="ghost" loading={recordsLoading}>
                   {recordsLoading ? 'Loading...' : 'Refresh'}
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -939,7 +1000,7 @@ export function OpReconciliationTab({
                     <button
                       type="button"
                       className="ghost-button compact"
-                      style={{ fontSize: '11px', color: '#2563eb' }}
+                      style={{ fontSize: '12px', color: '#2563eb' }}
                       onClick={() => { setRecordsClassification('All'); setRecordsPage(1); }}
                     >
                       Reset filter ({recordsClassification})
@@ -970,7 +1031,7 @@ export function OpReconciliationTab({
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                           <span style={{ width: 8, height: 8, borderRadius: '50%', background: item.color, display: 'inline-block' }} />
                           <strong style={{ fontSize: '12px', color: item.textColor }}>{item.label}</strong>
-                          <span style={{ fontSize: '11px', color: '#64748b' }}>({item.hint})</span>
+                          <span style={{ fontSize: '12px', color: '#64748b' }}>({item.hint})</span>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                           <span style={{ fontSize: '12px', fontWeight: 700, color: '#0f172a' }}>{item.count.toLocaleString()}</span>
@@ -980,7 +1041,7 @@ export function OpReconciliationTab({
                               background: item.bg,
                               color: item.textColor,
                               borderColor: item.border,
-                              fontSize: '11px',
+                              fontSize: '12px',
                               fontWeight: 700,
                               minWidth: 50,
                               textAlign: 'center',
@@ -1019,9 +1080,9 @@ export function OpReconciliationTab({
               style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'end' }}
             >
               <Field label="Search FOG ID / Defect / Mapping">
-                <input
+                <DebouncedInput
                   value={recordsSearch}
-                  onChange={(e) => setRecordsSearch(e.target.value)}
+                  onValueChange={setRecordsSearch}
                   placeholder="FOG ID, OP defect, Product or Defect record..."
                   style={{ minWidth: 280 }}
                 />
@@ -1101,53 +1162,7 @@ export function OpReconciliationTab({
                   </tr>
                 </thead>
                 <tbody>
-                  {(records?.items ?? []).map((row, index) => (
-                    <tr key={row.id}>
-                      <td className="text-muted">{(recordsPage - 1) * recordsPageSize + index + 1}</td>
-                      <td className="font-mono" style={{ fontWeight: 700 }}>{row.keyId}</td>
-                      <td>
-                        <div>{row.opDefectName || '—'}</div>
-                        {row.mappedMachineDefect && (
-                          <div className="text-xs text-muted">→ {row.mappedMachineDefect} · {row.mappedDefectFamily || 'Unclassified'}</div>
-                        )}
-                      </td>
-                      <td><StatusPill value={row.opJudge} /></td>
-                      <td>{row.productFound ? <StatusPill value={row.productJudge || 'Unknown'} /> : <span className="text-muted">Not Found</span>}</td>
-                      <td style={{ minWidth: 160 }}>
-                        <div>{row.productNameDefect || ''}</div>
-                        {row.productDefectName && row.productDefectName !== row.productNameDefect && (
-                          <div className="text-xs text-muted">DefectName: {row.productDefectName}</div>
-                        )}
-                      </td>
-                      <td style={{ minWidth: 260 }}>
-                        {row.defects.length > 0 ? (
-                          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                            {row.defects.map((defect) => (
-                              <span
-                                key={defect.id}
-                                className="tag-badge"
-                                title={`Type: ${defect.defectType || '—'} · Table: ${defect.defectTable || '—'} · Severity: ${defect.severity || '—'}`}
-                              >
-                                {defect.defectName}
-                                <span className="text-muted"> · {defect.defectType || defect.defectTable}</span>
-                              </span>
-                            ))}
-                          </div>
-                        ) : null}
-                      </td>
-                      <td>
-                        <span className="tag-badge" style={{ ...classificationStyle(row.classification), fontWeight: 700 }}>
-                          {row.classification}
-                        </span>
-                      </td>
-                      <td>
-                        <div>{row.productMachineCode || row.machineCode || '—'}</div>
-                        <div className="text-xs text-muted">{row.productLineCode || row.lineCode || '—'}</div>
-                      </td>
-                      <td className="text-xs">{formatDateTime(row.opInspectedAtUtc)}</td>
-                      <td className="font-mono text-xs" title={row.batchId}>{row.batchId.slice(0, 8)}</td>
-                    </tr>
-                  ))}
+                  <RecordRows items={records?.items} offset={(recordsPage - 1) * recordsPageSize} />
                   {!recordsLoading && (records?.items.length ?? 0) === 0 && (
                     <tr>
                       <td colSpan={11} className="text-center text-muted" style={{ padding: 36 }}>
@@ -1203,7 +1218,7 @@ export function OpReconciliationTab({
             <ul className="guidance-list">
               {(analysis?.recommendations ?? ['No recommendations available. Upload OP Excel data to reconcile.']).map((r, i) => (
                 <li key={i}>
-                  <strong>💡 </strong> {r}
+                  <strong><Icon name="info" className="icon inline-icon" /></strong> {r}
                 </li>
               ))}
             </ul>
@@ -1261,13 +1276,13 @@ export function OpReconciliationTab({
                         <button
                           type="button"
                           className="secondary compact"
-                          style={{ fontSize: '11px', whiteSpace: 'nowrap' }}
+                          style={{ fontSize: '12px', whiteSpace: 'nowrap' }}
                           onClick={() => {
                             setTargetDefect(item.machineDefectName)
                             setSubView('deepdive')
                           }}
                         >
-                          🔬 Deep-Dive →
+                          <Icon name="search" className="icon inline-icon" />Deep-Dive →
                         </button>
                       </td>
                     </tr>
@@ -1275,7 +1290,7 @@ export function OpReconciliationTab({
                   {(!analysis?.defectBreakdown || analysis.defectBreakdown.length === 0) && (
                     <tr>
                       <td colSpan={9} className="text-center text-muted" style={{ padding: '36px' }}>
-                        No reconciliation records available. Upload an Excel file or click <strong>✨ Seed Sample Data</strong>.
+                        No reconciliation records available. Upload an Excel file or click <strong><Icon name="star" className="icon inline-icon" />Seed Sample Data</strong>.
                       </td>
                     </tr>
                   )}
@@ -1329,7 +1344,7 @@ export function OpReconciliationTab({
                   padding: '12px',
                 }}
               >
-                <strong style={{ color: '#93c5fd', fontSize: '13px' }}>🎯 Recommended Gold Thresholds:</strong>
+                <strong style={{ color: '#93c5fd', fontSize: '13px' }}><Icon name="target" className="icon inline-icon" />Recommended Gold Thresholds:</strong>
                 <ul style={{ margin: '6px 0 0 16px', fontSize: '12px', color: '#cbd5e1' }}>
                   {analysis.deepDive.thresholdTuningRecommendations.map((rec, i) => (
                     <li key={i} style={{ marginBottom: '4px' }}>
@@ -1373,7 +1388,7 @@ export function OpReconciliationTab({
                         }}
                       >
                         <td className="font-mono font-bold" style={{ color: isGold ? '#34d399' : '#e2e8f0' }}>
-                          {isGold && '⭐ '}
+                          {isGold && ''}
                           {f.featureName}
                         </td>
                         <td className="font-mono" style={{ color: '#f59e0b' }}>{f.overkillMean.toFixed(1)}</td>
@@ -1433,15 +1448,15 @@ export function OpReconciliationTab({
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
                     <strong className="mono-code" style={{ color: '#f59e0b' }}>{sample.keyId}</strong>
-                    <span className="tag-badge" style={{ background: 'rgba(245, 158, 11, 0.2)', color: '#f59e0b', fontSize: '10px' }}>
+                    <span className="tag-badge" style={{ background: 'rgba(245, 158, 11, 0.2)', color: '#f59e0b', fontSize: '12px' }}>
                       OVERKILL
                     </span>
                   </div>
 
-                  <div style={{ fontSize: '11px', color: '#cbd5e1', marginBottom: '4px' }}>
+                  <div style={{ fontSize: '12px', color: '#cbd5e1', marginBottom: '4px' }}>
                     Machine NG: <strong style={{ color: '#ef4444' }}>{sample.machineDefectName}</strong>
                   </div>
-                  <div style={{ fontSize: '11px', color: '#cbd5e1', marginBottom: '6px' }}>
+                  <div style={{ fontSize: '12px', color: '#cbd5e1', marginBottom: '6px' }}>
                     OP Verdict: <strong style={{ color: '#22c55e' }}>{sample.opJudge} ({sample.opDefectName || 'No defect'})</strong>
                   </div>
 
@@ -1455,7 +1470,7 @@ export function OpReconciliationTab({
                             background: 'rgba(255,255,255,0.05)',
                             padding: '1px 5px',
                             borderRadius: '3px',
-                            fontSize: '10px',
+                            fontSize: '12px',
                             color: '#cbd5e1',
                           }}
                         >
@@ -1495,11 +1510,11 @@ export function OpReconciliationTab({
 
               <div style={{ display: 'flex', gap: '8px' }}>
                 <label className="secondary" style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center' }}>
-                  {clsfAnalyzing ? 'Analyzing CLSF...' : '📊 Upload CLSF & Analyze'}
+                  {clsfAnalyzing ? 'Analyzing CLSF...' : 'Upload CLSF & Analyze'}
                   <input type="file" accept=".clsf,.json" onChange={(e) => void handleClsfUpload(e)} disabled={clsfAnalyzing} style={{ display: 'none' }} />
                 </label>
                 <button type="button" className="secondary" onClick={() => setShowBulkMappingModal(true)}>
-                  ⚡ Bulk Paste / Machine Package
+                  <Icon name="operations" className="icon inline-icon" />Bulk Paste / Machine Package
                 </button>
                 <button
                   type="button"
@@ -1533,11 +1548,11 @@ export function OpReconciliationTab({
                 <option value="AOI">AOI</option>
               </select>
               <input value={mappingPackage} onChange={(e) => setMappingPackage(e.target.value)} placeholder="Mapping package name" style={{ maxWidth: 220 }} />
-              <input
+              <DebouncedInput
                 type="text"
                 placeholder="Search OP defect, machine defect, family..."
                 value={mappingSearch}
-                onChange={(e) => setMappingSearch(e.target.value)}
+                onValueChange={setMappingSearch}
                 style={{ maxWidth: 360, fontSize: '13px', padding: '6px 12px' }}
               />
               <span className="text-xs text-muted">
@@ -1556,7 +1571,7 @@ export function OpReconciliationTab({
                 </div>
                 <div style={{ display: 'flex', gap: 8 }}>
                   <span className="tag-badge">Total defects: {clsfAnalysis.totalDefectOccurrences}</span>
-                  <span className="tag-badge" style={{ background: '#059669', color: '#fff' }}>Active rules: {clsfAnalysis.activeRuleCount}</span>
+                  <span className="tag-badge" style={{ background: '#047857', color: '#fff' }}>Active rules: {clsfAnalysis.activeRuleCount}</span>
                 </div>
               </div>
               <div className="table-responsive" style={{ maxHeight: 480 }}>
@@ -1620,7 +1635,7 @@ export function OpReconciliationTab({
                             fontWeight: 700,
                           }}
                         >
-                          {m.isConfirmedDefect ? '✓ REAL DEFECT' : '⚠️ OVERKILL (FALSE ALARM)'}
+                          {m.isConfirmedDefect ? '✓ REAL DEFECT' : 'OVERKILL (FALSE ALARM)'}
                         </span>
                       </td>
                       <td className="text-xs text-muted" style={{ maxWidth: 280 }}>{m.description || '—'}</td>
@@ -1644,16 +1659,16 @@ export function OpReconciliationTab({
                             setShowMappingModal(true)
                           }}
                         >
-                          ✏️ Edit
+                          <Icon name="edit" className="icon inline-icon" />Edit
                         </button>
-                        <button
-                          type="button"
-                          className="ghost-button compact"
-                          style={{ color: '#ef4444' }}
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          aria-label={`Delete mapping ${m.opDefectName}`}
                           onClick={() => void handleDeleteMapping(m.id, m.opDefectName)}
                         >
-                          🗑️
-                        </button>
+                          Delete
+                        </Button>
                       </td>
                     </tr>
                   ))}
@@ -1735,7 +1750,7 @@ export function OpReconciliationTab({
                   onChange={(e) => setMappingForm({ ...mappingForm, isConfirmedDefect: e.target.checked })}
                 />
                 <span style={{ fontSize: '13px', fontWeight: 600 }}>
-                  {mappingForm.isConfirmedDefect ? '✓ Confirmed Real Defect' : '⚠️ Overkill / False Alarm (Cleanable/Noise)'}
+                  {mappingForm.isConfirmedDefect ? '✓ Confirmed Real Defect' : 'Overkill / False Alarm (Cleanable/Noise)'}
                 </span>
               </label>
               <small className="text-muted" style={{ display: 'block', marginTop: '4px' }}>
@@ -1793,7 +1808,7 @@ export function OpReconciliationTab({
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
               <span className="tag-badge">Machine: {mappingMachine}</span>
               <span className="tag-badge">Package: {mappingPackage}</span>
-              <span className="tag-badge" style={{ background: '#059669', color: '#fff' }}>{parsedBulkMappings.length} rules parsed</span>
+              <span className="tag-badge" style={{ background: '#047857', color: '#fff' }}>{parsedBulkMappings.length} rules parsed</span>
             </div>
             {parsedBulkMappings.length > 0 && (
               <div className="table-responsive" style={{ maxHeight: 280 }}>
@@ -1807,9 +1822,9 @@ export function OpReconciliationTab({
             )}
             <div className="actions">
               <button type="button" className="ghost-button" onClick={() => setShowBulkMappingModal(false)}>Cancel</button>
-              <button type="button" className="primary" disabled={bulkSaving || parsedBulkMappings.length === 0} onClick={() => void handleBulkSaveMappings()}>
+              <Button loading={bulkSaving} disabled={parsedBulkMappings.length === 0} onClick={() => void handleBulkSaveMappings()}>
                 {bulkSaving ? 'Saving package...' : `Save ${parsedBulkMappings.length} Mappings`}
-              </button>
+              </Button>
             </div>
           </div>
         </Modal>
@@ -1817,7 +1832,7 @@ export function OpReconciliationTab({
 
       {showPasteModal && (
         <Modal
-          title="📋 Paste Operator (OP) Review Data"
+          title="Paste Operator (OP) Review Data"
           description="Paste directly from Clipboard or Excel format: FOG ID | OP Defect Name | Judgment. Header rows are automatically detected and skipped."
           open={showPasteModal}
           onClose={() => setShowPasteModal(false)}
@@ -1831,7 +1846,7 @@ export function OpReconciliationTab({
                 onClick={() => void handleReadFromClipboard()}
                 style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontWeight: 600 }}
               >
-                📋 Read from Clipboard (Auto-paste)
+                <Icon name="clipboard" className="icon inline-icon" />Read from Clipboard (Auto-paste)
               </button>
               <button
                 type="button"
@@ -1840,7 +1855,7 @@ export function OpReconciliationTab({
                 style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                 title="Load 9 sample rows for FOP, POL, COP, B/P"
               >
-                💡 Load Concept Sample (FOP, POL, COP, B/P)
+                <Icon name="info" className="icon inline-icon" />Load Concept Sample (FOP, POL, COP, B/P)
               </button>
               {pasteText && (
                 <button
@@ -1849,7 +1864,7 @@ export function OpReconciliationTab({
                   onClick={() => setPasteText('')}
                   style={{ color: '#ef4444' }}
                 >
-                  🗑️ Clear
+                  <Icon name="trash" className="icon inline-icon" />Clear
                 </button>
               )}
             </div>
@@ -1898,7 +1913,7 @@ export function OpReconciliationTab({
               <span className="tag-badge" style={{ background: '#10b981', color: '#fff' }}>
                 {pasteStats.okCount} OK (Overkill)
               </span>
-              <span className="tag-badge" style={{ background: '#059669', color: '#fff' }}>
+              <span className="tag-badge" style={{ background: '#047857', color: '#fff' }}>
                 {pasteStats.mappedCount}/{pasteStats.total} Dictionary Mapped
               </span>
             </div>
@@ -1948,7 +1963,7 @@ export function OpReconciliationTab({
                               className="tag-badge"
                               style={{ background: '#fffbeb', color: '#b45309', border: '1px solid #fde68a' }}
                             >
-                              ⚠️ Not in dictionary
+                              <Icon name="warning" className="icon inline-icon" />Not in dictionary
                             </span>
                           )}
                         </td>
@@ -1968,15 +1983,9 @@ export function OpReconciliationTab({
               >
                 Cancel
               </button>
-              <button
-                type="button"
-                className="primary"
-                disabled={pasting || parsedPasteRows.length === 0}
-                onClick={() => void handleSavePastedRecords()}
-                style={{ background: '#2563eb', borderColor: '#3b82f6' }}
-              >
+              <Button loading={pasting} disabled={parsedPasteRows.length === 0} onClick={() => void handleSavePastedRecords()}>
                 {pasting ? 'Saving & Reconciling...' : `Save & Reconcile OP (${pasteStats.total} rows)`}
-              </button>
+              </Button>
             </div>
           </div>
         </Modal>

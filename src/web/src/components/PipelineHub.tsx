@@ -1,5 +1,7 @@
-import { useEffect, useMemo, useState } from 'react'
-import { formatDateTime } from '../format'
+import { useMemo, useState } from 'react'
+import { formatDateTime, parseServerTime } from '../format'
+import { DebouncedInput, Icon } from '../ui'
+import { usePolling } from '../lib/usePolling'
 import type { OverkillPipelineConfig, OverkillPipelineExecution } from '../types'
 
 type HealthBucket = 'failed' | 'attention' | 'running' | 'healthy' | 'paused'
@@ -74,9 +76,7 @@ function writePrefs(prefs: HubPrefs) {
 }
 
 function toTime(value: string | null | undefined) {
-  if (!value) return null
-  const time = new Date(value).getTime()
-  return Number.isNaN(time) ? null : time
+  return parseServerTime(value)
 }
 
 function formatAgo(value: string | number | null, now: number, withSeconds = false) {
@@ -96,7 +96,7 @@ function formatShortTime(value: string | null, now: number) {
   if (time === null) return null
   const date = new Date(time)
   const sameDay = new Date(now).toDateString() === date.toDateString()
-  const clock = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  const clock = `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
   return sameDay ? clock : `${date.toLocaleDateString([], { month: 'short', day: 'numeric' })} ${clock}`
 }
 
@@ -204,10 +204,8 @@ export function PipelineHub({
     })
   }
 
-  useEffect(() => {
-    const timer = window.setInterval(() => setNow(Date.now()), 5_000)
-    return () => window.clearInterval(timer)
-  }, [])
+  // Keeps "x seconds ago" labels moving; paused while the page is hidden.
+  usePolling(() => setNow(Date.now()), 5_000)
 
   const rows = useMemo(() => {
     const latestByConfig = new Map<string, OverkillPipelineExecution>()
@@ -224,12 +222,7 @@ export function PipelineHub({
 
   const anyRunning = rows.some((row) => row.bucket === 'running')
 
-  useEffect(() => {
-    const timer = window.setInterval(() => {
-      if (document.visibilityState === 'visible') void onRefresh()
-    }, anyRunning ? ACTIVE_REFRESH_MS : IDLE_REFRESH_MS)
-    return () => window.clearInterval(timer)
-  }, [anyRunning, onRefresh])
+  usePolling(onRefresh, anyRunning ? ACTIVE_REFRESH_MS : IDLE_REFRESH_MS)
 
   const machineOptions = useMemo(() => {
     const counts = new Map<string, number>()
@@ -374,14 +367,14 @@ export function PipelineHub({
         <div className="pipeline-hub-title">
           <div className="pipeline-hub-eyebrow">
             <span className="eyebrow-accent">Automated MariaDB Ingestion</span>
-            <span className="tag-badge" style={{ background: '#e0f2fe', color: '#0284c7' }}>MariaDB Engine</span>
+            <span className="tag-badge" style={{ background: '#e0f2fe', color: '#0369a1' }}>MariaDB Engine</span>
           </div>
-          <h3>
+          <h2>
             Overkill Query Pipelines ({pipelines.length})
             {filtersActive && pipelines.length > 0 ? (
               <span className="pipeline-hub-showing">Showing {visibleRows.length} of {pipelines.length}</span>
             ) : null}
-          </h3>
+          </h2>
           <p className="field-hint">
             Scheduled background pipeline extracting product & defect tables from MariaDB into local inspection tables.
           </p>
@@ -393,7 +386,7 @@ export function PipelineHub({
             onClick={onBatchSetup}
             title="Batch configure Overkill pipelines for multiple lines and defect tables"
           >
-            🚀 Batch Setup Defect Pipelines
+            <Icon name="play" className="icon inline-icon" />Batch Setup Defect Pipelines
           </button>
           <button type="button" className="ghost-button compact" disabled={refreshing} onClick={() => void handleRefresh()}>
             ↻ Refresh Pipelines
@@ -495,12 +488,12 @@ export function PipelineHub({
                         ))}
                       </select>
                     ) : null}
-                    <input
+                    <DebouncedInput
                       type="search"
                       aria-label="Search pipelines"
                       placeholder="Search name, connection, table…"
                       value={search}
-                      onChange={(event) => setSearch(event.target.value)}
+                      onValueChange={setSearch}
                     />
                     <select aria-label="Sort pipelines" value={prefs.sort} onChange={(event) => updatePrefs({ sort: event.target.value as SortMode })}>
                       <option value="priority">Sort: Needs attention first</option>

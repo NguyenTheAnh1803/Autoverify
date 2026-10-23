@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react'
-import ReactECharts from 'echarts-for-react'
+import ReactECharts from '../ReactECharts'
 import type { EwmaResult, CusumResult } from '../../types'
 
 export type EwmaChartProps = {
@@ -71,7 +71,7 @@ export const EwmaChart: React.FC<EwmaChartProps> = ({ result, onSelectRowIndex }
               <div><strong>Sample:</strong> ${params[0].axisValue} (Grid Row: #${pt.rowIndex})</div>
               ${lines}
               ${violationTag}
-              <div style="font-size:10px;color:#94a3b8;margin-top:4px;">(Click point to locate in preview grid)</div>
+              <div style="font-size:12px;color:#94a3b8;margin-top:4px;">(Click point to locate in preview grid)</div>
             </div>
           `
         },
@@ -310,7 +310,7 @@ export const CusumChart: React.FC<CusumChartProps> = ({ result, onSelectRowIndex
               <div><strong>Sample:</strong> ${params[0].axisValue} (Grid Row: #${pt.rowIndex})</div>
               ${lines}
               ${violationTag}
-              <div style="font-size:10px;color:#94a3b8;margin-top:4px;">(Click point to locate in preview grid)</div>
+              <div style="font-size:12px;color:#94a3b8;margin-top:4px;">(Click point to locate in preview grid)</div>
             </div>
           `
         },

@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
-import ReactECharts from 'echarts-for-react'
+import ReactECharts from '../components/ReactECharts'
 import { dashboardApi } from '../api'
 import { formatDate, formatPercent } from '../format'
-import { MetricCard } from '../ui'
+import { Button, MetricCard } from '../ui'
 import type { DashboardSectionReport, DashboardProductionReport, Notice } from '../types'
 
 type DashboardView = 'overkill' | 'leakage'
@@ -198,10 +198,13 @@ export function OverviewTab({ onNotice }: { onNotice: (notice: Notice) => void }
   const [days, setDays] = useState(14)
   const [report, setReport] = useState<DashboardProductionReport | null>(null)
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
+  const [reloadKey, setReloadKey] = useState(0)
 
   useEffect(() => {
     let active = true
     setLoading(true)
+    setLoadError(null)
     dashboardApi
       .productionReport(days)
       .then((nextReport) => {
@@ -209,7 +212,9 @@ export function OverviewTab({ onNotice }: { onNotice: (notice: Notice) => void }
       })
       .catch((error: unknown) => {
         if (!active) return
-        onNotice({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to load production dashboard.' })
+        const message = error instanceof Error ? error.message : 'Failed to load production dashboard.'
+        setLoadError(message)
+        onNotice({ tone: 'error', message })
       })
       .finally(() => {
         if (active) setLoading(false)
@@ -217,9 +222,10 @@ export function OverviewTab({ onNotice }: { onNotice: (notice: Notice) => void }
     return () => {
       active = false
     }
-  }, [days, onNotice])
+  }, [days, onNotice, reloadKey])
 
-  const activeReport = report?.[view] ?? null
+  // After a failed load the previous report (if any) is not shown as if it were current.
+  const activeReport = loadError ? null : (report?.[view] ?? null)
 
   return (
     <div className="dashboard-production-workspace">
@@ -263,11 +269,17 @@ export function OverviewTab({ onNotice }: { onNotice: (notice: Notice) => void }
       </div>
 
       {loading ? (
-        <div className="dashboard-report-loading">Loading production data...</div>
+        <div className="dashboard-report-loading" role="status">Loading production data...</div>
+      ) : loadError ? (
+        <div className="dashboard-report-empty" role="alert">
+          <strong>The production report could not be loaded</strong>
+          <span>{loadError}</span>
+          <Button variant="secondary" size="sm" onClick={() => setReloadKey((key) => key + 1)}>Try again</Button>
+        </div>
       ) : activeReport ? (
         <ProductionReport view={view} report={activeReport} />
       ) : (
-        <ReportEmptyState message="Production report could not be loaded." />
+        <ReportEmptyState message="No report is available for this period." />
       )}
     </div>
   )

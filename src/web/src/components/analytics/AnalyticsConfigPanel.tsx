@@ -1223,7 +1223,7 @@ return MCL_Block1 or MCL_Block2 or MCL_Block4 or SR_Block1 or SR_Block2 or SR_Bl
                 <button
                   type="button"
                   className="btn btn-primary btn-sm"
-                  style={{ background: '#10b981', borderColor: '#059669', color: '#fff', fontWeight: 600 }}
+                  style={{ background: '#10b981', borderColor: '#047857', color: '#fff', fontWeight: 600 }}
                   onClick={() => void handleImportRulesJsonText(scriptText)}
                   disabled={savingRuleScript}
                   title="Detected AOI Rules JSON structure! Click to import all rules into database"

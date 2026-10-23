@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent, type DragEvent } from 'react'
 import { connectionsApi, leakageQueueApi, storageApi } from '../api'
+import { useConfirm } from '../confirm'
 import { formatDate } from '../format'
-import { DefectFeatureInspector, Field, JudgeBadge, Modal, Pagination, StatusPill } from '../ui'
+import { usePolling } from '../lib/usePolling'
+import { Button, DebouncedInput, DefectFeatureInspector, Field, useLoadStatus, Icon, JudgeBadge, Modal, Pagination, StatusPill } from '../ui'
 import type {
   DatabaseConnection,
   DefectRecord,
@@ -96,7 +98,11 @@ export function LeakageOpsTab({ onNotice }: { onNotice: (notice: Notice) => void
   }, [])
 
   // Load Queue Items
+  const itemsLoad = useLoadStatus()
+  const { begin: beginItems, succeed: succeedItems, fail: failItems } = itemsLoad
+
   const loadItems = useCallback(async () => {
+    beginItems()
     try {
       const res = await leakageQueueApi.getItems({
         batchId: selectedBatchId !== 'all' ? selectedBatchId : undefined,
@@ -107,13 +113,15 @@ export function LeakageOpsTab({ onNotice }: { onNotice: (notice: Notice) => void
       })
       setItems(res.items ?? [])
       setTotalCount(res.totalCount ?? 0)
+      succeedItems()
     } catch (error) {
+      failItems(error)
       onNotice({
         tone: 'error',
         message: error instanceof Error ? error.message : 'Failed to fetch leakage queue items.',
       })
     }
-  }, [selectedBatchId, statusFilter, searchQuery, page, pageSize, onNotice])
+  }, [selectedBatchId, statusFilter, searchQuery, page, pageSize, onNotice, beginItems, succeedItems, failItems])
 
   // Check progress
   const pollProgress = useCallback(async () => {
@@ -146,17 +154,16 @@ export function LeakageOpsTab({ onNotice }: { onNotice: (notice: Notice) => void
       .catch(() => {})
   }, [loadBatches, loadItems])
 
-  // Polling interval when active
-  useEffect(() => {
-    const timer = setInterval(() => {
-      void pollProgress()
+  // Quick while a queue run is going; relaxed when idle. Paused while this tab or the browser tab is hidden.
+  usePolling(
+    async () => {
+      await pollProgress()
       if (isProcessing) {
-        void loadItems()
-        void loadBatches()
+        await Promise.all([loadItems(), loadBatches()])
       }
-    }, 2500)
-    return () => clearInterval(timer)
-  }, [pollProgress, isProcessing, loadItems, loadBatches])
+    },
+    isProcessing ? 2500 : 15000,
+  )
 
   // Handle Enqueue Paste
   async function handleEnqueuePaste() {
@@ -354,11 +361,26 @@ export function LeakageOpsTab({ onNotice }: { onNotice: (notice: Notice) => void
     }
   }
 
+  const confirm = useConfirm()
+
   async function handleClear(completedOnly = false) {
-    const confirmation = window.confirm(
+    const confirmation = await confirm(
       completedOnly
-        ? 'Clear completed records from the queue?'
-        : 'Are you sure you want to clear the selected queue items? This action cannot be undone.',
+        ? {
+            title: 'Clear completed records from the queue?',
+            message: 'Finished items are removed from the list. Items still waiting or running are kept.',
+            confirmLabel: 'Clear completed',
+            tone: 'danger',
+          }
+        : {
+            title: 'Clear the queue?',
+            message:
+              selectedIds.size > 0
+                ? `The ${selectedIds.size} selected item(s) are removed. This cannot be undone.`
+                : 'The items matching the current batch filter are removed. This cannot be undone.',
+            confirmLabel: 'Clear queue',
+            tone: 'danger',
+          },
     )
     if (!confirmation) return
 
@@ -472,7 +494,7 @@ export function LeakageOpsTab({ onNotice }: { onNotice: (notice: Notice) => void
               <p className="eyebrow">MANUAL QUERY INGESTION · ESCAPE RISK VERIFICATION</p>
               <h2>Leakage Manual Verification Pipeline</h2>
             </div>
-            <span className="anomaly-pill leakage">🔎 Leakage Ingestion</span>
+            <span className="anomaly-pill leakage"><Icon name="search" className="icon inline-icon" />Leakage Ingestion</span>
           </div>
 
           {/* Mode Switcher */}
@@ -482,14 +504,14 @@ export function LeakageOpsTab({ onNotice }: { onNotice: (notice: Notice) => void
               className={`leakage-tab-btn ${mode === 'paste' ? 'active' : ''}`}
               onClick={() => setMode('paste')}
             >
-              <span>📋</span> Paste List
+              <span><Icon name="clipboard" className="icon inline-icon" /></span> Paste List
             </button>
             <button
               type="button"
               className={`leakage-tab-btn ${mode === 'csv' ? 'active' : ''}`}
               onClick={() => setMode('csv')}
             >
-              <span>📁</span> CSV / TSV Upload
+              <span><Icon name="folder" className="icon inline-icon" /></span> CSV / TSV Upload
             </button>
           </div>
 
@@ -550,7 +572,7 @@ export function LeakageOpsTab({ onNotice }: { onNotice: (notice: Notice) => void
                   disabled={busy || !pasteText.trim()}
                   onClick={() => void handleEnqueuePaste()}
                 >
-                  📥 Save to Database as Pending ({parsedPasteStats.total} items)
+                  <Icon name="import" className="icon inline-icon" />Save to Database as Pending ({parsedPasteStats.total} items)
                 </button>
                 <button
                   type="button"
@@ -610,7 +632,7 @@ export function LeakageOpsTab({ onNotice }: { onNotice: (notice: Notice) => void
                     }
                   }}
                 />
-                <span className="dropzone-icon">📂</span>
+                <span className="dropzone-icon"><Icon name="folder" className="icon inline-icon" /></span>
                 {csvFile ? (
                   <div>
                     <strong>{csvFile.name}</strong>
@@ -661,7 +683,7 @@ export function LeakageOpsTab({ onNotice }: { onNotice: (notice: Notice) => void
                   disabled={busy || !csvFile}
                   onClick={() => void handleEnqueueCsv()}
                 >
-                  🚀 Upload & Enqueue as Pending
+                  <Icon name="play" className="icon inline-icon" />Upload & Enqueue as Pending
                 </button>
                 {csvFile ? (
                   <button
@@ -715,7 +737,7 @@ export function LeakageOpsTab({ onNotice }: { onNotice: (notice: Notice) => void
           </div>
           {isProcessing ? (
             <span className="queue-status-pill inprogress">
-              ⚡ Worker Active ({progress?.processedCount ?? 0} / {progress?.totalCount ?? 0})
+              <Icon name="operations" className="icon inline-icon" />Worker Active ({progress?.processedCount ?? 0} / {progress?.totalCount ?? 0})
             </span>
           ) : (
             <span className="clean-pill">Idle / Ready</span>
@@ -741,7 +763,7 @@ export function LeakageOpsTab({ onNotice }: { onNotice: (notice: Notice) => void
             <strong>{aggregateMetrics.consistent}</strong>
           </div>
           <div className="leakage-metric-badge leakage-suspect">
-            <span>⚠️ Leakage Suspects</span>
+            <span><Icon name="warning" className="icon inline-icon" />Leakage Suspects</span>
             <strong>{aggregateMetrics.leakage}</strong>
           </div>
           <div className="leakage-metric-badge not-found">
@@ -800,7 +822,7 @@ export function LeakageOpsTab({ onNotice }: { onNotice: (notice: Notice) => void
               disabled={busy}
               onClick={() => void loadItems()}
             >
-              🔄 Refresh
+              <Icon name="refresh" className="icon inline-icon" />Refresh
             </button>
             <button
               type="button"
@@ -808,24 +830,14 @@ export function LeakageOpsTab({ onNotice }: { onNotice: (notice: Notice) => void
               disabled={busy || isProcessing}
               onClick={() => void handleRetry()}
             >
-              🔁 Retry Failed / Not Found
+              <Icon name="refresh" className="icon inline-icon" />Retry Failed / Not Found
             </button>
-            <button
-              type="button"
-              className="ghost-button"
-              disabled={busy || isProcessing}
-              onClick={() => void handleClear(true)}
-            >
-              🧹 Clear Completed
-            </button>
-            <button
-              type="button"
-              className="ghost-button"
-              disabled={busy || isProcessing}
-              onClick={() => void handleClear(false)}
-            >
-              🗑️ Clear Queue
-            </button>
+            <Button variant="danger" disabled={busy || isProcessing} onClick={() => void handleClear(true)}>
+              Clear Completed
+            </Button>
+            <Button variant="danger" disabled={busy || isProcessing} onClick={() => void handleClear(false)}>
+              Clear Queue
+            </Button>
           </div>
         </div>
 
@@ -850,11 +862,12 @@ export function LeakageOpsTab({ onNotice }: { onNotice: (notice: Notice) => void
 
           {/* Search Input */}
           <Field label="Search by Product ID or FK ID">
-            <input
+            <DebouncedInput
               type="text"
               value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value)
+              delay={350}
+              onValueChange={(next) => {
+                setSearchQuery(next)
                 setPage(1)
               }}
               placeholder="Filter serials or FK IDs..."
@@ -871,7 +884,7 @@ export function LeakageOpsTab({ onNotice }: { onNotice: (notice: Notice) => void
                   { id: 'Pending', label: 'Pending' },
                   { id: 'InProgress', label: 'Processing' },
                   { id: 'Completed', label: 'Completed' },
-                  { id: 'Leakage', label: '⚠️ Leakage' },
+                  { id: 'Leakage', label: 'Leakage' },
                   { id: 'NotFound', label: 'Not Found' },
                   { id: 'Failed', label: 'Failed' },
                 ].map((f) => (
@@ -909,7 +922,15 @@ export function LeakageOpsTab({ onNotice }: { onNotice: (notice: Notice) => void
         </div>
 
         <div className="operations-record-list">
-          {items.length === 0 ? (
+          {items.length === 0 && itemsLoad.status === 'loading' ? (
+            <div className="operations-empty-row" role="status"><span className="skeleton-line" /></div>
+          ) : items.length === 0 && itemsLoad.status === 'error' ? (
+            <div className="operations-empty-row error-cell" role="alert">
+              <strong>The queue could not be loaded.</strong>
+              {itemsLoad.error ? <span className="error-cell-detail">{itemsLoad.error}</span> : null}
+              <Button size="sm" variant="secondary" onClick={() => void loadItems()}>Try again</Button>
+            </div>
+          ) : items.length === 0 ? (
             <div className="operations-empty-row">No queue records match the current filters.</div>
           ) : items.map((item, idx) => {
           const isSelected = selectedIds.has(item.id)
@@ -917,7 +938,7 @@ export function LeakageOpsTab({ onNotice }: { onNotice: (notice: Notice) => void
 
           let statusBadge = <span className="queue-status-pill pending">Pending</span>
           if (item.status === 'InProgress') {
-            statusBadge = <span className="queue-status-pill inprogress">⚡ Processing...</span>
+            statusBadge = <span className="queue-status-pill inprogress"><Icon name="operations" className="icon inline-icon" />Processing...</span>
           } else if (item.status === 'Completed') {
             statusBadge = <span className="queue-status-pill completed">Completed</span>
           } else if (item.status === 'NotFound') {
@@ -934,7 +955,7 @@ export function LeakageOpsTab({ onNotice }: { onNotice: (notice: Notice) => void
           if (item.isLeakageSuspect) {
             verdictElement = (
               <span className="queue-status-pill leakage">
-                ⚠️ Leakage ({item.anomalyScore.toFixed(2)})
+                <Icon name="warning" className="icon inline-icon" />Leakage ({item.anomalyScore.toFixed(2)})
               </span>
             )
           } else if (item.status === 'Completed') {
@@ -1031,7 +1052,7 @@ export function LeakageOpsTab({ onNotice }: { onNotice: (notice: Notice) => void
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                  <span style={{ fontSize: 20 }}>⚠️</span>
+                  <span style={{ fontSize: 20 }}><Icon name="warning" className="icon inline-icon" /></span>
                   <strong style={{ fontSize: 15 }}>CRITICAL ESCAPE RISK (LEAKAGE DETECTED)</strong>
                 </div>
                 <p style={{ margin: 0, fontSize: 13 }}>
@@ -1116,7 +1137,7 @@ export function LeakageOpsTab({ onNotice }: { onNotice: (notice: Notice) => void
                       gap: '4px',
                     }}
                   >
-                    📦 Open Full Product Defect Pack (.json.gz)
+                    <Icon name="package" className="icon inline-icon" />Open Full Product Defect Pack (.json.gz)
                   </a>
                 )}
               </div>
@@ -1197,7 +1218,7 @@ export function LeakageOpsTab({ onNotice }: { onNotice: (notice: Notice) => void
                     style={{ color: '#fff', padding: '2px 8px' }}
                     onClick={() => setZoomedImageUri(null)}
                   >
-                    ✕ Close Preview
+                    <Icon name="close" className="icon inline-icon" />Close Preview
                   </button>
                 </div>
                 <img

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { verificationApi } from '../api'
 import { formatDate } from '../format'
-import { DataTable, Field, Pagination, StatusPill } from '../ui'
+import { DataTable, Field, Pagination, StatusPill, useLoadStatus } from '../ui'
 import type { Notice, VerificationHistory } from '../types'
 
 export function HistoryTab({ onNotice }: { onNotice: (notice: Notice) => void }) {
@@ -13,9 +13,11 @@ export function HistoryTab({ onNotice }: { onNotice: (notice: Notice) => void })
   const [machineCode, setMachineCode] = useState('')
   const [lineCode, setLineCode] = useState('')
   const [applied, setApplied] = useState({ category: 'All', machineCode: '', lineCode: '' })
+  const { status, error: loadError, begin, succeed, fail } = useLoadStatus()
 
   const load = useCallback(async (nextPage = 1) => {
     try {
+      begin()
       const payload = await verificationApi.history({
         category: applied.category === 'All' ? undefined : applied.category,
         machineCode: applied.machineCode || undefined,
@@ -27,10 +29,12 @@ export function HistoryTab({ onNotice }: { onNotice: (notice: Notice) => void })
       setPage(payload.page)
       setTotalPages(payload.totalPages)
       setTotalCount(payload.totalCount)
+      succeed()
     } catch (error) {
+      fail(error)
       onNotice({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to load verification history.' })
     }
-  }, [applied, onNotice])
+  }, [applied, onNotice, begin, succeed, fail])
 
   useEffect(() => {
     void load(1)
@@ -70,6 +74,9 @@ export function HistoryTab({ onNotice }: { onNotice: (notice: Notice) => void })
       </form>
       <DataTable
         columns={['When', 'Category', 'ID', 'Judge', 'Status', 'Machine', 'Line', 'Connection', 'Query', 'Notes']}
+        status={status}
+        error={loadError}
+        onRetry={() => void load(page)}
         rows={rows.map((row) => ({
           id: row.id,
           cells: [

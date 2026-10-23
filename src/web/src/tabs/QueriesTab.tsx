@@ -12,7 +12,8 @@ import {
 } from '../api'
 import { formatDate, formNumber, formString, paginate } from '../format'
 import { BatchPipelinesModal } from '../components/BatchPipelinesModal'
-import { DataTable, Field, Modal, Pagination, StatusPill } from '../ui'
+import { Button, DataTable, Field, Icon, Modal, Pagination, StatusPill, useLoadStatus } from '../ui'
+import { useConfirm } from '../confirm'
 import type {
   CreateQueryProfileRequest,
   DatabaseConnection,
@@ -282,7 +283,15 @@ export function QueriesTab({ onNotice }: { onNotice: (notice: Notice) => void })
 
   const pagedExecutions = paginate(filteredExecutions, executionPage, 8)
 
+  const profilesLoad = useLoadStatus()
+  const pipelinesLoad = useLoadStatus()
+  const executionsLoad = useLoadStatus()
+  const { begin: beginProfiles, succeed: succeedProfiles, fail: failProfiles } = profilesLoad
+  const { begin: beginPipelines, succeed: succeedPipelines, fail: failPipelines } = pipelinesLoad
+  const { begin: beginExecutions, succeed: succeedExecutions, fail: failExecutions } = executionsLoad
+
   const loadProfilesAndConnections = useCallback(async () => {
+    beginProfiles()
     try {
       const [nextProfiles, connectionPage] = await Promise.all([
         queryProfilesApi.list(),
@@ -291,28 +300,36 @@ export function QueriesTab({ onNotice }: { onNotice: (notice: Notice) => void })
       setProfiles(nextProfiles)
       setConnections(connectionPage.items)
       setSelectedConnectionId((current) => current || connectionPage.items[0]?.id || '')
+      succeedProfiles()
     } catch (error) {
+      failProfiles(error)
       onNotice({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to load MariaDB queries.' })
     }
-  }, [onNotice])
+  }, [onNotice, beginProfiles, succeedProfiles, failProfiles])
 
   const loadPipelines = useCallback(async () => {
+    beginPipelines()
     try {
       const data = await getOverkillPipelineConfigs()
       setPipelines(data)
+      succeedPipelines()
     } catch (error) {
+      failPipelines(error)
       onNotice({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to load Overkill pipelines.' })
     }
-  }, [onNotice])
+  }, [onNotice, beginPipelines, succeedPipelines, failPipelines])
 
   const loadExecutions = useCallback(async () => {
+    beginExecutions()
     try {
       const data = await getOverkillPipelineExecutions()
       setExecutions(data)
+      succeedExecutions()
     } catch (error) {
+      failExecutions(error)
       onNotice({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to load pipeline executions.' })
     }
-  }, [onNotice])
+  }, [onNotice, beginExecutions, succeedExecutions, failExecutions])
 
   useEffect(() => {
     void loadProfilesAndConnections()
@@ -846,8 +863,16 @@ export function QueriesTab({ onNotice }: { onNotice: (notice: Notice) => void })
     }
   }
 
+  const confirm = useConfirm()
+
   async function handleDeletePipeline(id: string, name: string) {
-    if (!window.confirm(`Are you sure you want to delete pipeline '${name}'?`)) return
+    const ok = await confirm({
+      title: `Delete pipeline ${name}?`,
+      message: 'The pipeline stops running and its configuration is removed. This cannot be undone.',
+      confirmLabel: 'Delete pipeline',
+      tone: 'danger',
+    })
+    if (!ok) return
     try {
       await deleteOverkillPipelineConfig(id)
       onNotice({ tone: 'info', message: `Pipeline '${name}' deleted.` })
@@ -860,13 +885,13 @@ export function QueriesTab({ onNotice }: { onNotice: (notice: Notice) => void })
   return (
     <div className="tab-stack">
       {/* View Switcher Bar */}
-      <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '4px' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', marginBottom: '4px' }}>
         <button
           type="button"
           className={`filter-chip ${subView === 'pipelines' ? 'active' : ''}`}
           onClick={() => setSubView('pipelines')}
         >
-          ⚡ Overkill Automated Pipelines ({pipelines.length})
+          <Icon name="operations" className="icon inline-icon" />Overkill Automated Pipelines ({pipelines.length})
         </button>
         <button
           type="button"
@@ -894,7 +919,7 @@ export function QueriesTab({ onNotice }: { onNotice: (notice: Notice) => void })
                   onClick={() => setBatchProvisionModalOpen(true)}
                   title="Batch configure Overkill pipelines and multi-defect tables for lines"
                 >
-                  🚀 Batch Setup Defect Pipelines
+                  <Icon name="play" className="icon inline-icon" />Batch Setup Defect Pipelines
                 </button>
                 <button type="button" onClick={openCreatePipeline}>
                   + New Overkill Pipeline
@@ -910,6 +935,9 @@ export function QueriesTab({ onNotice }: { onNotice: (notice: Notice) => void })
               eyebrow="SCHEDULED PIPELINES"
               title="Configured Overkill Pipelines"
               columns={['Pipeline Name', 'Connection', 'Machine / Line', 'Schedule Interval', 'Status', 'Last Run / Scan', 'Actions']}
+              status={pipelinesLoad.status}
+              error={pipelinesLoad.error}
+              onRetry={() => void loadPipelines()}
               rows={pagedPipelines.items.map((p) => {
                 const intervalHours = (p.scheduleIntervalMinutes / 60).toFixed(1).replace('.0', '')
                 const isRunning = runningPipelineId === p.id || p.lastRunStatus === 'Running'
@@ -923,14 +951,14 @@ export function QueriesTab({ onNotice }: { onNotice: (notice: Notice) => void })
                         Table: <code>{p.productTableName}</code> · Zone: <code>{p.zoneColumnName || 'zone'}</code> · Defect: <code>{p.defectNameColumnName || 'defect_name'}</code> · Defect tables: {p.defectTables?.length ?? 0}
                       </div>
                       <div className="field-hint" style={{ marginTop: '2px' }}>
-                        PC Image API: <code style={{ color: '#9333ea' }}>{p.imageCrawlerApiUrl || 'Default PC API'}</code> {p.autoCrawlImages ? '· ⚡ Auto-crawl' : ''}
+                        PC Image API: <code style={{ color: '#9333ea' }}>{p.imageCrawlerApiUrl || 'Default PC API'}</code> {p.autoCrawlImages ? '· Auto-crawl' : ''}
                       </div>
                     </div>,
                     <div key="conn" style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                       <span>{p.connectionName}</span>
                       {p.offloadDefectsToSeaweedFs && (
-                        <span className="tag-badge" style={{ background: '#e0f2fe', color: '#0369a1', borderColor: '#bae6fd', fontSize: '10px', width: 'fit-content' }}>
-                          🌊 SeaweedFS
+                        <span className="tag-badge" style={{ background: '#e0f2fe', color: '#0369a1', borderColor: '#bae6fd', fontSize: '12px', width: 'fit-content' }}>
+                          <Icon name="leakage" className="icon inline-icon" />SeaweedFS
                         </span>
                       )}
                     </div>,
@@ -973,14 +1001,14 @@ export function QueriesTab({ onNotice }: { onNotice: (notice: Notice) => void })
                       >
                         Edit
                       </button>
-                      <button
-                        type="button"
-                        className="table-button"
-                        style={{ color: '#ef4444' }}
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        aria-label={`Delete pipeline ${p.name}`}
                         onClick={() => void handleDeletePipeline(p.id, p.name)}
                       >
                         Delete
-                      </button>
+                      </Button>
                     </div>,
                   ],
                 }
@@ -1009,6 +1037,7 @@ export function QueriesTab({ onNotice }: { onNotice: (notice: Notice) => void })
                     setExecutionPage(1)
                   }}
                   style={{ width: 'auto', minWidth: '200px' }}
+                  aria-label="Filter executions by pipeline"
                 >
                   <option value="All">All Pipelines</option>
                   {pipelines.map((p) => (
@@ -1031,6 +1060,9 @@ export function QueriesTab({ onNotice }: { onNotice: (notice: Notice) => void })
               eyebrow="AUDIT TRAIL"
               title="Recent Automated & Manual Ingestions"
               columns={['Pipeline', 'Trigger', 'Started', 'Duration', 'Status', 'Products', 'Defects', 'Overkill Suspects', 'Message']}
+              status={executionsLoad.status}
+              error={executionsLoad.error}
+              onRetry={() => void loadExecutions()}
               rows={pagedExecutions.items.map((exec) => ({
                 id: exec.id,
                 cells: [
@@ -1337,7 +1369,7 @@ export function QueriesTab({ onNotice }: { onNotice: (notice: Notice) => void })
                     }}
                   />
                   <span>
-                    <strong style={{ color: '#93c5fd' }}>Include OK Product IDs in inspection window (Throughput Tracking)</strong>
+                    <strong style={{ color: '#1d4ed8' }}>Include OK Product IDs in inspection window (Throughput Tracking)</strong>
                     <small>Collects both OK and NG units to benchmark throughput, station NG rates, and overkill across lines.</small>
                   </span>
                 </label>
@@ -1345,8 +1377,8 @@ export function QueriesTab({ onNotice }: { onNotice: (notice: Notice) => void })
                 {/* PC Image Crawler Configuration */}
                 <div style={{ marginTop: '10px', padding: '10px 12px', background: 'rgba(168, 85, 247, 0.06)', border: '1px solid rgba(168, 85, 247, 0.3)', borderRadius: '6px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                    <strong style={{ fontSize: '12px', color: '#7e22ce' }}>🖼️ PC Defect Image Crawler API</strong>
-                    <span style={{ fontSize: '11px', color: '#6b7280' }}>Crawls images using paths from <code>image_path</code> column</span>
+                    <strong style={{ fontSize: '12px', color: '#7e22ce' }}><Icon name="image" className="icon inline-icon" />PC Defect Image Crawler API</strong>
+                    <span style={{ fontSize: '12px', color: '#6b7280' }}>Crawls images using paths from <code>image_path</code> column</span>
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 180px auto', gap: '10px', alignItems: 'center' }}>
                     <input
@@ -1362,7 +1394,7 @@ export function QueriesTab({ onNotice }: { onNotice: (notice: Notice) => void })
                       onChange={(e) => setPipelineForm((prev) => ({ ...prev, imageCrawlerVpMode: e.target.value }))}
                       style={{ fontSize: '12px', fontWeight: 600 }}
                     >
-                      <option value="all">⚡ All VPs (Auto-try VP 0 & other VPs)</option>
+                      <option value="all">All VPs (Auto-try VP 0 & other VPs)</option>
                       <option value="0">VP = 0 (Prefer Thumbnail)</option>
                       <option value="auto">Auto VP (Feature/Path)</option>
                       <option value="1">VP = 1</option>
@@ -1389,7 +1421,7 @@ export function QueriesTab({ onNotice }: { onNotice: (notice: Notice) => void })
                     <h3 style={{ fontSize: '13px', fontWeight: 700, margin: 0, color: '#1e293b' }}>
                       2. Defect Tables Grid Mapping ({pipelineForm.defectTables.length})
                     </h3>
-                    <p className="muted" style={{ margin: '2px 0 0', fontSize: '11px' }}>
+                    <p className="muted" style={{ margin: '2px 0 0', fontSize: '12px' }}>
                       All defect tables follow the standard MariaDB schema (<code>fk_prod_id</code>, <code>name</code>, <code>judge</code>, <code>feature</code>, <code>reason</code>, <code>image_path</code>, etc.). Only the table name varies.
                     </p>
                   </div>
@@ -1408,7 +1440,7 @@ export function QueriesTab({ onNotice }: { onNotice: (notice: Notice) => void })
                       onClick={() => setShowBatchAdd(!showBatchAdd)}
                       title="Quick paste multiple table names (mcl_defect, aoi_defect, spi_defect...)"
                     >
-                      📋 Batch Paste Tables
+                      <Icon name="clipboard" className="icon inline-icon" />Batch Paste Tables
                     </button>
                     <button
                       type="button"
@@ -1416,7 +1448,7 @@ export function QueriesTab({ onNotice }: { onNotice: (notice: Notice) => void })
                       onClick={standardizeAllDefectTables}
                       title="Reset all rows to standard schema column names"
                     >
-                      ⚡ Standardize All Schemas
+                      <Icon name="operations" className="icon inline-icon" />Standardize All Schemas
                     </button>
                   </div>
                 </div>
@@ -1428,7 +1460,7 @@ export function QueriesTab({ onNotice }: { onNotice: (notice: Notice) => void })
                       <strong style={{ fontSize: '13px', color: '#0f172a' }}>
                         Batch Import Defect Tables (Multi-Table Paste & Live Preview)
                       </strong>
-                      <span className="tag-badge" style={{ background: '#059669', color: '#fff', fontSize: '11px', fontWeight: 700 }}>
+                      <span className="tag-badge" style={{ background: '#047857', color: '#fff', fontSize: '12px', fontWeight: 700 }}>
                         {parsedBatchDefectTables.length} Tables Detected
                       </span>
                     </div>
@@ -1440,13 +1472,13 @@ export function QueriesTab({ onNotice }: { onNotice: (notice: Notice) => void })
                         border: '1px solid rgba(59, 130, 246, 0.25)',
                         borderRadius: '6px',
                         padding: '8px 12px',
-                        fontSize: '11px',
+                        fontSize: '12px',
                         color: '#1e40af',
                         marginBottom: '8px',
                         lineHeight: 1.5,
                       }}
                     >
-                      <strong>💡 Multi-Table AOI Guide:</strong> Paste defect table names separated by newlines or commas.
+                      <strong><Icon name="info" className="icon inline-icon" />Multi-Table AOI Guide:</strong> Paste defect table names separated by newlines or commas.
                       The pipeline will automatically bind them to the <code>Product</code> table using Foreign Key <code>{pipelineForm.fkIdColumnName || 'fk_prod_id'}</code> and standard column definitions (<code>judge</code>, <code>name</code>, <code>feature</code>, <code>image_path</code>).
                     </div>
 
@@ -1460,7 +1492,7 @@ export function QueriesTab({ onNotice }: { onNotice: (notice: Notice) => void })
                     {/* Live Preview of Parsed Tables */}
                     {parsedBatchDefectTables.length > 0 && (
                       <div style={{ marginTop: '8px', border: '1px solid #cbd5e1', borderRadius: '4px', overflow: 'hidden' }}>
-                        <div style={{ background: '#f1f5f9', padding: '4px 8px', fontSize: '11px', fontWeight: 700, color: '#334155' }}>
+                        <div style={{ background: '#f1f5f9', padding: '4px 8px', fontSize: '12px', fontWeight: 700, color: '#334155' }}>
                           Live Preview: {parsedBatchDefectTables.length} Defect Tables to be Generated
                         </div>
                         <div style={{ maxHeight: '120px', overflowY: 'auto' }}>
@@ -1480,7 +1512,7 @@ export function QueriesTab({ onNotice }: { onNotice: (notice: Notice) => void })
                               {parsedBatchDefectTables.map((t, idx) => (
                                 <tr key={idx}>
                                   <td className="font-mono text-muted text-xs">{idx + 1}</td>
-                                  <td><strong className="mono-code" style={{ color: '#0284c7' }}>{t.tableName}</strong></td>
+                                  <td><strong className="mono-code" style={{ color: '#0369a1' }}>{t.tableName}</strong></td>
                                   <td className="text-xs">{t.displayName}</td>
                                   <td className="font-mono text-xs text-muted">{t.fkColumnName}</td>
                                   <td className="font-mono text-xs text-muted">{t.judgeColumn}</td>
@@ -1501,7 +1533,7 @@ export function QueriesTab({ onNotice }: { onNotice: (notice: Notice) => void })
                         onClick={handleBatchAdd}
                         disabled={!batchInput.trim()}
                       >
-                        ⚡ Generate {parsedBatchDefectTables.length} Table Rows
+                        <Icon name="operations" className="icon inline-icon" />Generate {parsedBatchDefectTables.length} Table Rows
                       </button>
                       <button
                         type="button"
@@ -1549,7 +1581,7 @@ export function QueriesTab({ onNotice }: { onNotice: (notice: Notice) => void })
                       {pipelineForm.defectTables.length === 0 ? (
                         <tr>
                           <td colSpan={14} style={{ textAlign: 'center', padding: '18px', color: '#64748b' }}>
-                            No defect tables configured. Click <strong>+ Add Row</strong> or <strong>📋 Batch Paste Tables</strong> above.
+                            No defect tables configured. Click <strong>+ Add Row</strong> or <strong><Icon name="clipboard" className="icon inline-icon" />Batch Paste Tables</strong> above.
                           </td>
                         </tr>
                       ) : (
@@ -1662,28 +1694,28 @@ export function QueriesTab({ onNotice }: { onNotice: (notice: Notice) => void })
                               <td>
                                 <div className="grid-actions">
                                   <button
-                                    type="button"
+                                    aria-label={expandedRow === index ? 'Collapse extra settings' : 'Expand extra columns (custom_feature, spec_judge, etc.)'} type="button"
                                     className={`grid-icon-btn ${expandedRow === index ? 'active' : ''}`}
                                     onClick={() => setExpandedRow(expandedRow === index ? null : index)}
                                     title={expandedRow === index ? 'Collapse extra settings' : 'Expand extra columns (custom_feature, spec_judge, etc.)'}
                                   >
-                                    ⚙️
+                                    <Icon name="settings" className="icon inline-icon" />
                                   </button>
                                   <button
-                                    type="button"
+                                    aria-label="Duplicate table row" type="button"
                                     className="grid-icon-btn"
                                     onClick={() => duplicateDefectTable(index)}
                                     title="Duplicate table row"
                                   >
-                                    📋
+                                    <Icon name="clipboard" className="icon inline-icon" />
                                   </button>
                                   <button
-                                    type="button"
+                                    aria-label="Delete table row" type="button"
                                     className="grid-icon-btn delete"
                                     onClick={() => removeDefectTable(index)}
                                     title="Delete table row"
                                   >
-                                    ✕
+                                    <Icon name="close" className="icon inline-icon" />
                                   </button>
                                 </div>
                               </td>
@@ -1695,13 +1727,13 @@ export function QueriesTab({ onNotice }: { onNotice: (notice: Notice) => void })
                                 <td colSpan={14} style={{ padding: '0 4px 6px' }}>
                                   <div className="subrow-card">
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                                      <strong style={{ fontSize: '11px', color: '#334155', textTransform: 'uppercase' }}>
+                                      <strong style={{ fontSize: '12px', color: '#334155', textTransform: 'uppercase' }}>
                                         Extended Schema & Direct Coordinates for [{defectTable.tableName || `#${index + 1}`}]
                                       </strong>
                                       <button
                                         type="button"
                                         className="secondary compact-button"
-                                        style={{ fontSize: '11px', padding: '2px 8px' }}
+                                        style={{ fontSize: '12px', padding: '2px 8px' }}
                                         onClick={() => {
                                           const std = createStandardDefectTable(defectTable.tableName, pipelineForm.fkIdColumnName || 'fk_prod_id')
                                           setPipelineForm((prev) => {
@@ -1711,7 +1743,7 @@ export function QueriesTab({ onNotice }: { onNotice: (notice: Notice) => void })
                                           })
                                         }}
                                       >
-                                        ⚡ Re-apply Standard Preset
+                                        <Icon name="operations" className="icon inline-icon" />Re-apply Standard Preset
                                       </button>
                                     </div>
                                     <div className="subrow-grid">
@@ -2021,14 +2053,9 @@ export function QueriesTab({ onNotice }: { onNotice: (notice: Notice) => void })
               {/* Test Mapping Button & Live Preview Box */}
               <div style={{ marginTop: '14px', borderTop: '1px solid #e2e8f0', paddingTop: '14px' }}>
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  <button
-                    type="button"
-                    className="secondary"
-                    disabled={testing || busy}
-                    onClick={() => void handleTestMapping()}
-                  >
-                    {testing ? 'Connecting & Testing...' : '🔍 Test Mapping & Preview Data'}
-                  </button>
+                  <Button type="button" onClick={() => void handleTestMapping()} variant="secondary" loading={testing} disabled={busy}>
+                    {testing ? 'Connecting & Testing...' : 'Test Mapping & Preview Data'}
+                  </Button>
                   <span className="field-hint">
                     Executes read-only sample query (LIMIT 5) against MariaDB without saving.
                   </span>
@@ -2052,17 +2079,17 @@ export function QueriesTab({ onNotice }: { onNotice: (notice: Notice) => void })
                       {testResult.defectCountsByTable &&
                         Object.entries(testResult.defectCountsByTable).map(([tbl, count]) => (
                           <span key={tbl} className="tag-badge" style={{ background: '#ecfdf5', color: '#166534', borderColor: '#86efac', fontWeight: 700 }}>
-                            📋 Table {tbl}: {count.toLocaleString()} defect(s)
+                            <Icon name="clipboard" className="icon inline-icon" />Table {tbl}: {count.toLocaleString()} defect(s)
                           </span>
                         ))}
                       {pipelineForm.bypassRuleEnabled ? (
                         <span className="tag-badge" style={{ background: '#fef3c7', color: '#92400e', borderColor: '#fcd34d' }}>
-                          🛡️ Bypassed: {testResult.bypassedDefectsCount ?? 0} | Scanned: {testResult.scannedDefectsCount ?? ((testResult.acceptedDefectsCount ?? testResult.sampleDefects.length) + (testResult.bypassedDefectsCount ?? 0))} | Accepted: {testResult.acceptedDefectsCount ?? testResult.sampleDefects.length}
+                          <Icon name="overkill" className="icon inline-icon" />Bypassed: {testResult.bypassedDefectsCount ?? 0} | Scanned: {testResult.scannedDefectsCount ?? ((testResult.acceptedDefectsCount ?? testResult.sampleDefects.length) + (testResult.bypassedDefectsCount ?? 0))} | Accepted: {testResult.acceptedDefectsCount ?? testResult.sampleDefects.length}
                         </span>
                       ) : (
                         (testResult.bypassedDefectsCount ?? 0) > 0 && (
                           <span className="tag-badge" style={{ background: '#fef3c7', color: '#92400e', borderColor: '#fcd34d' }}>
-                            🛡️ {testResult.bypassedDefectsCount} defect(s) bypassed (legacy)
+                            <Icon name="overkill" className="icon inline-icon" />{testResult.bypassedDefectsCount} defect(s) bypassed (legacy)
                           </span>
                         )
                       )}
@@ -2073,22 +2100,22 @@ export function QueriesTab({ onNotice }: { onNotice: (notice: Notice) => void })
                       )}
                       {testResult.alreadySavedProductsCount !== undefined && testResult.alreadySavedProductsCount > 0 && (
                         <span className="tag-badge" style={{ background: '#f8fafc', color: '#1e293b', borderColor: '#94a3b8', fontWeight: 700 }} title="Products already persisted in database are automatically locked/skipped to prevent duplicates">
-                          🔒 {testResult.alreadySavedProductsCount}/{testResult.sampleProductsCount} already in DB (automatically locked/skipped on real runs)
+                          <Icon name="lock" className="icon inline-icon" />{testResult.alreadySavedProductsCount}/{testResult.sampleProductsCount} already in DB (automatically locked/skipped on real runs)
                         </span>
                       )}
                     </div>
 
                     {testResult.generatedDefectSql && (
                       <div style={{ marginBottom: '10px' }}>
-                        <span style={{ fontSize: '11px', fontWeight: 700, color: '#334155' }}>
-                          ⚡ Generated SQL Query ({Object.keys(testResult.defectCountsByTable || {}).length} defect table(s) - pushdown bypass active):
+                        <span style={{ fontSize: '12px', fontWeight: 700, color: '#334155' }}>
+                          <Icon name="operations" className="icon inline-icon" />Generated SQL Query ({Object.keys(testResult.defectCountsByTable || {}).length} defect table(s) - pushdown bypass active):
                         </span>
                         <pre style={{
                           background: '#0f172a',
                           color: '#38bdf8',
                           padding: '8px 12px',
                           borderRadius: '6px',
-                          fontSize: '11px',
+                          fontSize: '12px',
                           overflowX: 'auto',
                           margin: '4px 0 0',
                           fontFamily: 'monospace',
@@ -2164,8 +2191,8 @@ export function QueriesTab({ onNotice }: { onNotice: (notice: Notice) => void })
 
                       return (
                         <div style={{ marginTop: '12px' }}>
-                          <div style={{ fontSize: '11px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
-                            🔍 Sample Defect Rows (Displaying {testResult.sampleDefects.length} / total {testResult.acceptedDefectsCount ?? testResult.sampleDefects.length} defect(s) found, query limit 2000):
+                          <div style={{ fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                            <Icon name="search" className="icon inline-icon" />Sample Defect Rows (Displaying {testResult.sampleDefects.length} / total {testResult.acceptedDefectsCount ?? testResult.sampleDefects.length} defect(s) found, query limit 2000):
                           </div>
                           <div className="mini-preview-table-wrap">
                             <table className="mini-preview-table">
@@ -2231,7 +2258,7 @@ export function QueriesTab({ onNotice }: { onNotice: (notice: Notice) => void })
                   onClick={() => setBatchProvisionModalOpen(true)}
                   title="Batch configure Overkill pipelines and multi-defect tables for lines"
                 >
-                  🚀 Batch Setup Defect Pipelines
+                  <Icon name="play" className="icon inline-icon" />Batch Setup Defect Pipelines
                 </button>
                 <button
                   type="button"
@@ -2324,6 +2351,9 @@ export function QueriesTab({ onNotice }: { onNotice: (notice: Notice) => void })
             eyebrow="GET /query-profiles"
             title="Saved query content"
             columns={['Name', 'Category', 'Machine', 'Line', 'Connection', 'Updated', '']}
+            status={profilesLoad.status}
+            error={profilesLoad.error}
+            onRetry={() => void loadProfilesAndConnections()}
             rows={pagedProfiles.items.map((profile) => ({
               id: profile.id,
               cells: [

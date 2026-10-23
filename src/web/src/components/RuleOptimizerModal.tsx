@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { classifierRulesApi } from '../api'
+import { useConfirm } from '../confirm'
 import { formatPercent } from '../format'
 import { Modal } from '../ui'
 import type {
@@ -79,12 +80,18 @@ export const RuleOptimizerModal: React.FC<RuleOptimizerModalProps> = ({
     }
   }
 
+  const confirm = useConfirm()
+
   async function handleApplyTunedRule() {
     if (!candidateScript.trim()) return
     if (simResult && !simResult.isSafeToDeploy) {
-      if (!window.confirm('WARNING: This candidate script introduces defect escape risk (Leakage)! Are you sure you want to save?')) {
-        return
-      }
+      const ok = await confirm({
+        title: 'Save a script that lets defects escape?',
+        message: 'The simulation found that this candidate script introduces defect escape risk (Leakage).',
+        confirmLabel: 'Save anyway',
+        tone: 'danger',
+      })
+      if (!ok) return
     }
 
     setSavingRule(true)
@@ -104,7 +111,7 @@ export const RuleOptimizerModal: React.FC<RuleOptimizerModalProps> = ({
 
   return (
     <Modal
-      title={`🎯 Rule Optimizer & What-If Simulation · ${rule.ruleName} (Priority ${rule.priority ?? 0})`}
+      title={`Rule Optimizer & What-If Simulation · ${rule.ruleName} (Priority ${rule.priority ?? 0})`}
       description="Automatically analyzes Overkill data, calculates Gold Thresholds, and runs regression simulations to verify false alarm reduction before deploying to machines."
       open={open}
       onClose={onClose}
@@ -171,7 +178,7 @@ export const RuleOptimizerModal: React.FC<RuleOptimizerModalProps> = ({
                     return (
                       <tr key={rec.featureName} style={{ background: isGold ? 'rgba(16, 185, 129, 0.08)' : undefined }}>
                         <td className="font-mono font-bold" style={{ color: isGold ? '#34d399' : '#e2e8f0' }}>
-                          {isGold && '⭐ '}
+                          {isGold && ''}
                           {rec.featureName}
                         </td>
                         <td className="font-mono text-muted">
@@ -227,7 +234,7 @@ export const RuleOptimizerModal: React.FC<RuleOptimizerModalProps> = ({
               rows={14}
               style={{
                 fontFamily: 'monospace',
-                fontSize: '11px',
+                fontSize: '12px',
                 width: '100%',
                 background: '#090d16',
                 color: '#94a3b8',
@@ -248,7 +255,7 @@ export const RuleOptimizerModal: React.FC<RuleOptimizerModalProps> = ({
                 <button
                   type="button"
                   className="ghost-button compact"
-                  style={{ fontSize: '10px', padding: '1px 6px' }}
+                  style={{ fontSize: '12px', padding: '1px 6px' }}
                   onClick={() => setCandidateScript(tuningData.autoTunedScript)}
                   title="Reload auto-tuned script"
                 >
@@ -262,7 +269,7 @@ export const RuleOptimizerModal: React.FC<RuleOptimizerModalProps> = ({
               rows={14}
               style={{
                 fontFamily: 'monospace',
-                fontSize: '11px',
+                fontSize: '12px',
                 width: '100%',
                 background: '#090d16',
                 color: '#e2e8f0',
@@ -287,7 +294,7 @@ export const RuleOptimizerModal: React.FC<RuleOptimizerModalProps> = ({
             onClick={() => void handleRunSimulation()}
             disabled={simulating || !candidateScript.trim()}
           >
-            {simulating ? 'Simulating...' : '🚀 Run What-If Simulation'}
+            {simulating ? 'Simulating...' : 'Run What-If Simulation'}
           </button>
         </div>
 
@@ -320,7 +327,7 @@ export const RuleOptimizerModal: React.FC<RuleOptimizerModalProps> = ({
                   padding: '4px 10px',
                 }}
               >
-                {simResult.isSafeToDeploy ? '✓ QUALIFIED FOR PRODUCTION' : '🚨 LEAKAGE RISK DETECTED'}
+                {simResult.isSafeToDeploy ? '✓ QUALIFIED FOR PRODUCTION' : 'LEAKAGE RISK DETECTED'}
               </span>
             </div>
 
@@ -382,7 +389,7 @@ export const RuleOptimizerModal: React.FC<RuleOptimizerModalProps> = ({
                         background: 'rgba(255,255,255,0.03)',
                         display: 'flex',
                         justifyContent: 'space-between',
-                        fontSize: '11px',
+                        fontSize: '12px',
                         alignItems: 'center',
                       }}
                     >
@@ -411,7 +418,7 @@ export const RuleOptimizerModal: React.FC<RuleOptimizerModalProps> = ({
           <button
             type="button"
             className="primary"
-            style={{ background: '#059669', borderColor: '#10b981', fontWeight: 600 }}
+            style={{ background: '#047857', borderColor: '#10b981', fontWeight: 600 }}
             onClick={() => void handleApplyTunedRule()}
             disabled={savingRule || !candidateScript.trim()}
           >

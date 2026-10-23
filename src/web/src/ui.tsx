@@ -1,6 +1,7 @@
-import { cloneElement, isValidElement, useEffect, useId, useMemo, useRef, useState, type ReactElement, type ReactNode } from 'react'
+import { cloneElement, isValidElement, memo, useCallback, useEffect, useId, useMemo, useRef, useState, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactElement, type ReactNode } from 'react'
 import type { DefectRecord, Notice } from './types'
 import { fetchDefectFeatureContent, storageApi, imageCrawlerApi } from './api'
+import { LazyImage } from './components/LazyImage'
 
 export function Icon({ name, className = 'icon' }: { name: string; className?: string }) {
   const paths: Record<string, string> = {
@@ -23,6 +24,26 @@ export function Icon({ name, className = 'icon' }: { name: string; className?: s
     close: 'M6 6l12 12M18 6 6 18',
     plus: 'M12 5v14M5 12h14',
     search: 'M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm10 2-4.35-4.35',
+    refresh: 'M21 12a9 9 0 0 1-15.5 6.3L3 16M3 12a9 9 0 0 1 15.5-6.3L21 8M21 3v5h-5M3 21v-5h5',
+    warning: 'M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0zM12 9v4M12 17h.01',
+    clock: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7v5l3 2',
+    check: 'M20 6 9 17l-5-5',
+    play: 'M7 4l13 8-13 8z',
+    package: 'M21 8 12 3 3 8v8l9 5 9-5zM3 8l9 5 9-5M12 13v8',
+    clipboard: 'M9 3h6v3H9zM7 5H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M8 12h8M8 16h5',
+    target: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM12 12h.01',
+    info: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 16v-4M12 8h.01',
+    image: 'M4 5h16v14H4zM8.5 10a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM20 15l-5-5L5 19',
+    save: 'M5 3h11l3 3v15H5zM8 3v5h7V3M8 21v-7h8v7',
+    link: 'M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1',
+    star: 'M12 3l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.8 6.2 20.9l1.1-6.5L2.6 9.8l6.5-.9z',
+    edit: 'M4 20h4L19 9l-4-4L4 16zM13 7l4 4',
+    trash: 'M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3',
+    flask: 'M9 3h6M10 3v6L4.5 19a1.5 1.5 0 0 0 1.3 2h12.4a1.5 1.5 0 0 0 1.3-2L14 9V3',
+    folder: 'M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z',
+    book: 'M4 4h6a3 3 0 0 1 2 1 3 3 0 0 1 2-1h6v15h-6a3 3 0 0 0-2 1 3 3 0 0 0-2-1H4z',
+    lock: 'M6 11h12v9H6zM8 11V8a4 4 0 0 1 8 0v3',
+    help: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7M12 17h.01',
   }
   return (
     <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
@@ -38,22 +59,107 @@ export function Icon({ name, className = 'icon' }: { name: string; className?: s
   )
 }
 
+/** Shown in place of a chart or a list that failed to load; says so and offers a retry instead of an empty "no data" message. */
+export function LoadFailure({ title, error, onRetry }: { title: string; error?: string | null; onRetry?: () => void }) {
+  return (
+    <div className="dashboard-report-empty" role="alert">
+      <strong>{title}</strong>
+      {error ? <span>{error}</span> : null}
+      {onRetry ? <Button variant="secondary" size="sm" onClick={onRetry}>Try again</Button> : null}
+    </div>
+  )
+}
+
+/** Placeholder for a chart while its data loads, the same height as the chart so the page does not jump. */
+export function ChartSkeleton({ height = 340 }: { height?: number }) {
+  return <span className="skeleton-line chart-skeleton" style={{ height }} role="status" aria-label="Loading chart" />
+}
+
+/** Where a list is in its life: first load, loaded, or failed. Lets a screen say "could not load" instead of "no records". */
+export type LoadStatus = 'loading' | 'ready' | 'error'
+
+/**
+ * Tracks the load state of one list. Call `begin()` before a user-initiated load, `succeed()` after it, `fail(error)` in the catch.
+ * A background refresh should skip `begin()`, so rows already on screen are not replaced by placeholders.
+ */
+export function useLoadStatus() {
+  const [state, setState] = useState<{ status: LoadStatus; error?: string }>({ status: 'loading' })
+  const begin = useCallback(() => setState((current) => (current.status === 'ready' ? current : { status: 'loading' })), [])
+  const succeed = useCallback(() => setState({ status: 'ready' }), [])
+  const fail = useCallback(
+    (error: unknown) => setState({ status: 'error', error: error instanceof Error ? error.message : 'The request failed.' }),
+    [],
+  )
+  return { status: state.status, error: state.error, begin, succeed, fail }
+}
+
+type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger'
+
+const BUTTON_VARIANT_CLASS: Record<ButtonVariant, string> = {
+  primary: 'primary',
+  secondary: 'secondary',
+  ghost: 'ghost-button',
+  danger: 'danger',
+}
+
+/**
+ * The one button. `primary` is for the main action of a block (one per block), `secondary` and `ghost` for the rest,
+ * `danger` for destructive actions. `loading` shows a spinner, disables the button and tells assistive tech it is busy,
+ * so a click gets feedback straight away and cannot be repeated while the request runs.
+ */
+export function Button({
+  variant = 'primary',
+  size = 'md',
+  loading = false,
+  className,
+  disabled,
+  type = 'button',
+  children,
+  ...rest
+}: Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'className'> & {
+  variant?: ButtonVariant
+  size?: 'md' | 'sm'
+  loading?: boolean
+  className?: string
+}) {
+  const classes = [BUTTON_VARIANT_CLASS[variant], size === 'sm' ? 'btn-sm' : '', className ?? ''].filter(Boolean).join(' ')
+  return (
+    <button {...rest} type={type} className={classes} disabled={disabled || loading} aria-busy={loading || undefined}>
+      {children}
+    </button>
+  )
+}
+
+/**
+ * A labelled form control. The label, the hint and the error are wired to the control (`aria-describedby`,
+ * `aria-invalid`, `aria-required`), so a screen reader announces them and the error is read when it appears.
+ */
 export function Field({
   label,
   children,
   hint,
+  error,
   required,
   className,
 }: {
   label: string
   children: ReactNode
   hint?: string
+  error?: string
   required?: boolean
   className?: string
 }) {
   const id = useId()
+  const hintId = `${id}-hint`
+  const errorId = `${id}-error`
+  const describedBy = [hint ? hintId : '', error ? errorId : ''].filter(Boolean).join(' ') || undefined
   const control = isValidElement(children)
-    ? cloneElement(children as ReactElement<{ id?: string }>, { id })
+    ? cloneElement(children as ReactElement<Record<string, unknown>>, {
+        id,
+        'aria-describedby': describedBy,
+        'aria-invalid': error ? true : undefined,
+        'aria-required': required ? true : undefined,
+      })
     : children
   return (
     <label className={`field${className ? ` ${className}` : ''}`}>
@@ -62,7 +168,8 @@ export function Field({
         {required ? <abbr title="Required">*</abbr> : null}
       </span>
       {control}
-      {hint ? <small className="field-hint">{hint}</small> : null}
+      {hint ? <small id={hintId} className="field-hint">{hint}</small> : null}
+      {error ? <small id={errorId} className="field-error" role="alert">{error}</small> : null}
     </label>
   )
 }
@@ -106,7 +213,7 @@ export function JudgeBadge({ value }: { value: string }) {
   return <span className={`judge-badge ${className}`}>{value}</span>
 }
 
-export function DataTable({
+export const DataTable = memo(function DataTable({
   title,
   eyebrow,
   columns,
@@ -115,6 +222,9 @@ export function DataTable({
   actions,
   selectedRow,
   onRowClick,
+  status = 'ready',
+  error,
+  onRetry,
 }: {
   title?: string
   eyebrow?: string
@@ -124,9 +234,14 @@ export function DataTable({
   actions?: ReactNode
   selectedRow?: string
   onRowClick?: (id: string) => void
+  /** `loading` shows placeholder rows, `error` says the data could not be loaded. Both beat "No records", which would be untrue. */
+  status?: LoadStatus
+  error?: string
+  onRetry?: () => void
 }) {
+  const failed = status === 'error'
   return (
-    <section className="panel table-panel">
+    <section className="panel table-panel" aria-busy={status === 'loading' || undefined}>
       {(title || actions) && (
         <div className="section-heading">
           <div>
@@ -136,17 +251,38 @@ export function DataTable({
           {actions}
         </div>
       )}
+      {failed && rows.length > 0 ? (
+        <div className="table-stale-banner" role="alert">
+          <span>Could not refresh this list{error ? `: ${error}` : '.'} The rows below are from the last successful load.</span>
+          {onRetry ? <Button size="sm" variant="secondary" onClick={onRetry}>Retry</Button> : null}
+        </div>
+      ) : null}
       <div className="table-wrap">
         <table>
           <thead>
             <tr>
-              {columns.map((column) => (
-                <th key={column}>{column}</th>
+              {columns.map((column, index) => (
+                // A column with no title is the row-actions column; give it a name for screen readers.
+                <th key={`${column}-${index}`} scope="col">{column || <span className="sr-only">Actions</span>}</th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {rows.length === 0 ? (
+            {rows.length === 0 && status === 'loading' ? (
+              [0, 1, 2].map((index) => (
+                <tr key={`loading-${index}`} className="skeleton-row" aria-hidden="true">
+                  <td colSpan={columns.length}><span className="skeleton-line" /></td>
+                </tr>
+              ))
+            ) : rows.length === 0 && failed ? (
+              <tr>
+                <td colSpan={columns.length} className="empty-cell error-cell" role="alert">
+                  <strong>This list could not be loaded.</strong>
+                  {error ? <span className="error-cell-detail">{error}</span> : null}
+                  {onRetry ? <Button size="sm" variant="secondary" onClick={onRetry}>Try again</Button> : null}
+                </td>
+              </tr>
+            ) : rows.length === 0 ? (
               <tr>
                 <td colSpan={columns.length} className="empty-cell">
                   {empty}
@@ -157,7 +293,20 @@ export function DataTable({
                 <tr
                   key={row.id}
                   className={row.selected || selectedRow === row.id ? 'selected-row' : undefined}
+                  aria-selected={onRowClick ? row.selected || selectedRow === row.id : undefined}
+                  tabIndex={onRowClick ? 0 : undefined}
                   onClick={onRowClick ? () => onRowClick(row.id) : undefined}
+                  onKeyDown={
+                    onRowClick
+                      ? (event) => {
+                          // A clickable row is also a keyboard target; Enter/Space must not fire from controls inside it.
+                          if ((event.key === 'Enter' || event.key === ' ') && event.target === event.currentTarget) {
+                            event.preventDefault()
+                            onRowClick(row.id)
+                          }
+                        }
+                      : undefined
+                  }
                 >
                   {row.cells.map((cell, index) => (
                     <td key={`${row.id}-${index}`}>{cell}</td>
@@ -170,7 +319,7 @@ export function DataTable({
       </div>
     </section>
   )
-}
+})
 
 export function Pagination({
   page,
@@ -227,12 +376,12 @@ export function Pagination({
             background: '#eff6ff',
             color: '#1d4ed8',
             borderColor: '#bfdbfe',
-            fontSize: '10px',
+            fontSize: '12px',
             fontWeight: 600,
           }}
           title="Latest data always displayed on first page"
         >
-          ⚡ Latest First
+          <Icon name="operations" className="icon inline-icon" />Latest First
         </span>
       </div>
 
@@ -240,7 +389,7 @@ export function Pagination({
         <button
           type="button"
           className="ghost-button compact"
-          style={{ fontSize: '11px', fontWeight: page === 1 ? 700 : 400 }}
+          style={{ fontSize: '12px', fontWeight: page === 1 ? 700 : 400 }}
           disabled={page <= 1}
           onClick={() => onPage(1)}
           title="Go to first page (Latest data)"
@@ -260,7 +409,7 @@ export function Pagination({
 
         {/* Page jump input */}
         <form onSubmit={handleJump} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-          <span style={{ fontSize: '11px', color: '#52627a' }}>Page:</span>
+          <span style={{ fontSize: '12px', color: '#52627a' }}>Page:</span>
           <input
             type="number"
             min={1}
@@ -272,7 +421,7 @@ export function Pagination({
               width: '56px',
               padding: '2px 6px',
               textAlign: 'center',
-              fontSize: '11px',
+              fontSize: '12px',
               fontFamily: 'monospace',
               fontWeight: 600,
               borderRadius: '4px',
@@ -281,13 +430,14 @@ export function Pagination({
               color: '#0f172a',
               boxShadow: 'inset 0 1px 2px rgba(15, 23, 42, 0.06)',
             }}
+            aria-label="Page number"
             title={`Enter page number (1 - ${safeTotalPages}) and press Enter`}
           />
           <button
             type="submit"
             className="secondary compact"
             style={{
-              fontSize: '10px',
+              fontSize: '12px',
               padding: '2px 8px',
               fontWeight: 700,
               background: '#eff6ff',
@@ -411,9 +561,78 @@ export function Modal({
   )
 }
 
-export function NoticeBanner({ notice }: { notice: Notice | null }) {
+/**
+ * A text box for filters and searches. It keeps what is typed in its own state, so a keystroke redraws only the box,
+ * and tells the page once typing pauses (or at once on Enter / leaving the box). Setting `value` from outside
+ * (a Reset button) replaces the text.
+ */
+export function DebouncedInput({
+  value,
+  onValueChange,
+  delay = 250,
+  onBlur,
+  onKeyDown,
+  ...rest
+}: Omit<InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange'> & {
+  value: string
+  onValueChange: (value: string) => void
+  delay?: number
+}) {
+  const [local, setLocal] = useState(value)
+  const sentRef = useRef(value)
+  const callbackRef = useRef(onValueChange)
+  useEffect(() => {
+    callbackRef.current = onValueChange
+  })
+
+  useEffect(() => {
+    if (value !== sentRef.current) {
+      sentRef.current = value
+      setLocal(value)
+    }
+  }, [value])
+
+  function send(next: string) {
+    if (next === sentRef.current) return
+    sentRef.current = next
+    callbackRef.current(next)
+  }
+
+  useEffect(() => {
+    if (local === sentRef.current) return
+    const timer = window.setTimeout(() => send(local), delay)
+    return () => window.clearTimeout(timer)
+  }, [local, delay])
+
+  return (
+    <input
+      {...rest}
+      value={local}
+      onChange={(event) => setLocal(event.target.value)}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter') send(event.currentTarget.value)
+        onKeyDown?.(event)
+      }}
+      onBlur={(event) => {
+        send(event.currentTarget.value)
+        onBlur?.(event)
+      }}
+    />
+  )
+}
+
+export function NoticeBanner({ notice, onDismiss }: { notice: Notice | null; onDismiss?: () => void }) {
   if (!notice) return null
-  return <div className={`notice ${notice.tone}`} role="status">{notice.message}</div>
+  return (
+    <div className={`notice ${notice.tone}`} role={notice.tone === 'error' ? 'alert' : 'status'}>
+      <span className="notice-text">{notice.message}</span>
+      {onDismiss ? (
+        <button type="button" className="notice-close" onClick={onDismiss} aria-label="Dismiss message">
+          <Icon name="close" />
+        </button>
+      ) : null}
+    </div>
+  )
 }
 
 export function ImageViewer({
@@ -576,7 +795,7 @@ export function ImageViewer({
             title="Zoom In"
             style={{ fontSize: '12px', fontWeight: 700, padding: '3px 9px' }}
           >
-            🔍+
+            <Icon name="search" className="icon inline-icon" />+
           </button>
           <button
             type="button"
@@ -585,21 +804,21 @@ export function ImageViewer({
             title="Zoom Out"
             style={{ fontSize: '12px', fontWeight: 700, padding: '3px 9px' }}
           >
-            🔍-
+            <Icon name="search" className="icon inline-icon" />-
           </button>
           <button
             type="button"
             className="ghost-button compact"
             onClick={handleReset}
             title="Reset Zoom & Position"
-            style={{ fontSize: '11px', padding: '3px 8px' }}
+            style={{ fontSize: '12px', padding: '3px 8px' }}
           >
             ↺ 100%
           </button>
-          <span style={{ fontSize: '11px', color: '#94a3b8', marginLeft: '4px', fontFamily: 'monospace' }}>
+          <span style={{ fontSize: '12px', color: '#94a3b8', marginLeft: '4px', fontFamily: 'monospace' }}>
             {Math.round(scale * 100)}%
           </span>
-          <span style={{ fontSize: '10px', color: '#64748b', marginLeft: '8px' }}>
+          <span style={{ fontSize: '12px', color: '#64748b', marginLeft: '8px' }}>
             (Scroll to Zoom · Click & Drag to Pan)
           </span>
         </div>
@@ -610,9 +829,9 @@ export function ImageViewer({
             className="primary compact"
             onClick={() => void handleSaveImage()}
             title="Save image to computer"
-            style={{ background: '#0284c7', fontSize: '11px', padding: '4px 12px', fontWeight: 600 }}
+            style={{ background: '#0369a1', fontSize: '12px', padding: '4px 12px', fontWeight: 600 }}
           >
-            💾 Save Image (.jpg)
+            <Icon name="save" className="icon inline-icon" />Save Image (.jpg)
           </button>
           <a
             href={src}
@@ -620,7 +839,7 @@ export function ImageViewer({
             rel="noreferrer"
             className="ghost-button compact"
             title="Open image in new tab"
-            style={{ fontSize: '11px', padding: '3px 8px' }}
+            style={{ fontSize: '12px', padding: '3px 8px' }}
           >
             ↗ New Tab
           </a>
@@ -886,11 +1105,11 @@ export function DefectFeatureInspector({ defect, initialVp }: { defect: DefectRe
             )}
             {defect.featureUrl?.includes('#') ? (
               <span className="tag-badge" style={{ background: '#f5f3ff', color: '#6d28d9', borderColor: '#ddd6fe', fontWeight: 600 }}>
-                📦 Unified Defect Pack
+                <Icon name="package" className="icon inline-icon" />Unified Defect Pack
               </span>
             ) : (defect.featureUrl || defect.imageUrl) ? (
               <span className="tag-badge" style={{ background: '#e0f2fe', color: '#0369a1', borderColor: '#bae6fd', fontWeight: 600 }}>
-                🌊 SeaweedFS Offloaded
+                <Icon name="leakage" className="icon inline-icon" />SeaweedFS Offloaded
               </span>
             ) : null}
           </div>
@@ -902,7 +1121,7 @@ export function DefectFeatureInspector({ defect, initialVp }: { defect: DefectRe
             {/* VP Navigation Bar: VP0 (Default) + Path Original + VP 1, 2, 3, 4 */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', borderBottom: '1px solid #e2e8f0', paddingBottom: '8px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: '11px', fontWeight: 700, color: '#475569', marginRight: '2px' }}>Camera Angle:</span>
+                <span style={{ fontSize: '12px', fontWeight: 700, color: '#475569', marginRight: '2px' }}>Camera Angle:</span>
 
                 {/* 🎯 Real VP Button */}
                 <button
@@ -911,7 +1130,7 @@ export function DefectFeatureInspector({ defect, initialVp }: { defect: DefectRe
                   onClick={() => void handleSelectOriginalVp()}
                   style={{
                     padding: '3px 12px',
-                    fontSize: '11px',
+                    fontSize: '12px',
                     fontWeight: 700,
                     borderRadius: '6px',
                     cursor: 'pointer',
@@ -928,11 +1147,11 @@ export function DefectFeatureInspector({ defect, initialVp }: { defect: DefectRe
                 >
                   <span>Load Path Original (VP{originalVp})</span>
                   {loadingVp === 'original' ? (
-                    <span style={{ fontSize: '10px' }}>⌛</span>
+                    <span style={{ fontSize: '12px' }}><Icon name="clock" className="icon inline-icon" /></span>
                   ) : vpImages.original ? (
                     <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: selectedVp === 'original' ? '#4ade80' : '#16a34a', display: 'inline-block' }} title="Image loaded" />
                   ) : (
-                    <span style={{ fontSize: '10px' }}>⚡</span>
+                    <span style={{ fontSize: '12px' }}><Icon name="operations" className="icon inline-icon" /></span>
                   )}
                 </button>
 
@@ -952,7 +1171,7 @@ export function DefectFeatureInspector({ defect, initialVp }: { defect: DefectRe
                       onClick={() => void handleSelectVp(vp)}
                       style={{
                         padding: '3px 8px',
-                        fontSize: '11px',
+                        fontSize: '12px',
                         fontWeight: isSelected ? 700 : 500,
                         borderRadius: '6px',
                         cursor: 'pointer',
@@ -968,11 +1187,11 @@ export function DefectFeatureInspector({ defect, initialVp }: { defect: DefectRe
                     >
                       <span>{vp === '0' ? 'VP0 (Default)' : isOriginal ? `VP${vp} (Path Angle)` : `VP${vp}`}</span>
                       {isLoading ? (
-                        <span style={{ fontSize: '9px', color: '#2563eb' }}>⌛</span>
+                        <span style={{ fontSize: '12px', color: '#2563eb' }}><Icon name="clock" className="icon inline-icon" /></span>
                       ) : isLoaded ? (
                         <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#16a34a', display: 'inline-block' }} title="Image loaded" />
                       ) : (
-                        <span style={{ fontSize: '10px', color: '#94a3b8' }}>⚡</span>
+                        <span style={{ fontSize: '12px', color: '#94a3b8' }}><Icon name="operations" className="icon inline-icon" /></span>
                       )}
                     </button>
                   )
@@ -983,12 +1202,12 @@ export function DefectFeatureInspector({ defect, initialVp }: { defect: DefectRe
                 <button
                   type="button"
                   className="secondary compact"
-                  style={{ fontSize: '11px', padding: '3px 8px', background: '#f1f5f9', borderColor: '#cbd5e1', color: '#334155' }}
+                  style={{ fontSize: '12px', padding: '3px 8px', background: '#f1f5f9', borderColor: '#cbd5e1', color: '#334155' }}
                   disabled={crawling || loadingVp !== null}
                   onClick={() => void handleForceRefreshVp()}
                   title="Re-crawl image from PC API for selected VP"
                 >
-                  {crawling ? 'Crawling...' : `⚡ Force Crawl VP${selectedVp}`}
+                  {crawling ? 'Crawling...' : `Force Crawl VP${selectedVp}`}
                 </button>
               </div>
             </div>
@@ -1014,53 +1233,50 @@ export function DefectFeatureInspector({ defect, initialVp }: { defect: DefectRe
                 title={currentImgSrc ? 'Click to enlarge image' : 'No image available'}
               >
                 {loadingVp === selectedVp ? (
-                  <div style={{ color: '#60a5fa', fontSize: '11px', textAlign: 'center', padding: '6px' }}>
-                    <div>⌛ Loading...</div>
-                    <div style={{ fontSize: '9px', color: '#94a3b8' }}>VP{selectedVp} from PC</div>
+                  <div style={{ color: '#60a5fa', fontSize: '12px', textAlign: 'center', padding: '6px' }}>
+                    <div><Icon name="clock" className="icon inline-icon" />Loading...</div>
+                    <div style={{ fontSize: '12px', color: '#94a3b8' }}>VP{selectedVp} from PC</div>
                   </div>
                 ) : currentImgSrc ? (
                   <>
-                    <img
+                    <LazyImage
                       src={currentImgSrc}
                       alt={`${defect.defectName} (VP${selectedVp})`}
                       style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none'
-                      }}
                     />
-                    <span style={{ position: 'absolute', bottom: '2px', right: '4px', fontSize: '9px', fontWeight: 700, color: '#fff', background: 'rgba(0,0,0,0.6)', padding: '1px 4px', borderRadius: '3px' }}>
+                    <span style={{ position: 'absolute', bottom: '2px', right: '4px', fontSize: '12px', fontWeight: 700, color: '#fff', background: 'rgba(0,0,0,0.6)', padding: '1px 4px', borderRadius: '3px' }}>
                       VP{selectedVp}
                     </span>
                   </>
                 ) : (
-                  <div style={{ color: '#64748b', textAlign: 'center', fontSize: '10px', padding: '4px' }}>
+                  <div style={{ color: '#64748b', textAlign: 'center', fontSize: '12px', padding: '4px' }}>
                     <div>VP{selectedVp} not loaded</div>
-                    <div style={{ fontSize: '9px', color: '#3b82f6', marginTop: '2px' }}>Click to load</div>
+                    <div style={{ fontSize: '12px', color: '#3b82f6', marginTop: '2px' }}>Click to load</div>
                   </div>
                 )}
               </div>
 
               <div style={{ flex: 1, minWidth: '220px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
-                  <span style={{ fontSize: '11px', fontWeight: 700, color: '#334155' }}>
-                    🖼️ Image Path (PC) & Active Angle: <span style={{ color: '#2563eb' }}>VP{selectedVp}</span>
+                  <span style={{ fontSize: '12px', fontWeight: 700, color: '#334155' }}>
+                    <Icon name="image" className="icon inline-icon" />Image Path (PC) & Active Angle: <span style={{ color: '#2563eb' }}>VP{selectedVp}</span>
                   </span>
                   {currentImgSrc && (
                     <button
                       type="button"
                       className="compact"
-                      style={{ fontSize: '11px', padding: '2px 6px', background: '#f8fafc', border: '1px solid #cbd5e1', cursor: 'pointer' }}
+                      style={{ fontSize: '12px', padding: '2px 6px', background: '#f8fafc', border: '1px solid #cbd5e1', cursor: 'pointer' }}
                       onClick={() => setImageZoomed(true)}
                     >
-                      🔍 Enlarge Image
+                      <Icon name="search" className="icon inline-icon" />Enlarge Image
                     </button>
                   )}
                 </div>
-                <code style={{ display: 'block', margin: '4px 0', fontSize: '11px', color: '#1e293b', background: '#f1f5f9', padding: '4px 8px', borderRadius: '4px', wordBreak: 'break-all' }}>
+                <code style={{ display: 'block', margin: '4px 0', fontSize: '12px', color: '#1e293b', background: '#f1f5f9', padding: '4px 8px', borderRadius: '4px', wordBreak: 'break-all' }}>
                   {defect.imageUri || defect.imageUrl || 'No image_path recorded'}
                 </code>
                 {crawlNotice && (
-                  <div style={{ fontSize: '11px', fontWeight: 600, color: crawlNotice.startsWith('✓') ? '#16a34a' : '#dc2626', marginTop: '4px' }}>
+                  <div style={{ fontSize: '12px', fontWeight: 600, color: crawlNotice.startsWith('✓') ? '#16a34a' : '#dc2626', marginTop: '4px' }}>
                     {crawlNotice}
                   </div>
                 )}
@@ -1100,11 +1316,11 @@ export function DefectFeatureInspector({ defect, initialVp }: { defect: DefectRe
 
         {/* Hyperlinks & Image Bar */}
         {(defect.featureUrl || defect.customFeatureUrl || defect.imageUrl) && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '8px', padding: '6px 10px', background: '#ffffff', borderRadius: '6px', border: '1px solid #e2e8f0', fontSize: '11px' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '8px', padding: '6px 10px', background: '#ffffff', borderRadius: '6px', border: '1px solid #e2e8f0', fontSize: '12px' }}>
             {defect.featureUrl && (
               <div>
                 <span className="muted">Feature SeaweedFS: </span>
-                <a href={defect.featureUrl} target="_blank" rel="noreferrer" style={{ color: '#0284c7', textDecoration: 'underline' }}>
+                <a href={defect.featureUrl} target="_blank" rel="noreferrer" style={{ color: '#0369a1', textDecoration: 'underline' }}>
                   {defect.featureUrl.length > 50 ? defect.featureUrl.slice(0, 48) + '...' : defect.featureUrl}
                 </a>
                 <a
@@ -1121,7 +1337,7 @@ export function DefectFeatureInspector({ defect, initialVp }: { defect: DefectRe
             {defect.customFeatureUrl && (
               <div>
                 <span className="muted">Custom Feature: </span>
-                <a href={defect.customFeatureUrl} target="_blank" rel="noreferrer" style={{ color: '#0284c7', textDecoration: 'underline' }}>
+                <a href={defect.customFeatureUrl} target="_blank" rel="noreferrer" style={{ color: '#0369a1', textDecoration: 'underline' }}>
                   {defect.customFeatureUrl.length > 50 ? defect.customFeatureUrl.slice(0, 48) + '...' : defect.customFeatureUrl}
                 </a>
                 <a
@@ -1139,7 +1355,7 @@ export function DefectFeatureInspector({ defect, initialVp }: { defect: DefectRe
               <div>
                 <span className="muted">Defect Image: </span>
                 <a href={defect.imageUrl} target="_blank" rel="noreferrer" style={{ color: '#16a34a', textDecoration: 'underline', fontWeight: 600 }}>
-                  🖼️ View Photo in SeaweedFS
+                  <Icon name="image" className="icon inline-icon" />View Photo in SeaweedFS
                 </a>
                 <a
                   href={storageApi.defectImagesUrl(defect.id)}
@@ -1162,7 +1378,7 @@ export function DefectFeatureInspector({ defect, initialVp }: { defect: DefectRe
                   style={{ color: '#7c3aed', fontWeight: 600, textDecoration: 'underline' }}
                   title="Stream & decompress unified defect pack for this Product ID"
                 >
-                  📦 [All Defects Pack JSON]
+                  <Icon name="package" className="icon inline-icon" />[All Defects Pack JSON]
                 </a>
               </div>
             )}
@@ -1264,7 +1480,7 @@ export function DefectFeatureInspector({ defect, initialVp }: { defect: DefectRe
                   onClick={() => setActiveTab(tab.id)}
                   style={{
                     padding: '4px 10px',
-                    fontSize: '11px',
+                    fontSize: '12px',
                     fontWeight: activeTab === tab.id ? 700 : 400,
                     background: activeTab === tab.id ? '#334155' : 'transparent',
                     color: activeTab === tab.id ? '#f8fafc' : '#94a3b8',
@@ -1284,7 +1500,7 @@ export function DefectFeatureInspector({ defect, initialVp }: { defect: DefectRe
                 onClick={() => setViewMode(viewMode === 'structured' ? 'raw' : 'structured')}
                 style={{
                   padding: '3px 8px',
-                  fontSize: '11px',
+                  fontSize: '12px',
                   background: 'rgba(255, 255, 255, 0.1)',
                   color: '#38bdf8',
                   border: '1px solid rgba(56, 189, 248, 0.3)',
@@ -1292,7 +1508,7 @@ export function DefectFeatureInspector({ defect, initialVp }: { defect: DefectRe
                   cursor: 'pointer',
                 }}
               >
-                {viewMode === 'structured' ? '🔍 Raw JSON' : '📊 Structured Table'}
+                {viewMode === 'structured' ? 'Raw JSON' : 'Structured Table'}
               </button>
             </div>
           </div>
@@ -1308,14 +1524,9 @@ export function DefectFeatureInspector({ defect, initialVp }: { defect: DefectRe
                 </p>
               )}
               <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
-                <button
-                  type="button"
-                  className="primary compact-button"
-                  disabled={loadingRemote}
-                  onClick={() => void handleLoadRemoteContent()}
-                >
-                  {loadingRemote ? 'Loading from SeaweedFS...' : '⚡ Load & Inspect JSON Content'}
-                </button>
+                <Button type="button" onClick={() => void handleLoadRemoteContent()} size="sm" loading={loadingRemote}>
+                  {loadingRemote ? 'Loading from SeaweedFS...' : 'Load & Inspect JSON Content'}
+                </Button>
                 <a
                   href={currentRemoteUrl}
                   target="_blank"
@@ -1323,7 +1534,7 @@ export function DefectFeatureInspector({ defect, initialVp }: { defect: DefectRe
                   className="secondary compact-button"
                   style={{ display: 'inline-flex', alignItems: 'center', textDecoration: 'none', color: '#f8fafc' }}
                 >
-                  🔗 Open Directly in Browser
+                  <Icon name="link" className="icon inline-icon" />Open Directly in Browser
                 </a>
               </div>
             </div>
@@ -1339,8 +1550,8 @@ export function DefectFeatureInspector({ defect, initialVp }: { defect: DefectRe
                 <tbody>
                   {Object.entries(currentParsed).map(([k, v]) => (
                     <tr key={k} style={{ borderBottom: '1px solid #1e293b' }}>
-                      <td style={{ fontFamily: 'monospace', color: '#38bdf8', padding: '4px 8px', fontSize: '11px' }}>{k}</td>
-                      <td style={{ fontFamily: 'monospace', color: '#f8fafc', padding: '4px 8px', fontSize: '11px' }}>
+                      <td style={{ fontFamily: 'monospace', color: '#38bdf8', padding: '4px 8px', fontSize: '12px' }}>{k}</td>
+                      <td style={{ fontFamily: 'monospace', color: '#f8fafc', padding: '4px 8px', fontSize: '12px' }}>
                         {typeof v === 'object' && v !== null ? JSON.stringify(v) : String(v ?? '')}
                       </td>
                     </tr>

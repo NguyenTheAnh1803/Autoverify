@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import ReactECharts from 'echarts-for-react'
+import ReactECharts from '../ReactECharts'
 import { productionFeatureApi } from '../../api'
 import { formatDate } from '../../format'
 import type { Notice, ProductionFeatureAnalysis, ProductionFeatureJob } from '../../types'

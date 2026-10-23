@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react'
-import ReactECharts from 'echarts-for-react'
+import ReactECharts from '../ReactECharts'
 import type { KMeansResult } from '../../types'
 
 export type KMeansChartProps = {
@@ -157,7 +157,7 @@ export const KMeansChart: React.FC<KMeansChartProps> = ({
               ${d.obs.lineCode || d.obs.machineCode ? `<div><strong>Scope:</strong> ${d.obs.lineCode || '?'}/${d.obs.machineCode || '?'}</div>` : ''}
               ${d.obs.defectFamily ? `<div><strong>Family:</strong> ${d.obs.defectFamily}</div>` : ''}
               <div><strong>Dist to Centroid:</strong> ${(d.dist ?? 0).toFixed(4)}</div>
-              <div style="font-size:10px;color:#38bdf8;margin-top:4px;">(Click point to drill down in preview grid)</div>
+              <div style="font-size:12px;color:#38bdf8;margin-top:4px;">(Click point to drill down in preview grid)</div>
             </div>
           `
         },

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
 import { connectionsApi, overkillPipelineApi, productsApi, scanListsApi, storageApi, verificationApi } from '../api'
 import { formatDate, formatDateTime, paginate } from '../format'
-import { DefectFeatureInspector, Field, JudgeBadge, Modal, Pagination, StatusPill } from '../ui'
+import { DefectFeatureInspector, Field, Icon, JudgeBadge, Modal, Pagination, StatusPill } from '../ui'
 import { BatchPipelinesModal } from '../components/BatchPipelinesModal'
 import { PipelineHub } from '../components/PipelineHub'
 import type {
@@ -284,7 +284,7 @@ export function OverkillOpsTab({ onNotice }: { onNotice: (notice: Notice) => voi
               disabled={busy}
               onClick={() => void runAutoOverkillVerify()}
             >
-              {busy ? 'Running Auto Scan...' : '⚡ Run Overkill Auto-Verification'}
+              {busy ? 'Running Auto Scan...' : 'Run Overkill Auto-Verification'}
             </button>
             <button
               type="button"
@@ -508,7 +508,7 @@ export function OverkillOpsTab({ onNotice }: { onNotice: (notice: Notice) => voi
                     gap: '4px',
                   }}
                 >
-                  📦 Open Full Product Defect Pack (.json.gz)
+                  <Icon name="package" className="icon inline-icon" />Open Full Product Defect Pack (.json.gz)
                 </a>
               </div>
             )}

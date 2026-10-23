@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react'
-import ReactECharts from 'echarts-for-react'
+import ReactECharts from '../ReactECharts'
 import type { DoeResult } from '../../types'
 
 export type DoeParetoChartProps = {
@@ -31,7 +31,7 @@ export const DoeParetoChart: React.FC<DoeParetoChartProps> = ({ result, onSelect
       value: e.standardizedEffectMagnitude,
       isSig: e.isStatisticallySignificant,
       itemStyle: {
-        color: e.isStatisticallySignificant ? '#f43f5e' : '#0284c7',
+        color: e.isStatisticallySignificant ? '#f43f5e' : '#0369a1',
       },
     }))
 
@@ -135,7 +135,7 @@ export const DoeParetoChart: React.FC<DoeParetoChartProps> = ({ result, onSelect
             <div><strong>Actual Y:</strong> ${params.data.actual.toFixed(4)}</div>
             <div><strong>Fitted Y:</strong> ${params.data.fitted.toFixed(4)}</div>
             <div><strong>Residual (e):</strong> ${params.data.residual.toFixed(4)}</div>
-            <div style="font-size:10px;color:#94a3b8;margin-top:4px;">(Click point to locate in preview grid)</div>
+            <div style="font-size:12px;color:#94a3b8;margin-top:4px;">(Click point to locate in preview grid)</div>
           </div>
         `,
       },

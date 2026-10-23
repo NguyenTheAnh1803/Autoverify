@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
@@ -65,6 +66,15 @@ try
     });
 
     builder.Services.AddControllers();
+
+    // The web bundle and JSON responses are text; Brotli/Gzip cuts what crosses the network by about 70%.
+    builder.Services.AddResponseCompression(options =>
+    {
+        options.EnableForHttps = true;
+        options.Providers.Add<BrotliCompressionProvider>();
+        options.Providers.Add<GzipCompressionProvider>();
+        options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[] { "image/svg+xml" });
+    });
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
 
@@ -213,6 +223,8 @@ try
 
     app.UseCors("Frontend");
 
+    app.UseResponseCompression();
+
     app.UseCustomSerilogRequestLogging();
 
     var embeddedWebRoot = Path.Combine(AppContext.BaseDirectory, "wwwroot");
@@ -220,7 +232,19 @@ try
     {
         var embeddedFileProvider = new PhysicalFileProvider(embeddedWebRoot);
         app.UseDefaultFiles(new DefaultFilesOptions { FileProvider = embeddedFileProvider });
-        app.UseStaticFiles(new StaticFileOptions { FileProvider = embeddedFileProvider });
+        app.UseStaticFiles(new StaticFileOptions
+        {
+            FileProvider = embeddedFileProvider,
+            OnPrepareResponse = context =>
+            {
+                // Files under /assets carry a content hash in their name, so they never change: cache them for a year.
+                // index.html names those files, so it must be re-checked on every load or a release would not show up.
+                var headers = context.Context.Response.Headers;
+                headers.CacheControl = context.Context.Request.Path.StartsWithSegments("/assets")
+                    ? "public, max-age=31536000, immutable"
+                    : "no-cache";
+            },
+        });
     }
 
     app.MapControllers();
@@ -235,6 +259,7 @@ try
         }
 
         context.Response.ContentType = "text/html; charset=utf-8";
+        context.Response.Headers.CacheControl = "no-cache";
         await context.Response.SendFileAsync(indexPath);
     });
 

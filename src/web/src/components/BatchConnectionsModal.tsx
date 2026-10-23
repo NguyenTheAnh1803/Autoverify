@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react'
 import { connectionsApi } from '../api'
-import { Field, Modal } from '../ui'
+import { Field, Icon, Modal } from '../ui'
 import type {
   BatchProvisionLineItem,
   BatchProvisionRequest,
@@ -204,7 +204,7 @@ export const BatchConnectionsModal: React.FC<BatchConnectionsModalProps> = ({
 
   return (
     <Modal
-      title="🚀 Batch Add Database Connections (Multi-Path Paste)"
+      title="Batch Add Database Connections (Multi-Path Paste)"
       description="Quickly register database connections for 80+ production lines/machines in one click. These connections serve as the foundation for Overkill Analysis, Leakage Verification, and Query Profiles."
       open={open}
       onClose={onClose}
@@ -219,12 +219,12 @@ export const BatchConnectionsModal: React.FC<BatchConnectionsModalProps> = ({
             borderRadius: '6px',
             padding: '12px 14px',
             fontSize: '12px',
-            color: '#93c5fd',
+            color: '#1d4ed8',
             lineHeight: 1.5,
           }}
         >
-          <strong>💡 How Multi-Path Connection Detection Works:</strong>
-          <p style={{ margin: '4px 0 6px 0', color: '#cbd5e1' }}>
+          <strong><Icon name="info" className="icon inline-icon" />How Multi-Path Connection Detection Works:</strong>
+          <p style={{ margin: '4px 0 6px 0', color: '#475569' }}>
             Paste paths from network shares, local directories, IP addresses, or comma-separated lists (1 line per row). The system automatically parses the Host, Line Code, and Machine Code.
           </p>
           <ul style={{ margin: '0 0 0 16px', padding: 0 }}>
@@ -238,10 +238,10 @@ export const BatchConnectionsModal: React.FC<BatchConnectionsModalProps> = ({
         {/* Multi-Path Input Textarea */}
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-            <label className="text-xs font-bold" style={{ color: '#e2e8f0' }}>
+            <label className="text-xs font-bold" style={{ color: '#475569' }}>
               Paste Connection Paths (1 line or path per row):
             </label>
-            <span className="tag-badge" style={{ background: '#2563eb', color: '#fff', fontWeight: 700, fontSize: '11px' }}>
+            <span className="tag-badge" style={{ background: '#2563eb', color: '#fff', fontWeight: 700, fontSize: '12px' }}>
               {parsedMultiPaths.length} Connections Detected
             </span>
           </div>
@@ -269,7 +269,7 @@ export const BatchConnectionsModal: React.FC<BatchConnectionsModalProps> = ({
         {parsedMultiPaths.length > 0 && (
           <div style={{ border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', overflow: 'hidden' }}>
             <div style={{ background: 'rgba(255,255,255,0.04)', padding: '6px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span className="text-xs font-bold" style={{ color: '#38bdf8' }}>
+              <span className="text-xs font-bold" style={{ color: '#0369a1' }}>
                 Live Preview: {parsedMultiPaths.length} Database Connections to be Created / Updated
               </span>
               <span className="text-xs text-muted">Ready to register</span>
@@ -292,9 +292,9 @@ export const BatchConnectionsModal: React.FC<BatchConnectionsModalProps> = ({
                   {parsedMultiPaths.slice(0, 20).map((p, idx) => (
                     <tr key={idx}>
                       <td className="font-mono text-muted text-xs">{idx + 1}</td>
-                      <td><strong style={{ color: '#38bdf8' }}>{p.lineCode}</strong></td>
+                      <td><strong style={{ color: '#0369a1' }}>{p.lineCode}</strong></td>
                       <td className="font-mono text-xs">{p.machineCode}</td>
-                      <td><strong style={{ color: '#f59e0b' }}>{p.modelCode}</strong></td>
+                      <td><strong style={{ color: '#b45309' }}>{p.modelCode}</strong></td>
                       <td className="font-mono text-xs text-muted">{p.host}</td>
                       <td className="font-mono text-xs text-muted">{p.databaseName}</td>
                       <td className="font-mono text-xs text-muted">{port}</td>
@@ -316,7 +316,7 @@ export const BatchConnectionsModal: React.FC<BatchConnectionsModalProps> = ({
 
         {/* Default Database Settings Strip */}
         <div>
-          <span className="text-xs font-bold" style={{ color: '#cbd5e1', display: 'block', marginBottom: '6px' }}>
+          <span className="text-xs font-bold" style={{ color: '#475569', display: 'block', marginBottom: '6px' }}>
             DEFAULT CREDENTIALS & CONNECTION TEMPLATE:
           </span>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px' }}>
@@ -369,13 +369,13 @@ export const BatchConnectionsModal: React.FC<BatchConnectionsModalProps> = ({
           <button
             type="button"
             className="primary"
-            style={{ background: '#2563eb', padding: '8px 24px', fontWeight: 600 }}
+            style={{ padding: '8px 24px' }}
             onClick={() => void handleExecute()}
             disabled={submitting}
           >
             {submitting
               ? 'Saving Connections...'
-              : `🚀 Add/Update ${parsedMultiPaths.length} Database Connections`}
+              : `Add/Update ${parsedMultiPaths.length} Database Connections`}
           </button>
         </div>
       </div>

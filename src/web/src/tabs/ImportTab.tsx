@@ -206,7 +206,7 @@ export function ImportTab({ onNotice }: { onNotice: (notice: Notice) => void }) 
               hint={category === 'Overkill' ? 'Auto-detected from NG records or manual select' : 'Select standard machine from connections'}
             >
               <select value={machineCode} onChange={(event) => onMachineChange(event.target.value)} required={category === 'Leakage'}>
-                {category === 'Overkill' && <option value="AUTO">⚡ Auto-detect Machine</option>}
+                {category === 'Overkill' && <option value="AUTO">Auto-detect Machine</option>}
                 {machines.length === 0 ? <option value="">No connections registered</option> : null}
                 {machines.map((machine) => (
                   <option key={machine} value={machine}>
@@ -233,7 +233,7 @@ export function ImportTab({ onNotice }: { onNotice: (notice: Notice) => void }) 
                 readOnly
                 value={
                   category === 'Overkill' && machineCode === 'AUTO'
-                    ? '⚡ Auto-bound to matching connection'
+                    ? 'Auto-bound to matching connection'
                     : selectedConnections.length
                       ? `${selectedConnections.length} connection(s) linked`
                       : 'No linked connection'
@@ -298,7 +298,7 @@ export function ImportTab({ onNotice }: { onNotice: (notice: Notice) => void }) 
               disabled={busy || (!machineCode && category === 'Leakage')}
               onClick={() => void runVerify()}
             >
-              {category === 'Overkill' ? '⚡ Auto-verify Overkill (NG/N/N/A)' : 'Verify Leakage (Standard)'}
+              {category === 'Overkill' ? 'Auto-verify Overkill (NG/N/N/A)' : 'Verify Leakage (Standard)'}
             </button>
           </div>
         </article>

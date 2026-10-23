@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react'
-import ReactECharts from 'echarts-for-react'
+import ReactECharts from '../ReactECharts'
 import type { GaussianMixtureResult } from '../../types'
 
 export type GmmChartProps = {
@@ -152,7 +152,7 @@ export const GmmChart: React.FC<GmmChartProps> = ({
               ${d.obs.keyId ? `<div><strong>Key:</strong> ${d.obs.keyId}</div>` : ''}
               ${d.obs.lineCode || d.obs.machineCode ? `<div><strong>Scope:</strong> ${d.obs.lineCode || '?'}/${d.obs.machineCode || '?'}</div>` : ''}
               ${d.obs.defectFamily ? `<div><strong>Family:</strong> ${d.obs.defectFamily}</div>` : ''}
-              <div style="font-size:10px;color:#38bdf8;margin-top:4px;">(Click point to drill down in preview grid)</div>
+              <div style="font-size:12px;color:#38bdf8;margin-top:4px;">(Click point to drill down in preview grid)</div>
             </div>
           `
         },
