@@ -1,4 +1,5 @@
 import { ProductionFeatureCharts } from '../components/analytics/ProductionFeatureCharts'
+import { SpcEarlyWarningCenter } from '../components/analytics/SpcEarlyWarningCenter'
 import type { Notice } from '../types'
 
 const ANALYSIS_STAGES = [
@@ -12,21 +13,21 @@ const ANALYSIS_STAGES = [
   {
     index: '02',
     title: 'Defect Correlation',
-    status: 'Next priority',
+    status: 'Available now',
     description: 'Measure which features move before Real Defect, Overkill and Leakage classifications increase.',
     outputs: ['Feature vs defect rate', 'Lag correlation', 'Top risk features'],
   },
   {
     index: '03',
     title: 'Line & Machine Benchmark',
-    status: 'Planned',
+    status: 'Available now',
     description: 'Compare the same feature distribution across Lines, Machines, Models, VPs and recipe revisions.',
     outputs: ['Distribution shift', 'Best-line baseline', 'Recipe delta'],
   },
   {
     index: '04',
     title: 'Predictive Alerts',
-    status: 'Planned',
+    status: 'Available now',
     description: 'Combine drift, threshold proximity and defect correlation into early-warning risk alerts.',
     outputs: ['Risk forecast', 'Alert severity', 'Recommended inspection'],
   },
@@ -49,6 +50,9 @@ export function FeatureTrendsTab({ onNotice }: { onNotice: (notice: Notice) => v
           <strong>Detect process change before defect rate rises</strong>
         </div>
       </section>
+
+      {/* Real-time SPC Early Warning & Capability Center */}
+      <SpcEarlyWarningCenter onNotice={onNotice} />
 
       <section className="feature-roadmap-panel">
         <div className="section-heading">

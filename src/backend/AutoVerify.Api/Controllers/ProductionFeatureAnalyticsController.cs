@@ -5,8 +5,17 @@ namespace AutoVerify.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/analytics/production-features")]
-public sealed class ProductionFeatureAnalyticsController(ProductionFeatureAnalyticsService analytics) : ControllerBase
+public sealed class ProductionFeatureAnalyticsController(ProductionFeatureAnalyticsService analytics, SpcEarlyWarningService earlyWarnings) : ControllerBase
 {
+    [HttpGet("early-warnings")]
+    [ProducesResponseType(typeof(SpcEarlyWarningDashboardResponse), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetEarlyWarnings(
+        [FromQuery] string? machineCode,
+        [FromQuery] string? lineCode,
+        [FromQuery] int lookbackCount = 400,
+        CancellationToken cancellationToken = default) =>
+        Ok(await earlyWarnings.GetEarlyWarningsAsync(machineCode, lineCode, lookbackCount, cancellationToken));
+
     [HttpGet("facets")]
     [ProducesResponseType(typeof(ProductionFeatureJobDto), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetFacets(CancellationToken cancellationToken) =>

@@ -233,6 +233,8 @@ export const dashboardApi = {
 }
 
 export const productionFeatureApi = {
+  getEarlyWarnings: (params: { machineCode?: string; lineCode?: string; lookbackCount?: number } = {}, signal?: AbortSignal) =>
+    api<import('./types').SpcEarlyWarningDashboardResponse>(`/analytics/production-features/early-warnings${qs(params)}`, { signal }),
   facets: (signal?: AbortSignal) =>
     api<ProductionFeatureJob>('/analytics/production-features/facets', { signal }),
   startJob: (filters: { machineCode?: string; lineCode?: string; period?: string; fromUtc?: string; toUtc?: string; defectName?: string; judge?: string } = {}, signal?: AbortSignal) =>

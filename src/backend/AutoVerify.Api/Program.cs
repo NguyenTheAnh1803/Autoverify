@@ -179,6 +179,7 @@ try
     builder.Services.AddSingleton<IDefectPreviewIngestionService, DefectPreviewIngestionService>();
     builder.Services.AddSingleton<IDefectFeatureAnalyticsService, DefectFeatureAnalyticsService>();
     builder.Services.AddSingleton<ProductionFeatureAnalyticsService>();
+    builder.Services.AddScoped<AutoVerify.Api.Analytics.SpcEarlyWarningService>();
     builder.Services.AddScoped<IDefectPreviewService, DefectPreviewService>();
     builder.Services.AddHostedService<DefectPreviewCleanupHostedService>();
 

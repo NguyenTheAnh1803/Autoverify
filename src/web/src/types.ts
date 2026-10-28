@@ -2478,3 +2478,46 @@ export type SimulateWhatIfResponse = {
   detailedExplanation: string
   divergences: WhatIfDivergenceDto[]
 }
+
+export type SpcDriftAlert = {
+  alertId: string
+  severity: 'Critical' | 'Warning' | 'Info'
+  machineCode: string
+  lineCode: string
+  featureName: string
+  ruleId: number
+  ruleName: string
+  centerLine: number
+  currentValue: number
+  sigma: number
+  driftDirection: 'Increasing' | 'Decreasing' | 'Outlier'
+  rootCauseHypothesis: string
+  recommendedAction: string
+  detectedAtUtc: string
+  sampleKeyId?: string | null
+}
+
+export type MachineCpkBenchmark = {
+  machineCode: string
+  lineCode: string
+  featureName: string
+  sampleSize: number
+  mean: number
+  sigma: number
+  cp?: number | null
+  cpk?: number | null
+  capabilityStatus: 'WorldClass' | 'Adequate' | 'Risky' | 'Incapable'
+  hasActiveDrift: boolean
+  totalViolations: number
+}
+
+export type SpcEarlyWarningDashboardResponse = {
+  totalEvaluatedRecords: number
+  activeAlertsCount: number
+  criticalCount: number
+  warningCount: number
+  infoCount: number
+  alerts: SpcDriftAlert[]
+  benchmarks: MachineCpkBenchmark[]
+  evaluatedAtUtc: string
+}
