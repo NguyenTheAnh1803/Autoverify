@@ -2343,6 +2343,7 @@ export type CreateClassifierRuleRequest = {
 
 export type UpdateClassifierRuleRequest = {
   ruleName?: string | null
+  version?: string | null
   thresholdsConfigJson?: string | null
   modelMetadataJson?: string | null
   scriptContent?: string | null

@@ -5,6 +5,7 @@ import { formatDateTime } from '../format'
 // Opened on demand, so its code is downloaded only when a rule is first optimised.
 const RuleOptimizerModal = lazy(() => import('../components/RuleOptimizerModal').then((m) => ({ default: m.RuleOptimizerModal })))
 import { Button, DebouncedInput, Field, Icon, Modal, StatusPill } from '../ui'
+import { VisualRuleBuilder } from '../components/VisualRuleBuilder'
 import { activatable } from '../lib/activatable'
 import type {
   ClassifierRuleDto,
@@ -405,6 +406,32 @@ export function ClassifierRulesTab({ onNotice }: { onNotice: (notice: Notice) =>
                           title="Run script tester for this rule"
                         >
                           <Icon name="operations" className="icon inline-icon" />Test
+                        </button>
+                        <button
+                          type="button"
+                          className="ghost-button compact text-xs text-info"
+                          onClick={() => {
+                            setEditingRule(null)
+                            setFormData({
+                              ruleCode: `${rule.ruleCode}_v2`,
+                              ruleName: `${rule.ruleName} (v2)`,
+                              version: '1.1.0',
+                              priority: rule.priority ?? 0,
+                              defectClass: rule.defectClass || '',
+                              defectFamily: rule.defectFamily || 'Optical',
+                              machineCode: rule.machineCode || '',
+                              lineCode: rule.lineCode || '',
+                              stationCode: rule.stationCode || '',
+                              scriptContent: rule.scriptContent || '',
+                              defectTypeId: rule.defectTypeId || '',
+                              description: `Cloned from ${rule.ruleCode}`,
+                              isActive: true,
+                            })
+                            setShowCreateModal(true)
+                          }}
+                          title="Clone as new version"
+                        >
+                          <Icon name="copy" className="icon inline-icon" />Clone
                         </button>
                         <button
                           type="button"
@@ -841,21 +868,10 @@ export function ClassifierRulesTab({ onNotice }: { onNotice: (notice: Notice) =>
               </Field>
             </div>
 
-            <Field label="Python-like Classifier Script">
-              <textarea
-                className="font-mono text-xs w-full text-strong"
-                value={formData.scriptContent ?? ''}
-                onChange={(e) => setFormData({ ...formData, scriptContent: e.target.value })}
-                rows={10}
-                placeholder="Cond1 = (G020_PxlArea > 90)... return Cond1"
-                style={{
-                  background: 'var(--slate-50)',
-                  padding: '10px',
-                  borderRadius: '6px',
-                  border: '1px solid var(--slate-200)',
-                }}
-              />
-            </Field>
+            <VisualRuleBuilder
+              script={formData.scriptContent ?? ''}
+              onChange={(newScript) => setFormData({ ...formData, scriptContent: newScript })}
+            />
 
             <div className="actions" style={{ justifyContent: 'flex-end' }}>
               <button type="button" className="ghost-button" onClick={() => setShowCreateModal(false)}>

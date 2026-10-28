@@ -39,6 +39,26 @@ export const RuleOptimizerModal: React.FC<RuleOptimizerModalProps> = ({
   // Applying new rule state
   const [savingRule, setSavingRule] = useState(false)
 
+  // Interactive Sliders state
+  const [sliderValues, setSliderValues] = useState<Record<string, number>>({})
+
+  // Version bump state
+  function getNextVersion(currentVer?: string) {
+    if (!currentVer) return '1.0.1'
+    const parts = currentVer.split('.')
+    if (parts.length >= 2) {
+      const last = parseInt(parts[parts.length - 1], 10)
+      if (!isNaN(last)) {
+        parts[parts.length - 1] = (last + 1).toString()
+        return parts.join('.')
+      }
+    }
+    return currentVer + '.1'
+  }
+
+  const [targetVersion, setTargetVersion] = useState<string>(getNextVersion(rule.version))
+  const [changeDescription, setChangeDescription] = useState<string>('Optimized thresholds via Rule Studio 2.0')
+
   // Initial load of tuning analysis
   React.useEffect(() => {
     if (open && rule.id) {
@@ -54,6 +74,13 @@ export const RuleOptimizerModal: React.FC<RuleOptimizerModalProps> = ({
       setBaselineScript(res.originalScript || rule.scriptContent || '')
       if (res.autoTunedScript) {
         setCandidateScript(res.autoTunedScript)
+      }
+      if (res.recommendations) {
+        const initSliders: Record<string, number> = {}
+        res.recommendations.forEach((r) => {
+          initSliders[r.featureName] = r.proposedThreshold
+        })
+        setSliderValues(initSliders)
       }
     } catch (err) {
       onNotice({ tone: 'error', message: err instanceof Error ? err.message : 'Failed to analyze rule thresholds.' })
@@ -98,6 +125,8 @@ export const RuleOptimizerModal: React.FC<RuleOptimizerModalProps> = ({
     try {
       await classifierRulesApi.updateRule(rule.id, {
         scriptContent: candidateScript,
+        version: targetVersion.trim() || undefined,
+        description: changeDescription.trim() || undefined,
       })
       onNotice({ tone: 'success', message: `Applied tuned script to Rule [${rule.ruleCode}] successfully!` })
       onRuleUpdated()
@@ -214,6 +243,141 @@ export const RuleOptimizerModal: React.FC<RuleOptimizerModalProps> = ({
                   })}
                 </tbody>
               </table>
+            </div>
+          </div>
+        )}
+
+        {/* Interactive What-If Sliders Panel */}
+        {tuningData?.recommendations && tuningData.recommendations.length > 0 && (
+          <div
+            className="vstack gap-md"
+            style={{
+              background: 'var(--slate-50)',
+              border: '1px solid var(--slate-200)',
+              borderRadius: '8px',
+              padding: '16px',
+            }}
+          >
+            <div className="hstack justify-between" style={{ alignItems: 'center' }}>
+              <div>
+                <strong className="text-xs text-strong" style={{ textTransform: 'uppercase' }}>
+                  🎯 Interactive What-If Threshold Sliders (Kéo Ngưỡng Trực Quan)
+                </strong>
+                <p className="text-xs text-muted" style={{ margin: 0 }}>
+                  Kéo thanh trượt để thử nghiệm các giá trị ngưỡng. Mã kịch bản bên dưới sẽ tự động cập nhật tức thì.
+                </p>
+              </div>
+              <div className="hstack gap-xs">
+                {tuningData.autoTunedScript && (
+                  <button
+                    type="button"
+                    className="ghost-button compact text-xs"
+                    onClick={() => {
+                      setCandidateScript(tuningData.autoTunedScript)
+                      const resetSliders: Record<string, number> = {}
+                      tuningData.recommendations.forEach((r) => {
+                        resetSliders[r.featureName] = r.proposedThreshold
+                      })
+                      setSliderValues(resetSliders)
+                    }}
+                    title="Khôi phục toàn bộ ngưỡng vàng đề xuất"
+                  >
+                    <Icon name="target" className="icon inline-icon" /> Áp dụng Ngưỡng Vàng
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className="ghost-button compact text-xs"
+                  onClick={() => {
+                    setCandidateScript(baselineScript)
+                  }}
+                  title="Khôi phục về kịch bản ban đầu"
+                >
+                  <Icon name="refresh" className="icon inline-icon" /> Reset về Baseline
+                </button>
+              </div>
+            </div>
+
+            <div className="vstack gap-md" style={{ marginTop: '4px' }}>
+              {tuningData.recommendations.map((rec) => {
+                const currentVal = sliderValues[rec.featureName] ?? rec.proposedThreshold
+                const minRange = Math.min(rec.overkillMin, rec.realMin)
+                const maxRange = Math.max(rec.overkillMax, rec.realMax)
+                const span = maxRange - minRange || 10
+                const sliderMin = Math.floor(minRange - span * 0.1)
+                const sliderMax = Math.ceil(maxRange + span * 0.1)
+                const step = span > 50 ? 1 : span > 5 ? 0.1 : 0.01
+
+                // Check safety
+                const isOperatorGreater = rec.comparisonOperator === '>' || rec.comparisonOperator === '>='
+                const isSafe = isOperatorGreater
+                  ? currentVal <= rec.realMin
+                  : currentVal >= rec.realMax
+
+                function handleSliderChange(val: number) {
+                  setSliderValues((prev) => ({ ...prev, [rec.featureName]: val }))
+                  const regex = new RegExp(`(\\b${rec.featureName}\\s*(?:>|<|>=|<=|==|!=)\\s*)([\\d.]+)`, 'g')
+                  setCandidateScript((prev) => prev.replace(regex, `$1${val}`))
+                }
+
+                return (
+                  <div
+                    key={rec.featureName}
+                    style={{
+                      background: '#fff',
+                      border: '1px solid var(--slate-200)',
+                      borderRadius: '6px',
+                      padding: '12px',
+                    }}
+                  >
+                    <div className="hstack justify-between" style={{ alignItems: 'center', marginBottom: '8px' }}>
+                      <div className="hstack gap-sm" style={{ alignItems: 'center' }}>
+                        <strong className="mono-code text-sm text-strong">{rec.featureName}</strong>
+                        <span className="text-xs text-muted">({rec.comparisonOperator} toán tử)</span>
+                        {isSafe ? (
+                          <span className="tag-badge text-xs" style={{ background: 'var(--status-ok-bg)', color: 'var(--status-ok-text)' }}>
+                            🛡️ Vùng an toàn (Zero Leakage)
+                          </span>
+                        ) : (
+                          <span className="tag-badge text-xs" style={{ background: 'var(--status-ng-bg)', color: 'var(--status-ng-text)' }}>
+                            ⚠️ Nguy cơ lọt lỗi (Vượt mốc Real NG {isOperatorGreater ? rec.realMin : rec.realMax})
+                          </span>
+                        )}
+                      </div>
+                      <div className="hstack gap-md">
+                        <span className="text-xs text-muted">
+                          Hiện tại: <b className="font-mono">{rec.currentThresholdInScript ?? 'None'}</b>
+                        </span>
+                        <span className="text-xs text-info">
+                          Ngưỡng vàng: <b className="font-mono">{rec.proposedThreshold}</b>
+                        </span>
+                        <span className="text-xs text-strong" style={{ color: 'var(--blue-700)' }}>
+                          Đang chọn: <b className="font-mono text-sm">{currentVal}</b>
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="hstack gap-md" style={{ alignItems: 'center' }}>
+                      <span className="font-mono text-xs text-muted" style={{ minWidth: '40px' }}>{sliderMin}</span>
+                      <input
+                        type="range"
+                        min={sliderMin}
+                        max={sliderMax}
+                        step={step}
+                        value={currentVal}
+                        onChange={(e) => handleSliderChange(parseFloat(e.target.value))}
+                        style={{ flex: 1, accentColor: isSafe ? 'var(--status-ok)' : 'var(--status-ng)', cursor: 'pointer' }}
+                      />
+                      <span className="font-mono text-xs text-muted" style={{ minWidth: '40px', textAlign: 'right' }}>{sliderMax}</span>
+                    </div>
+
+                    <div className="hstack justify-between text-xs text-muted" style={{ marginTop: '4px' }}>
+                      <span className="text-overkill">Overkill: [{rec.overkillMin} → {rec.overkillMax}]</span>
+                      <span className="text-real">Real Defect: [{rec.realMin} → {rec.realMax}]</span>
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           </div>
         )}
@@ -397,6 +561,39 @@ export const RuleOptimizerModal: React.FC<RuleOptimizerModalProps> = ({
             )}
           </div>
         )}
+
+        {/* Version Bump & Changelog Bar */}
+        <div
+          className="hstack gap-md"
+          style={{
+            background: 'var(--slate-50)',
+            padding: '10px 14px',
+            borderRadius: '6px',
+            border: '1px solid var(--slate-200)',
+            alignItems: 'center',
+          }}
+        >
+          <div className="hstack gap-xs" style={{ alignItems: 'center', minWidth: '180px' }}>
+            <span className="text-xs font-bold text-muted">Version Mới:</span>
+            <input
+              type="text"
+              value={targetVersion}
+              onChange={(e) => setTargetVersion(e.target.value)}
+              style={{ width: '85px', fontWeight: 'bold', fontFamily: 'monospace' }}
+              placeholder="v1.0.1"
+            />
+          </div>
+          <div className="hstack gap-xs" style={{ flex: 1, alignItems: 'center' }}>
+            <span className="text-xs font-bold text-muted">Mô tả:</span>
+            <input
+              type="text"
+              value={changeDescription}
+              onChange={(e) => setChangeDescription(e.target.value)}
+              style={{ flex: 1 }}
+              placeholder="VD: Tuned G020_PxlArea threshold to 95.0 (+35% Overkill cut)"
+            />
+          </div>
+        </div>
 
         {/* Modal Bottom Actions */}
         <div className="actions gap-md" style={{ justifyContent: 'flex-end', borderTop: '1px solid var(--slate-200)', paddingTop: '12px' }}>
