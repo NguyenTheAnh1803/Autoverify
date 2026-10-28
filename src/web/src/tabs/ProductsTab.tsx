@@ -53,27 +53,48 @@ export function ProductsTab({
   const load = useCallback(async (nextPage = 1) => {
     beginCatalog()
     try {
-      const [payload, connectionPage, options] = await Promise.all([
-        productsApi.list({ search: applied.search, judge: applied.judge, machineCode: applied.machineFilter, lineCode: applied.lineFilter, zone: applied.zoneFilter, defectName: applied.defectFilter, page: nextPage, pageSize: 25 }),
-        connectionsApi.list({ page: 1, pageSize: 100 }),
-        productsApi.filterOptions({ machineCode: machineFilter || undefined, lineCode: lineFilter || undefined }),
-      ])
+      const payload = await productsApi.list({
+        search: applied.search,
+        judge: applied.judge,
+        machineCode: applied.machineFilter,
+        lineCode: applied.lineFilter,
+        zone: applied.zoneFilter,
+        defectName: applied.defectFilter,
+        page: nextPage,
+        pageSize: 25,
+      })
       setProducts(payload.items)
       setPage(payload.page)
       setTotalPages(payload.totalPages)
       setTotalCount(payload.totalCount)
-      setConnections(connectionPage.items)
-      setFilterOptions(options)
       succeedCatalog()
     } catch (error) {
       failCatalog(error)
       onNotice({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to load products.' })
     }
-  }, [applied, machineFilter, lineFilter, onNotice, beginCatalog, succeedCatalog, failCatalog])
+  }, [applied, onNotice, beginCatalog, succeedCatalog, failCatalog])
 
   useEffect(() => {
     void load(1)
   }, [load])
+
+  useEffect(() => {
+    connectionsApi
+      .list({ page: 1, pageSize: 100 })
+      .then((connectionPage) => setConnections(connectionPage.items))
+      .catch(() => {
+        /* non-fatal */
+      })
+  }, [])
+
+  useEffect(() => {
+    productsApi
+      .filterOptions({ machineCode: machineFilter || undefined, lineCode: lineFilter || undefined })
+      .then((options) => setFilterOptions(options))
+      .catch(() => {
+        /* keep previous filter options if unavailable */
+      })
+  }, [machineFilter, lineFilter])
 
   // The AI column is optional: if the lookup fails the catalog still works and the column stays empty.
   const loadAiStatuses = useCallback(async (keyIds: string[]) => {
@@ -249,7 +270,7 @@ export function ProductsTab({
                       {product.keyId}
                     </button>,
                     <JudgeBadge key="j" value={product.judge} />,
-                    <div key="ai" style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                    <div className="hstack gap-sm flex-wrap" key="ai" >
                       <AiStatusBadge summary={aiStatuses[product.keyId]} />
                       {aiActions(product.keyId)}
                     </div>,
@@ -294,13 +315,13 @@ export function ProductsTab({
                     product.lineCode,
                     formatDateTime(product.inspectedAtUtc),
                     product.defectPackUrl ? (
-                      <div key="pack" style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                      <div className="hstack gap-sm flex-wrap" key="pack" >
                         <a
                           href={storageApi.productDefectPackUrl(product.keyId)}
                           target="_blank"
                           rel="noreferrer"
-                          className="tag-badge"
-                          style={{ background: '#f5f3ff', color: '#6d28d9', borderColor: '#ddd6fe', fontWeight: 600, textDecoration: 'none' }}
+                          className="tag-badge font-semibold"
+                          style={{ background: '#f5f3ff', color: '#6d28d9', borderColor: '#ddd6fe', textDecoration: 'none' }}
                           title="Download/View unified defect pack JSON"
                         >
                           <Icon name="package" className="icon inline-icon" />Defect Pack
@@ -308,25 +329,25 @@ export function ProductsTab({
                         {onAnalyzeDefects && (
                           <button
                             type="button"
-                            className="compact-button secondary"
+                            className="compact-button secondary text-xs"
                             onClick={() => onAnalyzeDefects({ keyId: product.keyId, sourceUri: product.defectPackUrl ?? undefined })}
                             title="Decompress & parse defect records in Defect & Feature Analysis"
-                            style={{ fontSize: '12px', padding: '2px 8px' }}
+                            style={{ padding: '2px 8px' }}
                           >
                             Analyze Defects
                           </button>
                         )}
                       </div>
                     ) : (
-                      <div key="pack" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span className="muted" style={{ fontSize: '12px' }}>—</span>
+                      <div className="hstack gap-sm" key="pack" >
+                        <span className="muted text-xs">—</span>
                         {onAnalyzeDefects && (
                           <button
                             type="button"
-                            className="compact-button secondary"
+                            className="compact-button secondary text-xs"
                             onClick={() => onAnalyzeDefects({ keyId: product.keyId })}
                             title="Analyze defects by Key ID in Defect & Feature Analysis"
-                            style={{ fontSize: '12px', padding: '1px 6px' }}
+                            style={{ padding: '1px 6px' }}
                           >
                             Analyze Defects
                           </button>
@@ -631,26 +652,24 @@ export function ProductsTab({
       </Modal>
 
       <Modal title={`Defects · ${selectedKey}`} description="GET /products/{keyId}/defects" open={inspectOpen} onClose={() => setInspectOpen(false)} wide>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-          <span style={{ fontSize: '12px', color: '#64748b' }}>
+        <div className="hstack justify-between" style={{ marginBottom: '10px' }}>
+          <span className="text-xs" style={{ color: '#64748b' }}>
             List of individual defects for product <strong>{selectedKey}</strong>
             <span style={{ marginLeft: '8px' }}><AiStatusBadge summary={aiStatuses[selectedKey]} /></span>
             <span style={{ marginLeft: '6px' }}>{aiActions(selectedKey)}</span>
           </span>
           {selectedKey && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div className="hstack gap-md">
               <a
+                className="text-xs font-semibold gap-xs"
                 href={storageApi.productDefectPackUrl(selectedKey)}
                 target="_blank"
                 rel="noreferrer"
                 style={{
-                  fontSize: '12px',
                   color: '#7c3aed',
-                  fontWeight: 600,
                   textDecoration: 'underline',
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '4px',
                 }}
               >
                 <Icon name="package" className="icon inline-icon" />Open Full Product Defect Pack (.json.gz)
@@ -658,7 +677,7 @@ export function ProductsTab({
               {onAnalyzeDefects && (
                 <button
                   type="button"
-                  className="compact-button secondary"
+                  className="compact-button secondary text-xs"
                   onClick={() => {
                     setInspectOpen(false)
                     onAnalyzeDefects({
@@ -666,7 +685,7 @@ export function ProductsTab({
                       sourceUri: storageApi.productDefectPackUrl(selectedKey),
                     })
                   }}
-                  style={{ fontSize: '12px', padding: '2px 8px' }}
+                  style={{ padding: '2px 8px' }}
                   title="Decompress & parse defect records in Defect & Feature Analysis"
                 >
                   Analyze Defects
@@ -681,28 +700,28 @@ export function ProductsTab({
             id: defect.id,
             cells: [
               <code key="tbl">{defect.defectTable}</code>,
-              <div key="name" style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+              <div className="vstack" key="name" style={{ gap: '2px' }}>
                 <strong style={{ color: '#0f172a' }}>{defect.defectName}</strong>
-                <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', alignItems: 'center' }}>
+                <div className="hstack gap-xs flex-wrap">
                   {defect.defectType && <span className="tag-badge">{defect.defectType}</span>}
                   {defect.modelCode && defect.modelCode !== 'UNASSIGNED' && (
-                    <span className="tag-badge" style={{ background: '#f0fdf4', color: '#166534', borderColor: '#bbf7d0', fontSize: '12px' }}>
+                    <span className="tag-badge text-xs" style={{ background: '#f0fdf4', color: '#166534', borderColor: '#bbf7d0' }}>
                       {defect.modelCode}
                     </span>
                   )}
                 </div>
               </div>,
-              <div key="judge" style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+              <div className="vstack" key="judge" style={{ gap: '2px' }}>
+                <div className="hstack gap-xs">
                   <JudgeBadge value={defect.judge} />
                   {defect.severity && (
                     <span className={`severity-tag ${defect.severity.toLowerCase()}`}>{defect.severity}</span>
                   )}
                 </div>
-                {defect.reason && <span style={{ fontSize: '12px', color: '#dc2626' }}>{defect.reason}</span>}
+                {defect.reason && <span className="text-xs" style={{ color: '#dc2626' }}>{defect.reason}</span>}
               </div>,
               <AiDefectVerdict key="ai" result={aiDetail?.defects.find((item) => item.defectId.toLowerCase() === defect.id.toLowerCase())} />,
-              <div key="spec" style={{ fontSize: '12px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+              <div className="vstack text-xs" key="spec" style={{ gap: '2px' }}>
                 {defect.specName ? (
                   <span>
                     Spec: <strong>{defect.specName}</strong> {defect.specJudge ? `(${defect.specJudge})` : ''}
@@ -716,15 +735,15 @@ export function ProductsTab({
                 {!defect.specName && !defect.eqpName && <span className="muted">—</span>}
               </div>,
               defect.priority != null ? (
-                <span key="p" className="clean-pill" style={{ fontWeight: 600 }}>{defect.priority}</span>
+                <span key="p" className="clean-pill font-semibold">{defect.priority}</span>
               ) : (
                 '—'
               ),
-              <div key="vp" style={{ display: 'flex', alignItems: 'center', gap: '3px', flexWrap: 'wrap' }}>
+              <div className="hstack flex-wrap" key="vp" style={{ gap: '3px' }}>
                 <button
                   type="button"
-                  className="secondary compact-button"
-                  style={{ fontSize: '12px', padding: '2px 6px', fontWeight: 700, background: '#eff6ff', borderColor: '#93c5fd', color: '#1d4ed8' }}
+                  className="secondary compact-button text-xs font-bold"
+                  style={{ padding: '2px 6px', background: '#eff6ff', borderColor: '#93c5fd', color: '#1d4ed8' }}
                   title="Open default VP0 thumbnail"
                   onClick={() => {
                     setJsonOpenVp('0')
@@ -735,8 +754,8 @@ export function ProductsTab({
                 </button>
                 <button
                   type="button"
-                  className="compact-button"
-                  style={{ fontSize: '12px', padding: '2px 6px', fontWeight: 700, background: '#f5f3ff', borderColor: '#c4b5fd', color: '#6d28d9' }}
+                  className="compact-button text-xs font-bold"
+                  style={{ padding: '2px 6px', background: '#f5f3ff', borderColor: '#c4b5fd', color: '#6d28d9' }}
                   title={`Click to open original VP from image_path (VP${extractOriginalDefectVp(defect)})`}
                   onClick={() => {
                     setJsonOpenVp(extractOriginalDefectVp(defect))
@@ -749,8 +768,8 @@ export function ProductsTab({
                   <button
                     key={vp}
                     type="button"
-                    className="compact-button"
-                    style={{ fontSize: '12px', padding: '2px 5px', background: '#f8fafc', borderColor: '#cbd5e1', color: '#475569' }}
+                    className="compact-button text-xs"
+                    style={{ padding: '2px 5px', background: '#f8fafc', borderColor: '#cbd5e1', color: '#475569' }}
                     title={`Click to open angle VP${vp}`}
                     onClick={() => {
                       setJsonOpenVp(vp)

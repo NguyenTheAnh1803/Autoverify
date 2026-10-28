@@ -31,7 +31,7 @@ export const DoeParetoChart: React.FC<DoeParetoChartProps> = ({ result, onSelect
       value: e.standardizedEffectMagnitude,
       isSig: e.isStatisticallySignificant,
       itemStyle: {
-        color: e.isStatisticallySignificant ? '#f43f5e' : '#0369a1',
+        color: e.isStatisticallySignificant ? '#c0392b' : '#2f6f9f',
       },
     }))
 
@@ -39,21 +39,17 @@ export const DoeParetoChart: React.FC<DoeParetoChartProps> = ({ result, onSelect
       title: {
         text: `Pareto Chart of Standardized Effects (Response: ${responseName})`,
         left: 'left',
-        textStyle: { color: '#cbd5e1', fontSize: 13, fontWeight: 'normal' },
       },
       tooltip: {
         trigger: 'axis',
-        backgroundColor: '#1e293b',
-        borderColor: '#475569',
-        textStyle: { color: '#f1f5f9', fontSize: 12 },
         formatter: (params: Array<{ name: string; value: number }>) => {
           const item = effectsPareto.find((e) => e.term === params[0].name)
           if (!item) return ''
           const sigTag = item.isStatisticallySignificant
-            ? '<span style="color:#f87171;font-weight:bold;">★ Statistically Significant</span>'
-            : '<span style="color:#94a3b8;">Not Significant</span>'
+            ? '<span style="color:#c0392b;font-weight:bold;">Statistically Significant</span>'
+            : '<span style="color:#64748b;">Not Significant</span>'
           return `
-            <div style="font-family:monospace;">
+            <div style="font-family:var(--font-mono);">
               <div><strong>Term:</strong> ${item.term} (${item.termType})</div>
               <div><strong>|t-value|:</strong> ${item.standardizedEffectMagnitude.toFixed(3)}</div>
               <div><strong>Coefficient:</strong> ${item.coefficient.toFixed(4)}</div>
@@ -67,16 +63,10 @@ export const DoeParetoChart: React.FC<DoeParetoChartProps> = ({ result, onSelect
       xAxis: {
         type: 'value',
         name: 'Standardized Effect (|t|)',
-        axisLine: { lineStyle: { color: '#475569' } },
-        splitLine: { lineStyle: { color: '#1e293b' } },
-        axisLabel: { color: '#94a3b8', fontSize: 10 },
-        nameTextStyle: { color: '#94a3b8', fontSize: 10 },
       },
       yAxis: {
         type: 'category',
         data: categories,
-        axisLine: { lineStyle: { color: '#475569' } },
-        axisLabel: { color: '#cbd5e1', fontSize: 11 },
       },
       series: [
         {
@@ -90,12 +80,12 @@ export const DoeParetoChart: React.FC<DoeParetoChartProps> = ({ result, onSelect
               {
                 xAxis: significanceThreshold,
                 name: 'Significance Threshold',
-                lineStyle: { color: '#f43f5e', type: 'dashed', width: 2 },
+                lineStyle: { color: '#c0392b', type: 'dashed', width: 2 },
                 label: {
                   formatter: `Threshold: ${significanceThreshold.toFixed(2)}`,
                   position: 'end',
-                  color: '#f43f5e',
-                  fontSize: 10,
+                  color: '#c0392b',
+                  fontSize: 11,
                 },
               },
             ],
@@ -115,27 +105,23 @@ export const DoeParetoChart: React.FC<DoeParetoChartProps> = ({ result, onSelect
       actual: r.actual,
       fitted: r.fitted,
       residual: r.residual,
-      itemStyle: { color: '#38bdf8' },
+      itemStyle: { color: '#2f6f9f' },
     }))
 
     return {
       title: {
         text: 'Residual Diagnostics (Residuals vs Fitted Values)',
         left: 'left',
-        textStyle: { color: '#cbd5e1', fontSize: 13, fontWeight: 'normal' },
       },
       tooltip: {
         trigger: 'item',
-        backgroundColor: '#1e293b',
-        borderColor: '#475569',
-        textStyle: { color: '#f1f5f9', fontSize: 12 },
         formatter: (params: { data: { value: [number, number]; rowIndex: number; actual: number; fitted: number; residual: number } }) => `
-          <div style="font-family:monospace;">
+          <div style="font-family:var(--font-mono);">
             <div><strong>Grid Row:</strong> #${params.data.rowIndex}</div>
             <div><strong>Actual Y:</strong> ${params.data.actual.toFixed(4)}</div>
             <div><strong>Fitted Y:</strong> ${params.data.fitted.toFixed(4)}</div>
             <div><strong>Residual (e):</strong> ${params.data.residual.toFixed(4)}</div>
-            <div style="font-size:12px;color:#94a3b8;margin-top:4px;">(Click point to locate in preview grid)</div>
+            <div style="font-size:12px;color:#64748b;margin-top:4px;">(Click point to locate in preview grid)</div>
           </div>
         `,
       },
@@ -143,18 +129,10 @@ export const DoeParetoChart: React.FC<DoeParetoChartProps> = ({ result, onSelect
       xAxis: {
         type: 'value',
         name: 'Fitted Value',
-        axisLine: { lineStyle: { color: '#475569' } },
-        splitLine: { lineStyle: { color: '#1e293b' } },
-        axisLabel: { color: '#94a3b8', fontSize: 10 },
-        nameTextStyle: { color: '#94a3b8', fontSize: 10 },
       },
       yAxis: {
         type: 'value',
         name: 'Residual',
-        axisLine: { lineStyle: { color: '#475569' } },
-        splitLine: { lineStyle: { color: '#1e293b' } },
-        axisLabel: { color: '#94a3b8', fontSize: 10 },
-        nameTextStyle: { color: '#94a3b8', fontSize: 10 },
       },
       series: [
         {

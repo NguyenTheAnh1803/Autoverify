@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { Icon } from '../../ui'
 import { classifierRulesApi } from '../../api'
 import type {
   FeatureSummary,
@@ -127,7 +128,8 @@ export const AnalyticsConfigPanel: React.FC<AnalyticsConfigPanelProps> = ({
   const [scriptText, setScriptText] = useState<string>('')
   const [maxEvalRows, setMaxEvalRows] = useState<number>(500)
   const [savingRuleScript, setSavingRuleScript] = useState<boolean>(false)
-  const [saveScriptMessage, setSaveScriptMessage] = useState<string | null>(null)
+  // What the last action reported; ok drives the colour, so the text needs no ✓ / ✗ prefix.
+  const [saveScriptMessage, setSaveScriptMessage] = useState<{ ok: boolean; text: string } | null>(null)
 
   const DEFAULT_AOI_DIC_CRACK_SCRIPT = `if( G010_VpID != 1):
 \treturn False
@@ -213,7 +215,7 @@ return MCL_Block1 or MCL_Block2 or MCL_Block4 or SR_Block1 or SR_Block2 or SR_Bl
           lineCode: scope?.lineCode,
           machineCode: scope?.machineCode,
         })
-        setSaveScriptMessage(`✓ Successfully imported ${mapped.length} Rules from JSON into Database!`)
+        setSaveScriptMessage({ ok: true, text: `Successfully imported ${mapped.length} Rules from JSON into Database!` })
         // Pick script of first rule or matching rule
         const first = mapped[0]
         if (first?.script) {
@@ -221,11 +223,11 @@ return MCL_Block1 or MCL_Block2 or MCL_Block4 or SR_Block1 or SR_Block2 or SR_Bl
         }
         setTimeout(() => setSaveScriptMessage(null), 6000)
       } else {
-        setSaveScriptMessage('Could not find "Rules" array in JSON.')
+        setSaveScriptMessage({ ok: false, text: 'Could not find "Rules" array in JSON.' })
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err)
-      setSaveScriptMessage(`JSON Parse Error: ${msg}`)
+      setSaveScriptMessage({ ok: false, text: `JSON Parse Error: ${msg}` })
     } finally {
       setSavingRuleScript(false)
     }
@@ -246,11 +248,11 @@ return MCL_Block1 or MCL_Block2 or MCL_Block4 or SR_Block1 or SR_Block2 or SR_Bl
       await classifierRulesApi.updateRule(resolvedRule.id, {
         scriptContent: scriptText,
       })
-      setSaveScriptMessage(`✓ Saved script into Rule ${resolvedRule.ruleCode} (v${resolvedRule.version}) successfully!`)
+      setSaveScriptMessage({ ok: true, text: `Saved script into Rule ${resolvedRule.ruleCode} (v${resolvedRule.version}) successfully!` })
       setTimeout(() => setSaveScriptMessage(null), 5000)
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err)
-      setSaveScriptMessage(`Error saving script: ${msg}`)
+      setSaveScriptMessage({ ok: false, text: `Error saving script: ${msg}` })
     } finally {
       setSavingRuleScript(false)
     }
@@ -1184,30 +1186,29 @@ return MCL_Block1 or MCL_Block2 or MCL_Block4 or SR_Block1 or SR_Block2 or SR_Bl
           <div className="form-vertical">
             {/* Guide notice banner */}
             <div
+              className="text-sm text-info"
               style={{
-                background: 'rgba(59, 130, 246, 0.1)',
-                border: '1px solid rgba(59, 130, 246, 0.3)',
+                background: 'var(--status-info-bg)',
+                border: '1px solid var(--status-info-border)',
                 borderRadius: 6,
                 padding: '10px 14px',
                 marginBottom: 12,
-                fontSize: 13,
-                color: '#93c5fd',
               }}
             >
-              <strong>📍 AOI Script Editor:</strong> Paste Python-like classifier script for this defect below.
+              <strong>AOI Script Editor:</strong> Paste Python-like classifier script for this defect below.
               The engine evaluates individual logic conditions (Guard clauses, IP_Cond, Cond1, Cond2, DL_Cond...)
               and breaks down pass/fail outcomes across defect observations.
             </div>
 
             {/* Quick Action Toolbar */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', marginBottom: 10 }}>
+            <div className="hstack flex-wrap gap-md" style={{ marginBottom: 10 }}>
               <button
                 type="button"
                 className="btn btn-secondary btn-sm"
                 onClick={() => setScriptText(DEFAULT_AOI_LIGHT_FAIL_SCRIPT)}
                 title="Paste template script for AOI Light_Fail (Priority 0)"
               >
-                ✨ Template: Light_Fail (Priority 0)
+                <Icon name="plus" className="icon inline-icon" />Template: Light_Fail (Priority 0)
               </button>
 
               <button
@@ -1216,19 +1217,19 @@ return MCL_Block1 or MCL_Block2 or MCL_Block4 or SR_Block1 or SR_Block2 or SR_Bl
                 onClick={() => setScriptText(DEFAULT_AOI_DIC_CRACK_SCRIPT)}
                 title="Paste template script for AOI DIC_Crack (Priority 1)"
               >
-                ✨ Template: DIC_Crack (Priority 1)
+                <Icon name="plus" className="icon inline-icon" />Template: DIC_Crack (Priority 1)
               </button>
 
               {scriptText.includes('"Rules"') && (
                 <button
                   type="button"
-                  className="btn btn-primary btn-sm"
-                  style={{ background: '#10b981', borderColor: '#047857', color: '#fff', fontWeight: 600 }}
+                  className="btn btn-primary btn-sm font-semibold"
+                  style={{ background: 'var(--status-ok)', borderColor: 'var(--status-ok-border)', color: '#fff' }}
                   onClick={() => void handleImportRulesJsonText(scriptText)}
                   disabled={savingRuleScript}
                   title="Detected AOI Rules JSON structure! Click to import all rules into database"
                 >
-                  📥 Import All Rules JSON
+                  <Icon name="import" className="icon inline-icon" />Import All Rules JSON
                 </button>
               )}
 
@@ -1239,7 +1240,7 @@ return MCL_Block1 or MCL_Block2 or MCL_Block4 or SR_Block1 or SR_Block2 or SR_Bl
                   onClick={() => setScriptText(resolvedRule.scriptContent || '')}
                   title={`Load script saved in Rule ${resolvedRule.ruleCode}`}
                 >
-                  📋 Load from Rule ({resolvedRule.ruleCode})
+                  <Icon name="clipboard" className="icon inline-icon" />Load from Rule ({resolvedRule.ruleCode})
                 </button>
               )}
 
@@ -1251,7 +1252,7 @@ return MCL_Block1 or MCL_Block2 or MCL_Block4 or SR_Block1 or SR_Block2 or SR_Bl
                   disabled={savingRuleScript || !scriptText.trim()}
                   title={`Save this script into Rule ${resolvedRule.ruleCode}`}
                 >
-                  {savingRuleScript ? 'Saving...' : `💾 Save to Rule ${resolvedRule.ruleCode}`}
+                  {savingRuleScript ? 'Saving...' : <><Icon name="save" className="icon inline-icon" />Save to Rule {resolvedRule.ruleCode}</>}
                 </button>
               )}
 
@@ -1266,45 +1267,42 @@ return MCL_Block1 or MCL_Block2 or MCL_Block4 or SR_Block1 or SR_Block2 or SR_Bl
               )}
 
               {resolvedRule && (
-                <span className="font-mono text-xs ml-auto" style={{ color: '#94a3b8' }}>
-                  Matched Rule: <strong style={{ color: '#60a5fa' }}>{resolvedRule.ruleCode}</strong> v{resolvedRule.version}
+                <span className="font-mono text-xs ml-auto text-muted">
+                  Matched Rule: <strong className="text-info">{resolvedRule.ruleCode}</strong> v{resolvedRule.version}
                 </span>
               )}
             </div>
 
             {saveScriptMessage && (
               <div
+                className="text-xs"
                 style={{
                   padding: '6px 10px',
                   borderRadius: 4,
                   marginBottom: 8,
-                  fontSize: 12,
-                  background: saveScriptMessage.startsWith('✓') ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)',
-                  border: `1px solid ${saveScriptMessage.startsWith('✓') ? '#22c55e' : '#ef4444'}`,
-                  color: saveScriptMessage.startsWith('✓') ? '#22c55e' : '#ef4444',
+                  background: saveScriptMessage.ok ? 'var(--status-ok-bg)' : 'var(--status-ng-bg)',
+                  border: `1px solid ${saveScriptMessage.ok ? 'var(--status-ok-border)' : 'var(--status-ng-border)'}`,
+                  color: saveScriptMessage.ok ? 'var(--status-ok-text)' : 'var(--status-ng-text)',
                 }}
               >
-                {saveScriptMessage}
+                {saveScriptMessage.text}
               </div>
             )}
 
             <div className="form-group">
               <label>AOI Classifier Script (Python-like) *</label>
               <textarea
+                className="font-mono text-xs text-strong w-full"
                 value={scriptText}
                 onChange={(e) => setScriptText(e.target.value)}
                 placeholder={`if( G010_VpID != 1):\n\treturn False\n\nCond1 = ( G020_PxlArea > 90 )\nCond2 = ( G038_PrcGrayMin < 45 )\nDL_Cond = MLClass01 > 90\n\nreturn Cond1 and Cond2 and DL_Cond`}
                 required
                 rows={16}
                 style={{
-                  fontFamily: 'monospace',
-                  fontSize: 12,
-                  background: 'rgba(0,0,0,0.3)',
-                  color: '#e2e8f0',
-                  border: '1px solid rgba(255,255,255,0.1)',
+                  background: 'var(--slate-50)',
+                  border: '1px solid var(--slate-200)',
                   borderRadius: 6,
                   padding: 10,
-                  width: '100%',
                   resize: 'vertical',
                   whiteSpace: 'pre',
                   tabSize: 4,
@@ -1322,7 +1320,7 @@ return MCL_Block1 or MCL_Block2 or MCL_Block4 or SR_Block1 or SR_Block2 or SR_Bl
                   value={maxEvalRows}
                   onChange={(e) => setMaxEvalRows(parseInt(e.target.value, 10) || 500)}
                 />
-                <span className="text-xs" style={{ color: '#94a3b8' }}>
+                <span className="text-xs text-muted">
                   Aggregated statistics always cover all rows. This limits per-row detail output.
                 </span>
               </div>

@@ -173,7 +173,7 @@ export function OpInputTab({ onNotice }: { onNotice: (notice: Notice) => void })
           <div>
             <p className="eyebrow">Product-linked Operator Review Intelligence</p>
             <h2>{mode === 'analysis' ? 'OP Reconciliation Dashboard & Deep-Dive' : 'OP Review Import Tools'}</h2>
-            <p className="text-xs text-muted" style={{ marginTop: 4 }}>
+            <p className="text-xs text-muted mt-1">
               {mode === 'analysis'
                 ? 'Monitor OP-to-Product reconciliation, classification rates, defect breakdowns, overkill evidence, and mapping quality.'
                 : 'Import OP judgments using Clipboard, CSV, or Excel. Re-importing the same FOG ID updates the current Product review without creating duplicates.'}
@@ -219,7 +219,7 @@ export function OpInputTab({ onNotice }: { onNotice: (notice: Notice) => void })
               <p className="eyebrow">Fast Text Import</p>
               <h3>{mode === 'clipboard' ? 'Paste Clipboard Data' : 'Paste CSV / TSV Content'}</h3>
             </div>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <div className="gap-md" style={{ display: 'flex', flexWrap: 'wrap' }}>
               {mode === 'clipboard' && <button type="button" className="secondary" onClick={() => void readClipboard()}>Read Clipboard</button>}
               <button type="button" className="ghost-button" onClick={() => setRawText(SAMPLE)}>Load Sample</button>
               <button type="button" className="ghost-button" onClick={() => setRawText('')}>Clear</button>
@@ -227,11 +227,12 @@ export function OpInputTab({ onNotice }: { onNotice: (notice: Notice) => void })
           </div>
 
           <textarea
+            className="w-full font-mono text-xs"
             rows={12}
             value={rawText}
             onChange={(event) => setRawText(event.target.value)}
             placeholder={'FOG ID\tDefect Name\tJudge\nA0E7670...\tDent\tNG'}
-            style={{ width: '100%', fontFamily: 'monospace', fontSize: 12, whiteSpace: 'pre' }}
+            style={{ whiteSpace: 'pre' }}
           />
 
           <div className="metrics-grid" style={{ marginTop: 14 }}>
@@ -242,9 +243,9 @@ export function OpInputTab({ onNotice }: { onNotice: (notice: Notice) => void })
           </div>
 
           {previewRows.length > 0 && (
-            <div style={{ marginTop: 12, minWidth: 0 }}>
-              <div className="table-responsive" style={{ maxHeight: 440, width: '100%', overflow: 'auto' }}>
-                <table className="analytics-data-table" style={{ tableLayout: 'fixed', width: '100%', minWidth: 680 }}>
+            <div className="mt-3" style={{ minWidth: 0 }}>
+              <div className="table-responsive w-full" style={{ maxHeight: 440, overflow: 'auto' }}>
+                <table className="analytics-data-table w-full" style={{ tableLayout: 'fixed', minWidth: 680 }}>
                   <colgroup><col style={{ width: 56 }} /><col style={{ width: 250 }} /><col /><col style={{ width: 110 }} /></colgroup>
                   <thead><tr><th>#</th><th>FOG ID</th><th>OP Defect</th><th>OP Judge</th></tr></thead>
                   <tbody>{pagedPreviewRows.map((row, index) => (
@@ -257,14 +258,14 @@ export function OpInputTab({ onNotice }: { onNotice: (notice: Notice) => void })
                   ))}</tbody>
                 </table>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginTop: 10 }}>
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <div className="hstack justify-between gap-lg flex-wrap" style={{ marginTop: 10 }}>
+                <div className="hstack gap-md">
                   <span className="text-xs text-muted">{previewRows.length.toLocaleString()} rows · Page {previewPage}/{previewTotalPages}</span>
                   <select value={previewPageSize} onChange={(event) => setPreviewPageSize(Number(event.target.value))} style={{ width: 90 }}>
                     <option value={25}>25</option><option value={50}>50</option><option value={100}>100</option>
                   </select>
                 </div>
-                <div style={{ display: 'flex', gap: 8 }}>
+                <div className="gap-md" style={{ display: 'flex' }}>
                   <button type="button" className="ghost-button compact" disabled={previewPage <= 1} onClick={() => setPreviewPage((page) => Math.max(1, page - 1))}>Previous</button>
                   <button type="button" className="ghost-button compact" disabled={previewPage >= previewTotalPages} onClick={() => setPreviewPage((page) => Math.min(previewTotalPages, page + 1))}>Next</button>
                 </div>
@@ -295,13 +296,13 @@ export function OpInputTab({ onNotice }: { onNotice: (notice: Notice) => void })
               onChange={(event) => setFile(event.target.files?.[0] ?? null)}
             />
           </label>
-          <div style={{ marginTop: 16 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 5 }}><span>Upload & processing progress</span><strong>{progress}%</strong></div>
+          <div className="mt-4">
+            <div className="text-xs" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}><span>Upload & processing progress</span><strong>{progress}%</strong></div>
             <div style={{ height: 12, borderRadius: 999, overflow: 'hidden', background: 'rgba(148,163,184,.2)' }}>
-              <div style={{ height: '100%', width: `${progress}%`, background: 'linear-gradient(90deg, #2563eb, #10b981)', transition: 'width .2s ease' }} />
+              <div style={{ height: '100%', width: '100%', background: 'linear-gradient(90deg, var(--blue-600), var(--status-ok))', transform: `scaleX(${Math.min(100, Math.max(0, progress)) / 100})`, transformOrigin: 'left center', transition: 'transform .2s ease' }} />
             </div>
           </div>
-          <div className="actions" style={{ marginTop: 16 }}>
+          <div className="actions mt-4">
             <Button loading={busy} disabled={!file || !machineCode || !lineCode} onClick={() => void importFile()}>{busy ? 'Uploading & Upserting...' : 'Upload and Synchronize'}</Button>
           </div>
         </section>

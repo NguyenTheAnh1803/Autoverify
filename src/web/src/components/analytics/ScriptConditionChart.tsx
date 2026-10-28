@@ -1,4 +1,6 @@
 import React, { useMemo, useState } from 'react'
+import { Icon } from '../../ui'
+import { activatable } from '../../lib/activatable'
 import ReactECharts from '../ReactECharts'
 import { defectAnalyticsApi } from '../../api'
 import type {
@@ -47,8 +49,6 @@ export const ScriptConditionChart: React.FC<ScriptConditionChartProps> = ({
         text: 'Script Evaluation Result',
         subtext: `${totalObservations} observations evaluated`,
         left: 'center',
-        textStyle: { color: '#e2e8f0', fontSize: 14 },
-        subtextStyle: { color: '#94a3b8', fontSize: 12 },
       },
       tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
       series: [
@@ -56,25 +56,21 @@ export const ScriptConditionChart: React.FC<ScriptConditionChartProps> = ({
           type: 'pie',
           radius: ['40%', '70%'],
           avoidLabelOverlap: true,
-          label: {
-            color: '#e2e8f0',
-            fontSize: 12,
-          },
           data: [
             {
               value: finalTrueCount,
               name: `NG Detected (True): ${finalTrueCount}`,
-              itemStyle: { color: '#ef4444' },
+              itemStyle: { color: '#c0392b' },
             },
             {
               value: finalFalseCount,
               name: `Filtered Out (False): ${finalFalseCount}`,
-              itemStyle: { color: '#22c55e' },
+              itemStyle: { color: '#3a9d8a' },
             },
             {
               value: guardFailedCount,
               name: `Guard Failed: ${guardFailedCount}`,
-              itemStyle: { color: '#f59e0b' },
+              itemStyle: { color: '#c8862b' },
             },
           ],
         },
@@ -95,7 +91,6 @@ export const ScriptConditionChart: React.FC<ScriptConditionChartProps> = ({
       title: {
         text: 'Condition Pass/Fail Breakdown',
         left: 'center',
-        textStyle: { color: '#e2e8f0', fontSize: 14 },
       },
       tooltip: {
         trigger: 'axis',
@@ -121,13 +116,10 @@ export const ScriptConditionChart: React.FC<ScriptConditionChartProps> = ({
         type: 'value',
         max: 100,
         name: '%',
-        axisLabel: { color: '#94a3b8' },
-        nameTextStyle: { color: '#94a3b8' },
       },
       yAxis: {
         type: 'category',
         data: names,
-        axisLabel: { color: '#e2e8f0', fontSize: 11 },
         inverse: true,
       },
       series: [
@@ -136,7 +128,7 @@ export const ScriptConditionChart: React.FC<ScriptConditionChartProps> = ({
           type: 'bar',
           stack: 'total',
           data: trueRatios,
-          itemStyle: { color: '#22c55e' },
+          itemStyle: { color: '#3a9d8a' },
           barMaxWidth: 28,
         },
         {
@@ -144,7 +136,7 @@ export const ScriptConditionChart: React.FC<ScriptConditionChartProps> = ({
           type: 'bar',
           stack: 'total',
           data: falseRatios,
-          itemStyle: { color: '#ef4444' },
+          itemStyle: { color: '#c0392b' },
           barMaxWidth: 28,
         },
       ],
@@ -164,7 +156,6 @@ export const ScriptConditionChart: React.FC<ScriptConditionChartProps> = ({
       title: {
         text: 'Guard Clauses (Early Return False)',
         left: 'center',
-        textStyle: { color: '#e2e8f0', fontSize: 14 },
       },
       tooltip: {
         trigger: 'axis',
@@ -188,13 +179,10 @@ export const ScriptConditionChart: React.FC<ScriptConditionChartProps> = ({
         type: 'value',
         max: 100,
         name: '%',
-        axisLabel: { color: '#94a3b8' },
-        nameTextStyle: { color: '#94a3b8' },
       },
       yAxis: {
         type: 'category',
         data: names,
-        axisLabel: { color: '#e2e8f0', fontSize: 11 },
         inverse: true,
       },
       series: [
@@ -203,7 +191,7 @@ export const ScriptConditionChart: React.FC<ScriptConditionChartProps> = ({
           type: 'bar',
           stack: 'total',
           data: passRatios,
-          itemStyle: { color: '#22c55e' },
+          itemStyle: { color: '#3a9d8a' },
           barMaxWidth: 28,
         },
         {
@@ -211,7 +199,7 @@ export const ScriptConditionChart: React.FC<ScriptConditionChartProps> = ({
           type: 'bar',
           stack: 'total',
           data: failRatios,
-          itemStyle: { color: '#f59e0b' },
+          itemStyle: { color: '#c8862b' },
           barMaxWidth: 28,
         },
       ],
@@ -222,26 +210,26 @@ export const ScriptConditionChart: React.FC<ScriptConditionChartProps> = ({
   // ---- ROW DETAIL: condition heatmap for selected row ----
   const renderRowDetail = (eval_: ScriptObservationEvaluation) => {
     return (
-      <div className="script-row-detail" style={{ marginTop: 12 }}>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8 }}>
-          <span className="font-mono text-xs" style={{ color: '#94a3b8' }}>
+      <div className="script-row-detail mt-3">
+        <div className="hstack gap-md" style={{ marginBottom: 8 }}>
+          <span className="font-mono text-xs" style={{ color: '#64748b' }}>
             Row #{eval_.observation.rowIndex}
           </span>
           <span
             className={`job-status-pill ${eval_.finalResult ? 'status-failed' : 'status-completed'}`}
-            style={{ fontSize: 11 }}
+            style={{ fontSize: 'var(--text-meta)' }}
           >
             {eval_.finalResult ? 'NG (Script=True)' : 'OK (Script=False)'}
           </span>
           {eval_.guardFailed && (
-            <span className="job-status-pill" style={{ background: '#f59e0b', color: '#000', fontSize: 11 }}>
+            <span className="job-status-pill text-xs" style={{ background: '#fef3c7', color: '#92400e' }}>
               Guard Failed: {eval_.failedGuardFeature}
             </span>
           )}
           <button
             type="button"
-            className="btn btn-ghost btn-sm"
-            style={{ marginLeft: 'auto', fontSize: 11 }}
+            className="btn btn-ghost btn-sm text-xs"
+            style={{ marginLeft: 'auto' }}
             onClick={() => onSelectRowIndex(eval_.observation.rowIndex)}
           >
             View Defect
@@ -249,21 +237,21 @@ export const ScriptConditionChart: React.FC<ScriptConditionChartProps> = ({
         </div>
 
         {/* Feature values table */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 4, marginBottom: 8 }}>
+        <div className="gap-xs" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(200px, 100%), 1fr))', marginBottom: 8 }}>
           {Object.entries(eval_.featureValues).map(([feat, val]) => (
             <div
+              className="text-xs"
               key={feat}
               style={{
                 display: 'flex',
                 justifyContent: 'space-between',
                 padding: '2px 6px',
-                background: 'rgba(255,255,255,0.03)',
+                background: '#f8fafc',
                 borderRadius: 3,
-                fontSize: 11,
               }}
             >
-              <span style={{ color: '#94a3b8' }}>{feat}</span>
-              <span className="font-mono" style={{ color: val != null ? '#e2e8f0' : '#ef4444' }}>
+              <span style={{ color: '#64748b' }}>{feat}</span>
+              <span className="font-mono" style={{ color: val != null ? '#1e293b' : '#c0392b' }}>
                 {val != null ? val.toFixed(2) : 'N/A'}
               </span>
             </div>
@@ -271,18 +259,18 @@ export const ScriptConditionChart: React.FC<ScriptConditionChartProps> = ({
         </div>
 
         {/* Condition results */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+        <div className="gap-sm" style={{ display: 'flex', flexWrap: 'wrap' }}>
           {Object.entries(eval_.conditionResults).map(([name, val]) => (
             <div
+              className="text-xs"
               key={name}
               style={{
                 padding: '4px 10px',
                 borderRadius: 4,
-                fontSize: 12,
                 fontWeight: 500,
-                background: val ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)',
-                border: `1px solid ${val ? '#22c55e' : '#ef4444'}`,
-                color: val ? '#22c55e' : '#ef4444',
+                background: val ? 'rgba(21,128,61,0.10)' : 'rgba(192,57,43,0.10)',
+                border: `1px solid ${val ? '#15803d' : '#c0392b'}`,
+                color: val ? '#15803d' : '#c0392b',
               }}
             >
               {name}: {val ? 'TRUE' : 'FALSE'}
@@ -303,19 +291,19 @@ export const ScriptConditionChart: React.FC<ScriptConditionChartProps> = ({
         </div>
         <div className="summary-stat">
           <span className="stat-label">NG (True)</span>
-          <span className="stat-value font-mono" style={{ color: '#ef4444' }}>
+          <span className="stat-value font-mono" style={{ color: '#c0392b' }}>
             {finalTrueCount} ({(finalTrueRatio * 100).toFixed(1)}%)
           </span>
         </div>
         <div className="summary-stat">
           <span className="stat-label">OK (False)</span>
-          <span className="stat-value font-mono" style={{ color: '#22c55e' }}>
+          <span className="stat-value font-mono" style={{ color: '#15803d' }}>
             {finalFalseCount}
           </span>
         </div>
         <div className="summary-stat">
           <span className="stat-label">Guard Failed</span>
-          <span className="stat-value font-mono" style={{ color: '#f59e0b' }}>
+          <span className="stat-value font-mono" style={{ color: '#b45309' }}>
             {guardFailedCount}
           </span>
         </div>
@@ -332,11 +320,11 @@ export const ScriptConditionChart: React.FC<ScriptConditionChartProps> = ({
             <a
               href={defectAnalyticsApi.getCsvExportUrl(sessionId, jobId)}
               download
-              className="btn btn-secondary btn-sm"
-              style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}
+              className="btn btn-secondary btn-sm gap-sm"
+              style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
               title="Export all script evaluation results to CSV for Excel review"
             >
-              📥 Export CSV Report
+              <Icon name="download" className="icon inline-icon" />Export CSV Report
             </a>
           </div>
         )}
@@ -381,7 +369,7 @@ export const ScriptConditionChart: React.FC<ScriptConditionChartProps> = ({
       {/* OVERVIEW */}
       {viewMode === 'overview' && (
         <div>
-          <div style={{ display: 'grid', gridTemplateColumns: guardStats.length > 0 ? '1fr 1fr' : '1fr', gap: 16 }}>
+          <div className="gap-xl" style={{ display: 'grid', gridTemplateColumns: guardStats.length > 0 ? '1fr 1fr' : '1fr' }}>
             <ReactECharts
               option={finalPieOption}
               style={{ height: 320 }}
@@ -397,23 +385,22 @@ export const ScriptConditionChart: React.FC<ScriptConditionChartProps> = ({
           </div>
 
           {/* Parsed script structure */}
-          <div className="section-header" style={{ marginTop: 16 }}>
+          <div className="section-header mt-4">
             <h4>Parsed Script Structure</h4>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          <div className="gap-lg" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
             <div>
-              <h5 style={{ color: '#94a3b8', fontSize: 12, marginBottom: 4 }}>Guard Clauses ({script.guards.length})</h5>
+              <h5 className="text-xs" style={{ color: '#64748b', marginBottom: 4 }}>Guard Clauses ({script.guards.length})</h5>
               {script.guards.map((g, i) => (
                 <div
+                  className="text-xs font-mono"
                   key={i}
                   style={{
                     padding: '4px 8px',
-                    background: 'rgba(255,255,255,0.03)',
+                    background: '#f8fafc',
                     borderRadius: 3,
                     marginBottom: 2,
-                    fontSize: 11,
-                    fontFamily: 'monospace',
-                    color: '#e2e8f0',
+                    color: '#1e293b',
                   }}
                 >
                   L{g.lineNumber}: {g.rawExpression}
@@ -421,36 +408,34 @@ export const ScriptConditionChart: React.FC<ScriptConditionChartProps> = ({
               ))}
             </div>
             <div>
-              <h5 style={{ color: '#94a3b8', fontSize: 12, marginBottom: 4 }}>
+              <h5 className="text-xs" style={{ color: '#64748b', marginBottom: 4 }}>
                 Named Conditions ({script.conditions.length})
               </h5>
               {script.conditions.map((c, i) => (
                 <div
+                  className="text-xs font-mono"
                   key={i}
                   style={{
                     padding: '4px 8px',
-                    background: 'rgba(255,255,255,0.03)',
+                    background: '#f8fafc',
                     borderRadius: 3,
                     marginBottom: 2,
-                    fontSize: 11,
-                    fontFamily: 'monospace',
-                    color: '#e2e8f0',
+                    color: '#1e293b',
                   }}
                 >
-                  L{c.lineNumber}: <b style={{ color: '#60a5fa' }}>{c.name}</b> = {c.expression}
+                  L{c.lineNumber}: <b style={{ color: '#1d4ed8' }}>{c.name}</b> = {c.expression}
                 </div>
               ))}
               {script.finalReturn && (
                 <div
+                  className="text-xs font-mono"
                   style={{
                     padding: '4px 8px',
-                    background: 'rgba(96,165,250,0.08)',
+                    background: 'rgba(47,111,159,0.08)',
                     borderRadius: 3,
                     marginTop: 6,
-                    fontSize: 11,
-                    fontFamily: 'monospace',
-                    color: '#60a5fa',
-                    border: '1px solid rgba(96,165,250,0.2)',
+                    color: '#1d4ed8',
+                    border: '1px solid rgba(47,111,159,0.25)',
                   }}
                 >
                   L{script.finalReturn.lineNumber}: return {script.finalReturn.rawExpression}
@@ -460,21 +445,20 @@ export const ScriptConditionChart: React.FC<ScriptConditionChartProps> = ({
           </div>
 
           {/* Required features */}
-          <div style={{ marginTop: 12 }}>
-            <h5 style={{ color: '#94a3b8', fontSize: 12, marginBottom: 4 }}>
+          <div className="mt-3">
+            <h5 className="text-xs" style={{ color: '#64748b', marginBottom: 4 }}>
               Required Features ({script.allRequiredFeatures.length})
             </h5>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+            <div className="gap-xs" style={{ display: 'flex', flexWrap: 'wrap' }}>
               {script.allRequiredFeatures.map((f) => (
                 <span
+                  className="text-xs font-mono"
                   key={f}
                   style={{
                     padding: '2px 8px',
-                    background: 'rgba(255,255,255,0.05)',
+                    background: '#f1f5f9',
                     borderRadius: 3,
-                    fontSize: 11,
-                    fontFamily: 'monospace',
-                    color: '#e2e8f0',
+                    color: '#1e293b',
                   }}
                 >
                   {f}
@@ -502,7 +486,7 @@ export const ScriptConditionChart: React.FC<ScriptConditionChartProps> = ({
 
           {/* Condition detail table */}
           {conditionStats.length > 0 && (
-            <div className="table-responsive" style={{ marginTop: 12 }}>
+            <div className="table-responsive mt-3">
               <table className="analytics-data-table" role="table">
                 <thead>
                   <tr>
@@ -517,7 +501,7 @@ export const ScriptConditionChart: React.FC<ScriptConditionChartProps> = ({
                 <tbody>
                   {conditionStats.map((c) => (
                     <tr key={c.conditionName}>
-                      <td className="font-mono font-bold" style={{ color: '#60a5fa' }}>
+                      <td className="font-mono font-bold" style={{ color: '#1d4ed8' }}>
                         {c.conditionName}
                       </td>
                       <td
@@ -527,16 +511,16 @@ export const ScriptConditionChart: React.FC<ScriptConditionChartProps> = ({
                       >
                         {c.expression}
                       </td>
-                      <td className="font-mono" style={{ color: '#22c55e' }}>
+                      <td className="font-mono" style={{ color: '#15803d' }}>
                         {c.trueCount}
                       </td>
-                      <td className="font-mono" style={{ color: '#ef4444' }}>
+                      <td className="font-mono" style={{ color: '#c0392b' }}>
                         {c.falseCount}
                       </td>
                       <td className="font-mono">
                         {(c.trueRatio * 100).toFixed(1)}%
                       </td>
-                      <td className="font-mono" style={{ color: c.missingFeatureCount > 0 ? '#f59e0b' : '#94a3b8' }}>
+                      <td className="font-mono" style={{ color: c.missingFeatureCount > 0 ? '#b45309' : '#64748b' }}>
                         {c.missingFeatureCount}
                       </td>
                     </tr>
@@ -548,8 +532,8 @@ export const ScriptConditionChart: React.FC<ScriptConditionChartProps> = ({
 
           {/* Guard detail table */}
           {guardStats.length > 0 && (
-            <div style={{ marginTop: 16 }}>
-              <h4 style={{ color: '#e2e8f0', fontSize: 14, marginBottom: 8 }}>Guard Clauses</h4>
+            <div className="mt-4">
+              <h4 className="text-base" style={{ color: '#1e293b', marginBottom: 8 }}>Guard Clauses</h4>
               <div className="table-responsive">
                 <table className="analytics-data-table" role="table">
                   <thead>
@@ -564,16 +548,16 @@ export const ScriptConditionChart: React.FC<ScriptConditionChartProps> = ({
                   <tbody>
                     {guardStats.map((g, i) => (
                       <tr key={i}>
-                        <td className="font-mono font-bold" style={{ color: '#f59e0b' }}>
+                        <td className="font-mono font-bold" style={{ color: '#b45309' }}>
                           {g.feature}
                         </td>
                         <td className="font-mono text-xs" title={g.expression}>
                           {g.expression}
                         </td>
-                        <td className="font-mono" style={{ color: '#22c55e' }}>
+                        <td className="font-mono" style={{ color: '#15803d' }}>
                           {g.passCount}
                         </td>
-                        <td className="font-mono" style={{ color: '#ef4444' }}>
+                        <td className="font-mono" style={{ color: '#c0392b' }}>
                           {g.failCount}
                         </td>
                         <td className="font-mono">
@@ -612,25 +596,25 @@ export const ScriptConditionChart: React.FC<ScriptConditionChartProps> = ({
                   <tr
                     key={ev.observation.rowIndex}
                     className={selectedRow?.observation.rowIndex === ev.observation.rowIndex ? 'selected-row' : ''}
-                    onClick={() => setSelectedRow(ev)}
+                    {...activatable(() => setSelectedRow(ev), { row: true, selected: selectedRow?.observation.rowIndex === ev.observation.rowIndex })}
                     style={{ cursor: 'pointer' }}
                   >
                     <td className="font-mono text-xs">{ev.observation.rowIndex}</td>
                     <td>
                       <span
                         className={`job-status-pill ${ev.finalResult ? 'status-failed' : 'status-completed'}`}
-                        style={{ fontSize: 10 }}
+                        style={{ fontSize: 'var(--text-meta)' }}
                       >
                         {ev.finalResult ? 'TRUE' : 'FALSE'}
                       </span>
                     </td>
                     <td>
                       {ev.guardFailed ? (
-                        <span style={{ color: '#f59e0b', fontSize: 11 }}>
+                        <span className="text-xs" style={{ color: '#b45309' }}>
                           FAIL ({ev.failedGuardFeature})
                         </span>
                       ) : (
-                        <span style={{ color: '#22c55e', fontSize: 11 }}>PASS</span>
+                        <span className="text-xs" style={{ color: '#15803d' }}>PASS</span>
                       )}
                     </td>
                     {conditionStats.map((c) => {
@@ -638,10 +622,9 @@ export const ScriptConditionChart: React.FC<ScriptConditionChartProps> = ({
                       return (
                         <td key={c.conditionName}>
                           <span
+                            className="font-semibold text-xs"
                             style={{
-                              color: val ? '#22c55e' : '#ef4444',
-                              fontWeight: 600,
-                              fontSize: 11,
+                              color: val ? '#15803d' : '#c0392b',
                             }}
                           >
                             {val ? 'T' : 'F'}
@@ -652,8 +635,8 @@ export const ScriptConditionChart: React.FC<ScriptConditionChartProps> = ({
                     <td>
                       <button
                         type="button"
-                        className="btn btn-ghost btn-sm"
-                        style={{ fontSize: 10, padding: '2px 6px' }}
+                        className="btn btn-ghost btn-sm text-xs"
+                        style={{ padding: '2px 6px' }}
                         onClick={(e) => {
                           e.stopPropagation()
                           onSelectRowIndex(ev.observation.rowIndex)

@@ -441,7 +441,20 @@ public sealed class ImageCrawlerService : IImageCrawlerService
             if (defect.ImageUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
                 defect.ImageUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
             {
-                return new ImageCrawlResult(true, null, "image/jpeg", defect.ImageUrl, null, 200);
+                try
+                {
+                    using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                    cts.CancelAfter(TimeSpan.FromSeconds(3));
+                    var bytes = await _httpClient.GetByteArrayAsync(defect.ImageUrl, cts.Token);
+                    if (bytes != null && bytes.Length > 0)
+                    {
+                        return new ImageCrawlResult(true, bytes, "image/jpeg", defect.ImageUrl, null, 200);
+                    }
+                }
+                catch
+                {
+                    // Stored HTTP url unreachable (e.g. localhost:8888 from different machine). Fall through to crawler API.
+                }
             }
 
             try
@@ -498,8 +511,26 @@ public sealed class ImageCrawlerService : IImageCrawlerService
             cancellationToken);
         if (!crawlResult.Success || crawlResult.ImageBytes == null || crawlResult.ImageBytes.Length == 0)
         {
-            _logger.LogWarning("[VP_Image] Crawl failed for DefectId={DefectId}, VP={VP}: {ErrorMessage}", defect.Id, effectiveVp, crawlResult.ErrorMessage);
-            return crawlResult;
+            if (effectiveVp == "0")
+            {
+                var originalVp = ResolveOriginalDefectVp(imagePath);
+                if (!string.IsNullOrWhiteSpace(originalVp) && originalVp != "0")
+                {
+                    _logger.LogInformation("[VP_Image] VP0 not available on machine, fallback to Original VP{OriginalVp} for DefectId={DefectId}", originalVp, defect.Id);
+                    crawlResult = await CrawlImageInternalAsync(
+                        imagePath,
+                        apiUrl,
+                        apiUrl.Contains("/api/image/get", StringComparison.OrdinalIgnoreCase) ? "POST" : "GET",
+                        featureJson,
+                        originalVp,
+                        cancellationToken);
+                }
+            }
+            if (!crawlResult.Success || crawlResult.ImageBytes == null || crawlResult.ImageBytes.Length == 0)
+            {
+                _logger.LogWarning("[VP_Image] Crawl failed for DefectId={DefectId}, VP={VP}: {ErrorMessage}", defect.Id, effectiveVp, crawlResult.ErrorMessage);
+                return crawlResult;
+            }
         }
 
         // VP1-4/original are strictly on-demand proxy responses. Do not upload them

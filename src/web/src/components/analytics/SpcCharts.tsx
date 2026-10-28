@@ -1,6 +1,8 @@
 import React, { useMemo, useState } from 'react'
+import { Icon } from '../../ui'
 import ReactECharts from '../ReactECharts'
 import type { SpcResult } from '../../types'
+import { CHART, measureLine, refLines, spcZones, toolbox, valueAxis, zoom } from '../../lib/chartTheme'
 
 export type SpcChartsProps = {
   result: SpcResult
@@ -46,8 +48,8 @@ export const SpcCharts: React.FC<SpcChartsProps> = ({
         rowIndex: p.rowIndex,
         violatingRuleIds: p.violatingRuleIds,
         itemStyle: isViolating
-          ? { color: '#ef4444', borderColor: '#f87171', borderWidth: 2 }
-          : { color: '#38bdf8' },
+          ? { color: '#c0392b', borderColor: '#c0392b', borderWidth: 2 }
+          : { color: '#2f6f9f' },
       }
     })
 
@@ -59,77 +61,43 @@ export const SpcCharts: React.FC<SpcChartsProps> = ({
       title: {
         text: `${primaryChart.name} Control Chart (${chartType}) - ${featureName}`,
         left: 'left',
-        textStyle: { color: '#cbd5e1', fontSize: 13, fontWeight: 'normal' },
       },
       tooltip: {
         trigger: 'item',
-        backgroundColor: '#1e293b',
-        borderColor: '#475569',
-        textStyle: { color: '#f1f5f9', fontSize: 12 },
         formatter: (params: { data: { value: number; rowIndex: number; violatingRuleIds?: number[] }; name: string }) => {
           const pt = params.data
           const ruleList = pt.violatingRuleIds && pt.violatingRuleIds.length > 0
-            ? `<div style="color:#f87171;font-weight:bold;margin-top:4px;">Nelson Rules Violated: ${pt.violatingRuleIds.join(', ')}</div>`
+            ? `<div style="color:#c0392b;font-weight:bold;margin-top:4px;">Nelson Rules Violated: ${pt.violatingRuleIds.join(', ')}</div>`
             : ''
           return `
-            <div style="font-family:monospace;">
+            <div style="font-family:var(--font-mono);">
               <div><strong>Sample:</strong> ${params.name}</div>
               <div><strong>Value:</strong> ${pt.value.toFixed(4)}</div>
               <div><strong>Grid Row Index:</strong> #${pt.rowIndex}</div>
               ${ruleList}
-              <div style="font-size:12px;color:#94a3b8;margin-top:4px;">(Click point to locate in preview grid)</div>
+              <div style="font-size:12px;color:#64748b;margin-top:4px;">(Click point to locate in preview grid)</div>
             </div>
           `
         },
       },
-      grid: { left: '50px', right: '90px', top: '40px', bottom: '30px' },
-      xAxis: {
-        type: 'category',
-        data: xData,
-        axisLine: { lineStyle: { color: '#475569' } },
-        axisLabel: { color: '#94a3b8', fontSize: 10 },
-      },
-      yAxis: {
-        type: 'value',
-        scale: true,
-        axisLine: { lineStyle: { color: '#475569' } },
-        splitLine: { lineStyle: { color: '#1e293b' } },
-        axisLabel: { color: '#94a3b8', fontSize: 10 },
-      },
+      toolbox: toolbox(),
+      grid: { left: 12, right: 16, top: 44, bottom: seriesData.length > 60 ? 40 : 14 },
+      xAxis: { type: 'category', data: xData },
+      yAxis: valueAxis(),
+      dataZoom: seriesData.length > 60 ? zoom() : undefined,
       series: [
-        {
-          name: primaryChart.name,
-          type: 'line',
-          data: seriesData,
+        measureLine(primaryChart.name, seriesData, {
           showSymbol: true,
           symbolSize: (_value: unknown, params: { data: { violatingRuleIds?: number[] } }) =>
             params.data.violatingRuleIds && params.data.violatingRuleIds.length > 0 ? 8 : 4,
-          lineStyle: { color: '#38bdf8', width: 1.5 },
-          markLine: {
-            silent: false,
-            symbol: 'none',
-            data: [
-              {
-                yAxis: ucl,
-                name: 'UCL',
-                lineStyle: { color: '#f43f5e', type: 'dashed', width: 1.5 },
-                label: { formatter: `UCL: ${ucl.toFixed(3)}`, position: 'end', color: '#f43f5e', fontSize: 10 },
-              },
-              {
-                yAxis: cl,
-                name: 'CL',
-                lineStyle: { color: '#10b981', type: 'solid', width: 1.5 },
-                label: { formatter: `CL: ${cl.toFixed(3)}`, position: 'end', color: '#10b981', fontSize: 10 },
-              },
-              {
-                yAxis: lcl,
-                name: 'LCL',
-                lineStyle: { color: '#f43f5e', type: 'dashed', width: 1.5 },
-                label: { formatter: `LCL: ${lcl.toFixed(3)}`, position: 'end', color: '#f43f5e', fontSize: 10 },
-              },
-            ],
-          },
-        },
+          lineStyle: { color: CHART.primary, width: 1.25 },
+          markLine: refLines([
+            { name: 'UCL', value: ucl, kind: 'control' },
+            { name: 'CL', value: cl, kind: 'mean' },
+            { name: 'LCL', value: lcl, kind: 'control' },
+          ]),
+          markArea: spcZones(cl, ucl, lcl),
+        }),
       ],
     }
   }, [primaryChart, chartType, featureName])
@@ -142,7 +110,7 @@ export const SpcCharts: React.FC<SpcChartsProps> = ({
     const seriesData = secondaryChart.points.map((p) => ({
       value: p.value,
       rowIndex: p.rowIndex,
-      itemStyle: { color: '#a855f7' },
+      itemStyle: { color: CHART.series[4] },
     }))
 
     const ucl = secondaryChart.upperControlLimit
@@ -153,68 +121,34 @@ export const SpcCharts: React.FC<SpcChartsProps> = ({
       title: {
         text: `${secondaryChart.name} Dispersion Chart - ${featureName}`,
         left: 'left',
-        textStyle: { color: '#cbd5e1', fontSize: 13, fontWeight: 'normal' },
       },
       tooltip: {
         trigger: 'item',
-        backgroundColor: '#1e293b',
-        borderColor: '#475569',
-        textStyle: { color: '#f1f5f9', fontSize: 12 },
         formatter: (params: { data: { value: number; rowIndex: number }; name: string }) => `
-          <div style="font-family:monospace;">
+          <div style="font-family:var(--font-mono);">
             <div><strong>Sample:</strong> ${params.name}</div>
             <div><strong>Dispersion:</strong> ${params.data.value.toFixed(4)}</div>
             <div><strong>Grid Row Index:</strong> #${params.data.rowIndex}</div>
           </div>
         `,
       },
-      grid: { left: '50px', right: '90px', top: '40px', bottom: '30px' },
-      xAxis: {
-        type: 'category',
-        data: xData,
-        axisLine: { lineStyle: { color: '#475569' } },
-        axisLabel: { color: '#94a3b8', fontSize: 10 },
-      },
-      yAxis: {
-        type: 'value',
-        scale: true,
-        axisLine: { lineStyle: { color: '#475569' } },
-        splitLine: { lineStyle: { color: '#1e293b' } },
-        axisLabel: { color: '#94a3b8', fontSize: 10 },
-      },
+      toolbox: toolbox(),
+      grid: { left: 12, right: 16, top: 44, bottom: seriesData.length > 60 ? 40 : 14 },
+      xAxis: { type: 'category', data: xData },
+      yAxis: valueAxis(),
+      dataZoom: seriesData.length > 60 ? zoom() : undefined,
       series: [
-        {
-          name: secondaryChart.name,
-          type: 'line',
-          data: seriesData,
+        measureLine(secondaryChart.name, seriesData, {
           showSymbol: true,
           symbolSize: 4,
-          lineStyle: { color: '#a855f7', width: 1.5 },
-          markLine: {
-            silent: false,
-            symbol: 'none',
-            data: [
-              {
-                yAxis: ucl,
-                name: 'UCL',
-                lineStyle: { color: '#f43f5e', type: 'dashed', width: 1.5 },
-                label: { formatter: `UCL: ${ucl.toFixed(3)}`, position: 'end', color: '#f43f5e', fontSize: 10 },
-              },
-              {
-                yAxis: cl,
-                name: 'CL',
-                lineStyle: { color: '#10b981', type: 'solid', width: 1.5 },
-                label: { formatter: `CL: ${cl.toFixed(3)}`, position: 'end', color: '#10b981', fontSize: 10 },
-              },
-              {
-                yAxis: lcl,
-                name: 'LCL',
-                lineStyle: { color: '#f43f5e', type: 'dashed', width: 1.5 },
-                label: { formatter: `LCL: ${lcl.toFixed(3)}`, position: 'end', color: '#f43f5e', fontSize: 10 },
-              },
-            ],
-          },
-        },
+          lineStyle: { color: CHART.series[4], width: 1.25 },
+          markLine: refLines([
+            { name: 'UCL', value: ucl, kind: 'control' },
+            { name: 'CL', value: cl, kind: 'mean' },
+            { name: 'LCL', value: lcl, kind: 'control' },
+          ]),
+          markArea: spcZones(cl, ucl, lcl),
+        }),
       ],
     }
   }, [secondaryChart, featureName])
@@ -317,38 +251,34 @@ export const SpcCharts: React.FC<SpcChartsProps> = ({
       {/* Feature Value Preview Card (Per-Point Preview) */}
       {selectedPointPreview && (
         <div
-          className="analytics-feature-preview-card"
+          className="analytics-feature-preview-card hstack mt-3 justify-between"
           style={{
-            marginTop: '12px',
             padding: '10px 14px',
-            background: 'rgba(15, 23, 42, 0.9)',
-            border: '1px solid #0369a1',
+            background: '#f8fafc',
+            border: '1px solid #cbd5e1',
             borderRadius: '8px',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            color: '#f8fafc',
+            color: '#1e293b',
           }}
         >
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '14px' }}>📊</span>
-              <strong style={{ color: '#38bdf8', fontSize: '12px' }}>
+            <div className="hstack gap-md">
+              <Icon name="analysis" className="icon" />
+              <strong className="text-xs" style={{ color: '#2f6f9f' }}>
                 Feature Value Preview: <code>{selectedPointPreview.featureName}</code>
               </strong>
-              <span className="tag-badge" style={{ fontSize: '12px', background: '#0369a1', color: '#f0f9ff' }}>
+              <span className="tag-badge text-xs" style={{ background: '#2f6f9f', color: '#f0f9ff' }}>
                 Sample: {selectedPointPreview.sampleName}
               </span>
             </div>
-            <div style={{ marginTop: '4px', fontSize: '12px', display: 'flex', gap: '16px' }}>
+            <div className="mt-1 text-xs gap-xl" style={{ display: 'flex' }}>
               <span>
-                Observed Value: <strong className="font-mono text-sky-400" style={{ color: '#38bdf8' }}>{selectedPointPreview.value.toFixed(4)}</strong>
+                Observed Value: <strong className="font-mono text-sky-400" style={{ color: '#2f6f9f' }}>{selectedPointPreview.value.toFixed(4)}</strong>
               </span>
               <span>
                 Grid Row Index: <strong>#{selectedPointPreview.rowIndex}</strong>
               </span>
               {selectedPointPreview.violatingRuleIds && selectedPointPreview.violatingRuleIds.length > 0 && (
-                <span style={{ color: '#ef4444', fontWeight: 600 }}>
+                <span className="font-semibold" style={{ color: '#c0392b' }}>
                   Nelson Violations: Rules [{selectedPointPreview.violatingRuleIds.join(', ')}]
                 </span>
               )}
@@ -356,11 +286,11 @@ export const SpcCharts: React.FC<SpcChartsProps> = ({
           </div>
           <button
             type="button"
-            className="compact-button secondary"
-            style={{ fontSize: '12px', padding: '4px 8px' }}
+            className="compact-button secondary text-xs"
+            style={{ padding: '4px 8px' }}
             onClick={() => onSelectRowIndex(selectedPointPreview.rowIndex)}
           >
-            🎯 Locate in Defect Table
+            <Icon name="target" className="icon inline-icon" />Locate in Defect Table
           </button>
         </div>
       )}

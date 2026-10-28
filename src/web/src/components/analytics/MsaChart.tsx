@@ -36,15 +36,11 @@ export const MsaChart: React.FC<MsaChartProps> = ({ result }) => {
       title: {
         text: `Gage R&R Variance Components - ${featureName}`,
         left: 'left',
-        textStyle: { color: '#cbd5e1', fontSize: 13, fontWeight: 'normal' },
       },
       tooltip: {
         trigger: 'axis',
-        backgroundColor: '#1e293b',
-        borderColor: '#475569',
-        textStyle: { color: '#f1f5f9', fontSize: 12 },
         formatter: (params: Array<{ seriesName: string; value: string; axisValue: string }>) => `
-          <div style="font-family:monospace;">
+          <div style="font-family:var(--font-mono);">
             <div><strong>${params[0].axisValue}</strong></div>
             <div>% Contribution (Variance): ${params[0].value}%</div>
             <div>% Study Variation (SD): ${params[1]?.value}%</div>
@@ -53,36 +49,31 @@ export const MsaChart: React.FC<MsaChartProps> = ({ result }) => {
       },
       legend: {
         data: ['% Contribution (Variance)', '% Study Variation (SD)'],
-        textStyle: { color: '#94a3b8' },
         right: '20px',
         top: '5px',
       },
-      grid: { left: '120px', right: '40px', top: '40px', bottom: '30px' },
+      grid: { left: 12, right: 24, top: 44, bottom: 14 },
       xAxis: {
         type: 'value',
         max: 100,
-        axisLine: { lineStyle: { color: '#475569' } },
-        splitLine: { lineStyle: { color: '#1e293b' } },
-        axisLabel: { color: '#94a3b8', fontSize: 10, formatter: '{value}%' },
+        axisLabel: { formatter: '{value}%' },
       },
       yAxis: {
         type: 'category',
         data: categories,
-        axisLine: { lineStyle: { color: '#475569' } },
-        axisLabel: { color: '#94a3b8', fontSize: 11 },
       },
       series: [
         {
           name: '% Contribution (Variance)',
           type: 'bar',
           data: pctContrib,
-          itemStyle: { color: '#0369a1' },
+          itemStyle: { color: '#2f6f9f' },
         },
         {
           name: '% Study Variation (SD)',
           type: 'bar',
           data: pctStudyVar,
-          itemStyle: { color: '#f59e0b' },
+          itemStyle: { color: '#c8862b' },
         },
       ],
     }

@@ -5,6 +5,7 @@ import { formatDateTime } from '../format'
 // Opened on demand, so its code is downloaded only when a rule is first optimised.
 const RuleOptimizerModal = lazy(() => import('../components/RuleOptimizerModal').then((m) => ({ default: m.RuleOptimizerModal })))
 import { Button, DebouncedInput, Field, Icon, Modal, StatusPill } from '../ui'
+import { activatable } from '../lib/activatable'
 import type {
   ClassifierRuleDto,
   CreateClassifierRuleRequest,
@@ -174,7 +175,7 @@ export function ClassifierRulesTab({ onNotice }: { onNotice: (notice: Notice) =>
       }))
 
       const result = await classifierRulesApi.importAoiRulesJson({ rules: mapped })
-      onNotice({ tone: 'success', message: `✓ Successfully imported ${result.length} Rules into the system!` })
+      onNotice({ tone: 'success', message: `Successfully imported ${result.length} Rules into the system!` })
       setShowImportJsonModal(false)
       await loadRules()
     } catch (err) {
@@ -185,12 +186,17 @@ export function ClassifierRulesTab({ onNotice }: { onNotice: (notice: Notice) =>
   }
 
   // Save single rule (Create or Edit)
+  // A second click while the first save is in flight would create the rule twice.
+  const [savingRule, setSavingRule] = useState(false)
+
   async function handleSaveRule() {
+    if (savingRule) return
     if (!formData.ruleCode.trim() || !formData.ruleName.trim()) {
       onNotice({ tone: 'error', message: 'Rule Code and Rule Name are required.' })
       return
     }
 
+    setSavingRule(true)
     try {
       if (editingRule) {
         await classifierRulesApi.updateRule(editingRule.id, {
@@ -201,16 +207,18 @@ export function ClassifierRulesTab({ onNotice }: { onNotice: (notice: Notice) =>
           isActive: formData.isActive,
           description: formData.description,
         })
-        onNotice({ tone: 'success', message: `✓ Updated Rule ${editingRule.ruleCode} successfully!` })
+        onNotice({ tone: 'success', message: `Updated Rule ${editingRule.ruleCode} successfully!` })
       } else {
         await classifierRulesApi.createRule(formData)
-        onNotice({ tone: 'success', message: `✓ Created Rule ${formData.ruleCode} successfully!` })
+        onNotice({ tone: 'success', message: `Created Rule ${formData.ruleCode} successfully!` })
       }
       setShowCreateModal(false)
       setEditingRule(null)
       await loadRules()
     } catch (err) {
       onNotice({ tone: 'error', message: err instanceof Error ? err.message : 'Failed to save rule.' })
+    } finally {
+      setSavingRule(false)
     }
   }
 
@@ -227,7 +235,7 @@ export function ClassifierRulesTab({ onNotice }: { onNotice: (notice: Notice) =>
     if (!ok) return
     try {
       await classifierRulesApi.deleteRule(rule.id)
-      onNotice({ tone: 'success', message: `✓ Deleted Rule ${rule.ruleCode} successfully!` })
+      onNotice({ tone: 'success', message: `Deleted Rule ${rule.ruleCode} successfully!` })
       await loadRules()
     } catch (err) {
       onNotice({ tone: 'error', message: err instanceof Error ? err.message : 'Failed to delete rule.' })
@@ -242,23 +250,23 @@ export function ClassifierRulesTab({ onNotice }: { onNotice: (notice: Notice) =>
           <div>
             <p className="eyebrow">AOI Recipe & Machine Classifier Rules</p>
             <h2>Classifier Rules & Script Management</h2>
-            <p className="text-xs text-muted" style={{ marginTop: '4px' }}>
+            <p className="text-xs text-muted mt-1">
               Configure defect classification scripts (Light_Fail, DIC_Crack...), batch import AOI JSON rules, and test logic interactively.
             </p>
           </div>
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          <div className="gap-md" style={{ display: 'flex', flexWrap: 'wrap' }}>
             <button
               type="button"
-              className="primary"
-              style={{ background: '#2563eb', borderColor: '#3b82f6', fontWeight: 600 }}
+              className="primary font-semibold"
+              style={{ background: 'var(--blue-600)', borderColor: 'var(--status-info-border)' }}
               onClick={() => handleOpenTester()}
             >
               <Icon name="operations" className="icon inline-icon" />Interactive Rule Tester
             </button>
             <button
               type="button"
-              className="secondary"
-              style={{ background: '#047857', borderColor: '#10b981', color: '#fff', fontWeight: 600 }}
+              className="secondary font-semibold"
+              style={{ background: 'var(--status-ok)', borderColor: 'var(--status-ok-border)', color: '#fff' }}
               onClick={() => setShowImportJsonModal(true)}
             >
               <Icon name="import" className="icon inline-icon" />Import AOI Rules JSON
@@ -290,7 +298,7 @@ export function ClassifierRulesTab({ onNotice }: { onNotice: (notice: Notice) =>
         </div>
 
         {/* Filter bar */}
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginTop: '14px' }}>
+        <div className="hstack gap-lg" style={{ marginTop: '14px' }}>
           <DebouncedInput
             type="text"
             placeholder="Search by rule code, name, family, script..."
@@ -319,7 +327,7 @@ export function ClassifierRulesTab({ onNotice }: { onNotice: (notice: Notice) =>
                 <th>Defect Type ID</th>
                 <th>Script Status</th>
                 <th>Updated</th>
-                <th style={{ width: '220px', textAlign: 'right' }}>Actions</th>
+                <th className="text-right" style={{ width: '220px' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -329,12 +337,10 @@ export function ClassifierRulesTab({ onNotice }: { onNotice: (notice: Notice) =>
                   <tr key={rule.id}>
                     <td>
                       <span
-                        className="tag-badge font-mono"
+                        className="tag-badge font-mono font-bold text-xs"
                         style={{
-                          background: rule.priority === 0 ? 'rgba(245, 158, 11, 0.2)' : 'rgba(96, 165, 250, 0.15)',
-                          color: rule.priority === 0 ? '#f59e0b' : '#60a5fa',
-                          fontWeight: 700,
-                          fontSize: '12px',
+                          background: rule.priority === 0 ? 'var(--status-overkill-bg)' : 'var(--status-info-bg)',
+                          color: rule.priority === 0 ? 'var(--status-overkill-text)' : 'var(--status-info-text)',
                         }}
                       >
                         Priority {rule.priority ?? 0}
@@ -342,14 +348,14 @@ export function ClassifierRulesTab({ onNotice }: { onNotice: (notice: Notice) =>
                     </td>
                     <td>
                       <div>
-                        <strong className="mono-code" style={{ fontSize: '13px', color: '#e2e8f0' }}>
+                        <strong className="mono-code text-sm text-strong">
                           {rule.ruleCode}
                         </strong>
                       </div>
                       <small className="text-muted">{rule.ruleName}</small>
                     </td>
                     <td>
-                      <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                      <div className="hstack gap-xs">
                         {rule.defectFamily && <StatusPill value={rule.defectFamily} />}
                         <strong className="text-xs">{rule.defectClass || '—'}</strong>
                       </div>
@@ -362,19 +368,19 @@ export function ClassifierRulesTab({ onNotice }: { onNotice: (notice: Notice) =>
                         <span
                           className="tag-badge"
                           style={{
-                            background: 'rgba(34, 197, 94, 0.15)',
-                            color: '#22c55e',
+                            background: 'var(--status-ok-bg)',
+                            color: 'var(--status-ok-text)',
                             fontWeight: 600,
                             fontSize: '12px',
                             cursor: 'pointer',
                           }}
-                          onClick={() => setInspectingRule(rule)}
-                          title="Click to view script content"
+                          {...activatable(() => setInspectingRule(rule))}
+                          title="View script content"
                         >
-                          ✓ Script Present ({rule.scriptContent?.split('\n').length} lines)
+                          <Icon name="check" className="icon inline-icon" />Script Present ({rule.scriptContent?.split('\n').length} lines)
                         </span>
                       ) : (
-                        <span className="tag-badge" style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', fontSize: '12px' }}>
+                        <span className="tag-badge text-ng text-xs" style={{ background: 'var(--status-ng-bg)' }}>
                           No Script (N/A)
                         </span>
                       )}
@@ -382,12 +388,11 @@ export function ClassifierRulesTab({ onNotice }: { onNotice: (notice: Notice) =>
                     <td className="font-mono text-xs text-muted">
                       {formatDateTime(rule.updatedAtUtc || rule.createdAtUtc)}
                     </td>
-                    <td style={{ textAlign: 'right' }}>
-                      <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
+                    <td className="text-right">
+                      <div className="gap-sm" style={{ display: 'flex', justifyContent: 'flex-end' }}>
                         <button
                           type="button"
-                          className="ghost-button compact"
-                          style={{ fontSize: '12px', color: '#10b981', fontWeight: 600 }}
+                          className="ghost-button compact text-xs text-ok font-semibold"
                           onClick={() => setOptimizingRule(rule)}
                           title="Auto-calculate Gold Thresholds and run What-If simulations"
                         >
@@ -395,8 +400,7 @@ export function ClassifierRulesTab({ onNotice }: { onNotice: (notice: Notice) =>
                         </button>
                         <button
                           type="button"
-                          className="ghost-button compact"
-                          style={{ fontSize: '12px', color: '#38bdf8' }}
+                          className="ghost-button compact text-xs text-info"
                           onClick={() => handleOpenTester(rule)}
                           title="Run script tester for this rule"
                         >
@@ -404,8 +408,7 @@ export function ClassifierRulesTab({ onNotice }: { onNotice: (notice: Notice) =>
                         </button>
                         <button
                           type="button"
-                          className="ghost-button compact"
-                          style={{ fontSize: '12px' }}
+                          className="ghost-button compact text-xs"
                           onClick={() => {
                             setEditingRule(rule)
                             setFormData({
@@ -478,9 +481,9 @@ export function ClassifierRulesTab({ onNotice }: { onNotice: (notice: Notice) =>
           onClose={() => setShowTestModal(false)}
           wide
         >
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div className="vstack gap-xl">
             {/* Rule Selector toolbar */}
-            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <div className="hstack gap-md flex-wrap">
               <Field label="Load Existing Rule">
                 <select
                   value={testRuleId}
@@ -503,7 +506,7 @@ export function ClassifierRulesTab({ onNotice }: { onNotice: (notice: Notice) =>
                 </select>
               </Field>
 
-              <div style={{ marginTop: 'auto', display: 'flex', gap: '6px' }}>
+              <div className="gap-sm" style={{ marginTop: 'auto', display: 'flex' }}>
                 <button
                   type="button"
                   className="ghost-button compact"
@@ -559,58 +562,52 @@ export function ClassifierRulesTab({ onNotice }: { onNotice: (notice: Notice) =>
             </div>
 
             {/* Two Column Layout: Left Script, Right Features */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '16px' }}>
+            <div className="gap-xl" style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr' }}>
               <div>
-                <label className="text-xs font-bold" style={{ color: '#93c5fd', display: 'block', marginBottom: '6px' }}>
+                <label className="text-xs font-bold text-info" style={{ display: 'block', marginBottom: '6px' }}>
                   Python-like Classifier Script to Test:
                 </label>
                 <textarea
+                  className="font-mono text-xs w-full text-strong"
                   value={testScriptText}
                   onChange={(e) => setTestScriptText(e.target.value)}
                   rows={14}
                   placeholder="# Enter script..."
                   style={{
-                    fontFamily: 'monospace',
-                    fontSize: '12px',
-                    width: '100%',
-                    background: '#090d16',
-                    color: '#e2e8f0',
+                    background: 'var(--slate-50)',
                     padding: '10px',
                     borderRadius: '6px',
-                    border: '1px solid rgba(255,255,255,0.1)',
+                    border: '1px solid var(--slate-200)',
                   }}
                 />
               </div>
 
               <div>
-                <label className="text-xs font-bold" style={{ color: '#93c5fd', display: 'block', marginBottom: '6px' }}>
+                <label className="text-xs font-bold text-info" style={{ display: 'block', marginBottom: '6px' }}>
                   Observation Features (Key-Value JSON):
                 </label>
                 <textarea
+                  className="font-mono text-xs w-full text-strong"
                   value={testFeaturesJson}
                   onChange={(e) => setTestFeaturesJson(e.target.value)}
                   rows={14}
                   placeholder='{ "G010_VpID": 1, ... }'
                   style={{
-                    fontFamily: 'monospace',
-                    fontSize: '12px',
-                    width: '100%',
-                    background: '#090d16',
-                    color: '#e2e8f0',
+                    background: 'var(--slate-50)',
                     padding: '10px',
                     borderRadius: '6px',
-                    border: '1px solid rgba(255,255,255,0.1)',
+                    border: '1px solid var(--slate-200)',
                   }}
                 />
               </div>
             </div>
 
             {/* Test Action */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+            <div className="gap-md" style={{ display: 'flex', justifyContent: 'flex-end' }}>
               <button
                 type="button"
-                className="primary"
-                style={{ background: '#2563eb', padding: '8px 24px', fontWeight: 600 }}
+                className="primary font-semibold"
+                style={{ background: 'var(--blue-600)', padding: '8px 24px' }}
                 onClick={() => void handleRunTest()}
                 disabled={testingBusy || !testScriptText.trim()}
               >
@@ -621,29 +618,27 @@ export function ClassifierRulesTab({ onNotice }: { onNotice: (notice: Notice) =>
             {/* Test Result Display */}
             {testResult && (
               <div
+                className="mt-2"
                 style={{
-                  background: testResult.finalResult ? 'rgba(168, 85, 247, 0.1)' : 'rgba(245, 158, 11, 0.1)',
-                  border: `1px solid ${testResult.finalResult ? '#a855f7' : '#f59e0b'}`,
+                  background: testResult.finalResult ? 'var(--status-real-bg)' : 'var(--status-overkill-bg)',
+                  border: `1px solid ${testResult.finalResult ? 'var(--status-real-border)' : 'var(--status-overkill-border)'}`,
                   borderRadius: '8px',
                   padding: '16px',
-                  marginTop: '8px',
                 }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                <div className="hstack justify-between" style={{ marginBottom: '12px' }}>
                   <div>
                     <span className="text-xs text-muted">OVERALL EVALUATION VERDICT:</span>
-                    <h3 style={{ margin: '4px 0', color: testResult.finalResult ? '#a855f7' : '#f59e0b' }}>
+                    <h3 style={{ margin: '4px 0', color: testResult.finalResult ? 'var(--status-real-text)' : 'var(--status-overkill-text)' }}>
                       {testResult.verdict}
                     </h3>
                   </div>
                   <span
-                    className="tag-badge"
+                    className="tag-badge text-base font-bold"
                     style={{
-                      background: testResult.finalResult ? '#a855f7' : '#f59e0b',
+                      background: testResult.finalResult ? 'var(--status-real)' : 'var(--status-overkill)',
                       color: '#fff',
-                      fontSize: '14px',
                       padding: '6px 14px',
-                      fontWeight: 700,
                     }}
                   >
                     {testResult.finalResult ? 'TRUE (REAL DEFECT)' : 'FALSE (N/A)'}
@@ -656,19 +651,17 @@ export function ClassifierRulesTab({ onNotice }: { onNotice: (notice: Notice) =>
                     <span className="text-xs text-muted" style={{ display: 'block', marginBottom: '6px' }}>
                       CONDITION BREAKDOWN:
                     </span>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                    <div className="gap-sm" style={{ display: 'flex', flexWrap: 'wrap' }}>
                       {Object.entries(testResult.conditionResults).map(([name, val]) => (
                         <div
+                          className="text-xs font-semibold font-mono"
                           key={name}
                           style={{
                             padding: '4px 10px',
                             borderRadius: '4px',
-                            fontSize: '12px',
-                            fontWeight: 600,
-                            fontFamily: 'monospace',
-                            background: val ? 'rgba(34, 197, 94, 0.2)' : 'rgba(239, 68, 68, 0.2)',
-                            color: val ? '#22c55e' : '#ef4444',
-                            border: `1px solid ${val ? '#22c55e' : '#ef4444'}`,
+                            background: val ? 'var(--status-ok-bg)' : 'var(--status-ng-bg)',
+                            color: val ? 'var(--status-ok-text)' : 'var(--status-ng-text)',
+                            border: `1px solid ${val ? 'var(--status-ok-border)' : 'var(--status-ng-border)'}`,
                           }}
                         >
                           {name}: {val ? 'TRUE' : 'FALSE'}
@@ -684,14 +677,14 @@ export function ClassifierRulesTab({ onNotice }: { onNotice: (notice: Notice) =>
                     <span className="text-xs text-muted" style={{ display: 'block', marginBottom: '6px' }}>
                       GUARD CLAUSES (EARLY FILTERS):
                     </span>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                    <div className="gap-sm" style={{ display: 'flex', flexWrap: 'wrap' }}>
                       {Object.entries(testResult.guardResults).map(([name, val]) => (
                         <span
                           key={name}
                           className="font-mono text-xs"
                           style={{
-                            color: val ? '#22c55e' : '#ef4444',
-                            background: 'rgba(255,255,255,0.05)',
+                            color: val ? 'var(--status-ok-text)' : 'var(--status-ng-text)',
+                            background: 'var(--slate-50)',
                             padding: '2px 6px',
                             borderRadius: '3px',
                           }}
@@ -705,24 +698,24 @@ export function ClassifierRulesTab({ onNotice }: { onNotice: (notice: Notice) =>
 
                 {/* Feature Values Echo */}
                 {testResult.featureValues && Object.keys(testResult.featureValues).length > 0 && (
-                  <div style={{ marginTop: '12px' }}>
+                  <div className="mt-3">
                     <span className="text-xs text-muted" style={{ display: 'block', marginBottom: '6px' }}>
                       FEATURE VALUES EVALUATED:
                     </span>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '4px' }}>
+                    <div className="gap-xs" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(180px, 100%), 1fr))' }}>
                       {Object.entries(testResult.featureValues).map(([k, v]) => (
                         <div
+                          className="text-xs"
                           key={k}
                           style={{
                             display: 'flex',
                             justifyContent: 'space-between',
                             padding: '2px 6px',
-                            background: 'rgba(255,255,255,0.03)',
+                            background: 'var(--slate-50)',
                             borderRadius: '3px',
-                            fontSize: '12px',
                           }}
                         >
-                          <span style={{ color: '#94a3b8' }}>{k}</span>
+                          <span className="text-muted">{k}</span>
                           <strong className="font-mono">{v != null ? v.toFixed(1) : 'N/A'}</strong>
                         </div>
                       ))}
@@ -744,21 +737,18 @@ export function ClassifierRulesTab({ onNotice }: { onNotice: (notice: Notice) =>
           onClose={() => setShowImportJsonModal(false)}
           wide
         >
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <div className="vstack" style={{ gap: '14px' }}>
             <textarea
+              className="font-mono text-xs w-full text-strong"
               value={importJsonText}
               onChange={(e) => setImportJsonText(e.target.value)}
               rows={16}
               aria-label="AOI rules JSON"
               style={{
-                fontFamily: 'monospace',
-                fontSize: '12px',
-                width: '100%',
-                background: '#090d16',
-                color: '#e2e8f0',
+                background: 'var(--slate-50)',
                 padding: '12px',
                 borderRadius: '6px',
-                border: '1px solid rgba(255,255,255,0.1)',
+                border: '1px solid var(--slate-200)',
                 whiteSpace: 'pre',
               }}
             />
@@ -770,11 +760,11 @@ export function ClassifierRulesTab({ onNotice }: { onNotice: (notice: Notice) =>
               <button
                 type="button"
                 className="primary"
-                style={{ background: '#047857', borderColor: '#10b981' }}
+                style={{ background: 'var(--status-ok)', borderColor: 'var(--status-ok-border)' }}
                 onClick={() => void handleImportJson()}
                 disabled={importingBusy || !importJsonText.trim()}
               >
-                {importingBusy ? 'Importing...' : '✓ Confirm & Import All Rules'}
+                {importingBusy ? 'Importing...' : 'Confirm & Import All Rules'}
               </button>
             </div>
           </div>
@@ -790,8 +780,8 @@ export function ClassifierRulesTab({ onNotice }: { onNotice: (notice: Notice) =>
           onClose={() => setShowCreateModal(false)}
           wide
         >
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          <div className="vstack" style={{ gap: '14px' }}>
+            <div className="gap-lg" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
               <Field label="Rule Code *" required>
                 <input
                   type="text"
@@ -853,19 +843,16 @@ export function ClassifierRulesTab({ onNotice }: { onNotice: (notice: Notice) =>
 
             <Field label="Python-like Classifier Script">
               <textarea
+                className="font-mono text-xs w-full text-strong"
                 value={formData.scriptContent ?? ''}
                 onChange={(e) => setFormData({ ...formData, scriptContent: e.target.value })}
                 rows={10}
                 placeholder="Cond1 = (G020_PxlArea > 90)... return Cond1"
                 style={{
-                  fontFamily: 'monospace',
-                  fontSize: '12px',
-                  width: '100%',
-                  background: '#090d16',
-                  color: '#e2e8f0',
+                  background: 'var(--slate-50)',
                   padding: '10px',
                   borderRadius: '6px',
-                  border: '1px solid rgba(255,255,255,0.1)',
+                  border: '1px solid var(--slate-200)',
                 }}
               />
             </Field>
@@ -874,8 +861,8 @@ export function ClassifierRulesTab({ onNotice }: { onNotice: (notice: Notice) =>
               <button type="button" className="ghost-button" onClick={() => setShowCreateModal(false)}>
                 Cancel
               </button>
-              <button type="button" className="primary" onClick={() => void handleSaveRule()}>
-                {editingRule ? 'Save Changes' : 'Create Rule'}
+              <button type="button" className="primary" onClick={() => void handleSaveRule()} disabled={savingRule} aria-busy={savingRule || undefined}>
+                {savingRule ? 'Saving…' : editingRule ? 'Save Changes' : 'Create Rule'}
               </button>
             </div>
           </div>
@@ -891,17 +878,16 @@ export function ClassifierRulesTab({ onNotice }: { onNotice: (notice: Notice) =>
           onClose={() => setInspectingRule(null)}
           wide
         >
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div className="vstack gap-lg">
             <pre
+              className="text-strong text-xs"
               style={{
-                background: '#090d16',
-                color: '#e2e8f0',
+                background: 'var(--slate-50)',
                 padding: '16px',
                 borderRadius: '8px',
-                fontSize: '12px',
                 lineHeight: 1.5,
                 overflowX: 'auto',
-                border: '1px solid rgba(255,255,255,0.1)',
+                border: '1px solid var(--slate-200)',
               }}
             >
               {inspectingRule.scriptContent || '# No script content'}

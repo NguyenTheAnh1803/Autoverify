@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Net;
 using System.Text;
@@ -22,6 +23,15 @@ public sealed class AutoVerifyStore(
     IImportValidationService importEngine,
     ILogger<AutoVerifyStore>? logger = null)
 {
+    private static readonly ConcurrentDictionary<string, (DateTimeOffset ExpiresAtUtc, ProductFilterOptionsDto Data)> FilterOptionsCache = new(StringComparer.OrdinalIgnoreCase);
+    private static readonly ConcurrentDictionary<string, (DateTimeOffset ExpiresAtUtc, int Count)> ProductCountCache = new(StringComparer.OrdinalIgnoreCase);
+
+    public static void InvalidateProductCaches()
+    {
+        FilterOptionsCache.Clear();
+        ProductCountCache.Clear();
+    }
+
     public async Task<bool> ValidateCredentialsAsync(string username, string password)
     {
         var user = await db.Users.SingleOrDefaultAsync(x => x.Username == username && x.IsActive);
@@ -153,18 +163,95 @@ public sealed class AutoVerifyStore(
 
     public async Task<ProductFilterOptionsDto> GetProductFilterOptionsAsync(string? machineCode, string? lineCode)
     {
+        var cacheKey = $"{machineCode ?? "ALL"}|{lineCode ?? "ALL"}";
+        var isRelational = db.Database.IsRelational();
+        if (isRelational && FilterOptionsCache.TryGetValue(cacheKey, out var cached) && cached.ExpiresAtUtc > DateTimeOffset.UtcNow)
+        {
+            return cached.Data;
+        }
+
         var query = db.ProductRecords.AsNoTracking().AsQueryable();
         if (!string.IsNullOrWhiteSpace(machineCode) && machineCode != "All") query = query.Where(p => p.MachineCode == machineCode);
         if (!string.IsNullOrWhiteSpace(lineCode) && lineCode != "All") query = query.Where(p => p.LineCode == lineCode);
 
-        var judges = await query.Select(p => p.Judge).Where(v => v != "").Distinct().OrderBy(v => v).ToArrayAsync();
-        var zones = await query.Select(p => p.Zone).Where(v => v != null && v != "").Distinct().OrderBy(v => v).Select(v => v!).ToArrayAsync();
-        var names = await query.Select(p => p.NameDefect).Where(v => v != "" && v != "None").Distinct().ToArrayAsync();
-        var defects = await query.Select(p => p.DefectName).Where(v => v != null && v != "" && v != "None").Distinct().Select(v => v!).ToArrayAsync();
-        var machines = await db.ProductRecords.AsNoTracking().Select(p => p.MachineCode).Where(v => v != "").Distinct().OrderBy(v => v).ToArrayAsync();
-        var lines = await query.Select(p => p.LineCode).Where(v => v != "").Distinct().OrderBy(v => v).ToArrayAsync();
+        // Sample the newest records + newest NG records in 2 bounded index-friendly projections instead of 6 full-table scans over millions of rows
+        var recentSample = await query
+            .OrderByDescending(p => p.InspectedAtUtc)
+            .Take(5000)
+            .Select(p => new { p.Judge, p.Zone, p.NameDefect, p.DefectName, p.MachineCode, p.LineCode })
+            .ToArrayAsync();
 
-        return new ProductFilterOptionsDto(judges, zones, names.Concat(defects).Distinct(StringComparer.OrdinalIgnoreCase).OrderBy(v => v).ToArray(), machines, lines);
+        var recentNgSample = await query
+            .Where(p => p.Judge != "OK" && p.Judge != "G")
+            .OrderByDescending(p => p.InspectedAtUtc)
+            .Take(2000)
+            .Select(p => new { p.Judge, p.Zone, p.NameDefect, p.DefectName, p.MachineCode, p.LineCode })
+            .ToArrayAsync();
+
+        var connScopes = await db.DatabaseConnections.AsNoTracking()
+            .Select(c => new { c.MachineCode, c.LineCode })
+            .ToArrayAsync();
+
+        var recentDefectNames = await db.DefectRecords.AsNoTracking()
+            .OrderByDescending(d => d.CreatedAtUtc)
+            .Take(2000)
+            .Select(d => d.DefectName)
+            .ToArrayAsync();
+
+        var combined = recentSample.Concat(recentNgSample).ToArray();
+
+        var judges = combined
+            .Select(p => p.Judge)
+            .Where(v => !string.IsNullOrWhiteSpace(v))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(v => v)
+            .ToArray();
+
+        var zones = combined
+            .Select(p => p.Zone)
+            .Where(v => !string.IsNullOrWhiteSpace(v))
+            .Select(v => v!)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(v => v)
+            .ToArray();
+
+        var defectNames = combined
+            .Select(p => p.NameDefect)
+            .Concat(combined.Select(p => p.DefectName))
+            .Concat(recentDefectNames)
+            .Where(v => !string.IsNullOrWhiteSpace(v) && !v.Equals("None", StringComparison.OrdinalIgnoreCase))
+            .Select(v => v!)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(v => v)
+            .ToArray();
+
+        var machines = combined
+            .Select(p => p.MachineCode)
+            .Concat(connScopes.Select(c => c.MachineCode))
+            .Where(v => !string.IsNullOrWhiteSpace(v))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(v => v)
+            .ToArray();
+
+        var scopedConnLines = connScopes
+            .Where(c => string.IsNullOrWhiteSpace(machineCode) || machineCode == "All" || string.Equals(c.MachineCode, machineCode, StringComparison.OrdinalIgnoreCase))
+            .Select(c => c.LineCode);
+
+        var lines = combined
+            .Select(p => p.LineCode)
+            .Concat(scopedConnLines)
+            .Where(v => !string.IsNullOrWhiteSpace(v))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(v => v)
+            .ToArray();
+
+        var result = new ProductFilterOptionsDto(judges, zones, defectNames, machines, lines);
+        if (isRelational)
+        {
+            FilterOptionsCache[cacheKey] = (DateTimeOffset.UtcNow.AddSeconds(60), result);
+        }
+
+        return result;
     }
 
     public async Task<PagedResponse<VerificationResultResponse>> GetResultsAsync(Guid executionId, int page, int pageSize)
@@ -1444,7 +1531,7 @@ public sealed class AutoVerifyStore(
     public async Task<PagedResponse<ProductRecordDto>> GetProductsAsync(string? searchTerm, string? judge, string? panelId, string? machineCode, string? lineCode, int page, int pageSize, string? zone = null, string? defectName = null)
     {
         var (normalizedPage, normalizedPageSize) = NormalizePage(page, pageSize);
-        var query = db.ProductRecords.AsQueryable();
+        var query = db.ProductRecords.AsNoTracking().AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(searchTerm))
         {
@@ -1471,12 +1558,44 @@ public sealed class AutoVerifyStore(
         if (!string.IsNullOrWhiteSpace(defectName) && defectName != "All")
             query = query.Where(x => x.DefectName == defectName || x.NameDefect == defectName);
 
-        var totalCount = await query.CountAsync();
-        var items = await query.OrderByDescending(x => x.InspectedAtUtc)
+        var countKey = $"{searchTerm ?? ""}|{judge ?? ""}|{panelId ?? ""}|{machineCode ?? ""}|{lineCode ?? ""}|{zone ?? ""}|{defectName ?? ""}";
+        var isRelational = db.Database.IsRelational();
+        int totalCount;
+        if (isRelational && ProductCountCache.TryGetValue(countKey, out var cachedCount) && cachedCount.ExpiresAtUtc > DateTimeOffset.UtcNow)
+        {
+            totalCount = cachedCount.Count;
+        }
+        else
+        {
+            totalCount = await query.CountAsync();
+            if (isRelational)
+            {
+                ProductCountCache[countKey] = (DateTimeOffset.UtcNow.AddSeconds(30), totalCount);
+            }
+        }
+
+        // Two-step deferred join: select only the primary keys from the index, then fetch the 25 full rows by PK
+        var pageIds = await query
+            .OrderByDescending(x => x.InspectedAtUtc)
             .Skip((normalizedPage - 1) * normalizedPageSize)
             .Take(normalizedPageSize)
-            .Select(x => ToResponse(x))
+            .Select(x => x.Id)
             .ToArrayAsync();
+
+        if (pageIds.Length == 0)
+        {
+            return CreatePagedResponse(Array.Empty<ProductRecordDto>(), normalizedPage, normalizedPageSize, totalCount);
+        }
+
+        var entities = await db.ProductRecords
+            .AsNoTracking()
+            .Where(x => pageIds.Contains(x.Id))
+            .ToArrayAsync();
+
+        var items = entities
+            .OrderByDescending(x => x.InspectedAtUtc)
+            .Select(ToResponse)
+            .ToArray();
 
         return CreatePagedResponse(items, normalizedPage, normalizedPageSize, totalCount);
     }
@@ -1533,17 +1652,32 @@ public sealed class AutoVerifyStore(
             ? "ALL"
             : importEngine.NormalizeConfigKey(lineCode);
 
-        var productsQuery = db.ProductRecords.AsQueryable();
+        var productsQuery = db.ProductRecords.AsNoTracking().AsQueryable();
         if (machine != "ALL") productsQuery = productsQuery.Where(x => x.MachineCode == machine);
         if (line != "ALL") productsQuery = productsQuery.Where(x => x.LineCode == line);
 
         var ngProducts = await productsQuery
             .Where(x => x.Judge == "NG" || x.Judge == "N" || x.Judge == "N/A" || x.Judge == "NA")
+            .OrderByDescending(x => x.InspectedAtUtc)
+            .Take(5000)
+            .Select(x => new { x.KeyId })
             .ToArrayAsync();
         var ngKeys = ngProducts.Select(x => x.KeyId).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
         var defects = ngKeys.Length == 0
             ? []
-            : await db.DefectRecords.Where(x => ngKeys.Contains(x.KeyId)).ToArrayAsync();
+            : await db.DefectRecords.AsNoTracking()
+                .Where(x => ngKeys.Contains(x.KeyId))
+                .Select(x => new DefectRecordEntity
+                {
+                    Id = x.Id,
+                    KeyId = x.KeyId,
+                    DefectTable = x.DefectTable,
+                    DefectName = x.DefectName,
+                    DefectType = x.DefectType,
+                    Judge = x.Judge,
+                    Severity = x.Severity
+                })
+                .ToArrayAsync();
 
         var systems = defects
             .GroupBy(x => x.DefectTable, StringComparer.OrdinalIgnoreCase)
@@ -1650,39 +1784,98 @@ public sealed class AutoVerifyStore(
         if (toUtc.HasValue) productsQuery = productsQuery.Where(x => x.InspectedAtUtc <= toUtc.Value);
 
         var products = await productsQuery
-            .OrderBy(x => x.InspectedAtUtc)
+            .OrderByDescending(x => x.InspectedAtUtc)
             .Take(10000)
+            .Select(x => new ProductRecordEntity
+            {
+                Id = x.Id,
+                KeyId = x.KeyId,
+                Judge = x.Judge,
+                PanelId = x.PanelId,
+                PanelJudge = x.PanelJudge,
+                NameDefect = x.NameDefect,
+                MachineCode = x.MachineCode,
+                LineCode = x.LineCode,
+                ModelCode = x.ModelCode,
+                InspectedAtUtc = x.InspectedAtUtc,
+                Zone = x.Zone,
+                DefectName = x.DefectName,
+                OpReviewMark = x.OpReviewMark,
+                OpReviewJudge = x.OpReviewJudge,
+                OpReviewDefectName = x.OpReviewDefectName,
+                OpReviewMappedDefect = x.OpReviewMappedDefect,
+                OpReviewedAtUtc = x.OpReviewedAtUtc
+            })
             .ToArrayAsync();
-
-        var keyIds = products.Select(p => p.KeyId).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
-
-        var defectsQuery = db.DefectRecords.AsNoTracking().AsQueryable();
-        if (keyIds.Length > 0)
-        {
-            defectsQuery = defectsQuery.Where(d => keyIds.Contains(d.KeyId));
-        }
-        else
-        {
-            defectsQuery = defectsQuery.Where(d => false);
-        }
-
-        if (!string.IsNullOrWhiteSpace(targetFamily))
-        {
-            defectsQuery = defectsQuery.Where(d =>
-                (d.DefectType != null && d.DefectType.Contains(targetFamily)) ||
-                d.DefectTable.Contains(targetFamily));
-        }
-
-        var defects = await defectsQuery.ToArrayAsync();
-        var defectsByKey = defects
-            .GroupBy(d => d.KeyId, StringComparer.OrdinalIgnoreCase)
-            .ToDictionary(g => g.Key, g => g.ToArray(), StringComparer.OrdinalIgnoreCase);
 
         // Load active classifier rules to evaluate against defects
         var activeRules = await db.MachineClassifierRules
             .AsNoTracking()
             .Where(r => r.IsActive)
             .ToArrayAsync();
+        var hasActiveScripts = activeRules.Any(r => !string.IsNullOrWhiteSpace(r.ScriptContent));
+
+        var keyIds = products
+            .Select(p => p.KeyId)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        var defectsList = new List<DefectRecordEntity>();
+        foreach (var chunk in keyIds.Chunk(2000))
+        {
+            var chunkKeys = chunk.ToArray();
+            var defectsQuery = db.DefectRecords.AsNoTracking().Where(d => chunkKeys.Contains(d.KeyId));
+            if (!string.IsNullOrWhiteSpace(targetFamily))
+            {
+                defectsQuery = defectsQuery.Where(d =>
+                    (d.DefectType != null && d.DefectType.Contains(targetFamily)) ||
+                    d.DefectTable.Contains(targetFamily));
+            }
+
+            if (hasActiveScripts)
+            {
+                defectsList.AddRange(await defectsQuery.ToListAsync());
+            }
+            else
+            {
+                defectsList.AddRange(await defectsQuery
+                    .Select(d => new DefectRecordEntity
+                    {
+                        Id = d.Id,
+                        KeyId = d.KeyId,
+                        DefectTable = d.DefectTable,
+                        DefectName = d.DefectName,
+                        DefectType = d.DefectType,
+                        ComponentName = d.ComponentName,
+                        CoordinateX = d.CoordinateX,
+                        CoordinateY = d.CoordinateY,
+                        Severity = d.Severity,
+                        Judge = d.Judge,
+                        ConfidenceScore = d.ConfidenceScore,
+                        ConnectionId = d.ConnectionId,
+                        ModelCode = d.ModelCode,
+                        MachineCode = d.MachineCode,
+                        LineCode = d.LineCode,
+                        ImageUri = d.ImageUri,
+                        ImageUrl = d.ImageUrl,
+                        FeatureUrl = d.FeatureUrl,
+                        CustomFeatureUrl = d.CustomFeatureUrl,
+                        Reason = d.Reason,
+                        EqpName = d.EqpName,
+                        EmNo = d.EmNo,
+                        SpecName = d.SpecName,
+                        SpecJudge = d.SpecJudge,
+                        SpecReason = d.SpecReason,
+                        Priority = d.Priority,
+                        CreatedAtUtc = d.CreatedAtUtc
+                    })
+                    .ToListAsync());
+            }
+        }
+
+        var defectsByKey = defectsList
+            .GroupBy(d => d.KeyId, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(g => g.Key, g => g.ToArray(), StringComparer.OrdinalIgnoreCase);
 
         var evaluations = new List<AnomalyClassifierEngine.ProductAnomalyEvaluation>(products.Length);
         foreach (var prod in products)
@@ -1997,15 +2190,40 @@ public sealed class AutoVerifyStore(
         var products = await productsQuery
             .OrderByDescending(p => p.InspectedAtUtc)
             .Take(10000)
+            .Select(p => new ProductRecordEntity
+            {
+                Id = p.Id,
+                KeyId = p.KeyId,
+                Judge = p.Judge,
+                PanelId = p.PanelId,
+                PanelJudge = p.PanelJudge,
+                NameDefect = p.NameDefect,
+                MachineCode = p.MachineCode,
+                LineCode = p.LineCode,
+                ModelCode = p.ModelCode,
+                InspectedAtUtc = p.InspectedAtUtc,
+                Zone = p.Zone,
+                DefectName = p.DefectName,
+                DefectPackUrl = p.DefectPackUrl,
+                OpReviewMark = p.OpReviewMark,
+                OpReviewJudge = p.OpReviewJudge,
+                OpReviewDefectName = p.OpReviewDefectName,
+                OpReviewMappedDefect = p.OpReviewMappedDefect,
+                OpReviewNote = p.OpReviewNote,
+                OpReviewedAtUtc = p.OpReviewedAtUtc
+            })
             .ToArrayAsync(cancellationToken);
 
         var keyIds = products.Select(p => p.KeyId).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
 
-        var defects = keyIds.Length == 0
-            ? []
-            : await db.DefectRecords.AsNoTracking()
-                .Where(d => keyIds.Contains(d.KeyId))
-                .ToArrayAsync(cancellationToken);
+        var defects = new List<DefectRecordEntity>();
+        foreach (var chunk in keyIds.Chunk(2000))
+        {
+            var chunkKeys = chunk.ToArray();
+            defects.AddRange(await db.DefectRecords.AsNoTracking()
+                .Where(d => chunkKeys.Contains(d.KeyId))
+                .ToListAsync(cancellationToken));
+        }
 
         var defectsByKey = defects
             .GroupBy(d => d.KeyId, StringComparer.OrdinalIgnoreCase)
@@ -2211,6 +2429,7 @@ public sealed class AutoVerifyStore(
         };
         db.ProductRecords.Add(entity);
         await db.SaveChangesAsync();
+        InvalidateProductCaches();
         return ToResponse(entity);
     }
 

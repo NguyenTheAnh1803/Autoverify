@@ -44,6 +44,11 @@ export function Icon({ name, className = 'icon' }: { name: string; className?: s
     book: 'M4 4h6a3 3 0 0 1 2 1 3 3 0 0 1 2-1h6v15h-6a3 3 0 0 0-2 1 3 3 0 0 0-2-1H4z',
     lock: 'M6 11h12v9H6zM8 11V8a4 4 0 0 1 8 0v3',
     help: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7M12 17h.01',
+    download: 'M12 4v11m-4-4 4 4 4-4M5 20h14',
+    external: 'M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5',
+    sort: 'M8 9l4-4 4 4M8 15l4 4 4-4',
+    'sort-asc': 'M8 14l4-4 4 4',
+    'sort-desc': 'M8 10l4 4 4-4',
   }
   return (
     <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
@@ -354,30 +359,18 @@ export function Pagination({
   }
 
   return (
-    <div
-      className="pagination"
-      style={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        gap: '8px',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '10px 4px',
-      }}
-    >
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+    <div className="pagination">
+      <div className="pagination-summary">
         <span>
           Page <strong>{page}</strong> of <strong>{safeTotalPages}</strong> &bull;{' '}
           <strong>{totalCount.toLocaleString()}</strong> records
         </span>
         <span
-          className="tag-badge"
+          className="tag-badge text-xs font-semibold"
           style={{
             background: '#eff6ff',
             color: '#1d4ed8',
             borderColor: '#bfdbfe',
-            fontSize: '12px',
-            fontWeight: 600,
           }}
           title="Latest data always displayed on first page"
         >
@@ -385,11 +378,10 @@ export function Pagination({
         </span>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+      <div className="pagination-controls">
         <button
           type="button"
-          className="ghost-button compact"
-          style={{ fontSize: '12px', fontWeight: page === 1 ? 700 : 400 }}
+          className="pagination-btn"
           disabled={page <= 1}
           onClick={() => onPage(1)}
           title="Go to first page (Latest data)"
@@ -399,7 +391,7 @@ export function Pagination({
 
         <button
           type="button"
-          className="ghost-button compact"
+          className="pagination-btn"
           disabled={page <= 1}
           onClick={() => onPage(page - 1)}
           title="Previous page"
@@ -407,9 +399,9 @@ export function Pagination({
           ‹ Prev
         </button>
 
-        {/* Page jump input */}
-        <form onSubmit={handleJump} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-          <span style={{ fontSize: '12px', color: '#52627a' }}>Page:</span>
+        {/* Page jump composite input */}
+        <form onSubmit={handleJump} className="pagination-jump">
+          <span className="pagination-jump-label">Page</span>
           <input
             type="number"
             min={1}
@@ -417,33 +409,13 @@ export function Pagination({
             value={jumpPage}
             onChange={(e) => setJumpPage(e.target.value)}
             onBlur={() => handleJump()}
-            style={{
-              width: '56px',
-              padding: '2px 6px',
-              textAlign: 'center',
-              fontSize: '12px',
-              fontFamily: 'monospace',
-              fontWeight: 600,
-              borderRadius: '4px',
-              border: '1px solid #cbd5e1',
-              background: '#ffffff',
-              color: '#0f172a',
-              boxShadow: 'inset 0 1px 2px rgba(15, 23, 42, 0.06)',
-            }}
+            className="pagination-jump-input"
             aria-label="Page number"
             title={`Enter page number (1 - ${safeTotalPages}) and press Enter`}
           />
           <button
             type="submit"
-            className="secondary compact"
-            style={{
-              fontSize: '12px',
-              padding: '2px 8px',
-              fontWeight: 700,
-              background: '#eff6ff',
-              color: '#1d4ed8',
-              borderColor: '#bfdbfe',
-            }}
+            className="pagination-jump-btn"
             title="Go to entered page"
           >
             Go
@@ -452,7 +424,7 @@ export function Pagination({
 
         <button
           type="button"
-          className="ghost-button compact"
+          className="pagination-btn"
           disabled={page >= safeTotalPages}
           onClick={() => onPage(page + 1)}
           title="Next page"
@@ -462,7 +434,7 @@ export function Pagination({
 
         <button
           type="button"
-          className="ghost-button compact"
+          className="pagination-btn"
           disabled={page >= safeTotalPages}
           onClick={() => onPage(safeTotalPages)}
           title="Go to last page"
@@ -729,6 +701,8 @@ export function ImageViewer({
       // If data URL or direct link, trigger clean download
       const fileName = alt.replace(/[^a-zA-Z0-9_-]/g, '_') + '.jpg'
       const response = await fetch(src)
+      // An error page saved as .jpg is worse than no download: fall back to opening the image instead.
+      if (!response.ok) throw new Error(`Image request failed (${response.status})`)
       const blob = await response.blob()
       const blobUrl = window.URL.createObjectURL(blob)
       const link = document.createElement('a')
@@ -747,12 +721,11 @@ export function ImageViewer({
   if (!src) {
     return (
       <div
+        className="hstack"
         style={{
           background: '#020617',
           borderRadius: '8px',
           padding: '24px',
-          display: 'flex',
-          alignItems: 'center',
           justifyContent: 'center',
           minHeight: '280px',
           color: '#64748b',
@@ -765,9 +738,8 @@ export function ImageViewer({
 
   return (
     <div
+      className="vstack"
       style={{
-        display: 'flex',
-        flexDirection: 'column',
         borderRadius: '8px',
         overflow: 'hidden',
         border: '1px solid rgba(255,255,255,0.1)',
@@ -776,60 +748,56 @@ export function ImageViewer({
     >
       {/* Viewer Toolbar: Zoom / Pan Controls / Save Image */}
       <div
+        className="hstack justify-between flex-wrap gap-md"
         style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
           padding: '8px 12px',
           background: 'rgba(255,255,255,0.04)',
           borderBottom: '1px solid rgba(255,255,255,0.08)',
-          flexWrap: 'wrap',
-          gap: '8px',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <div className="hstack gap-sm">
           <button
             type="button"
-            className="secondary compact"
+            className="secondary compact text-xs font-bold"
             onClick={handleZoomIn}
             title="Zoom In"
-            style={{ fontSize: '12px', fontWeight: 700, padding: '3px 9px' }}
+            style={{ padding: '3px 9px' }}
           >
             <Icon name="search" className="icon inline-icon" />+
           </button>
           <button
             type="button"
-            className="secondary compact"
+            className="secondary compact text-xs font-bold"
             onClick={handleZoomOut}
             title="Zoom Out"
-            style={{ fontSize: '12px', fontWeight: 700, padding: '3px 9px' }}
+            style={{ padding: '3px 9px' }}
           >
             <Icon name="search" className="icon inline-icon" />-
           </button>
           <button
             type="button"
-            className="ghost-button compact"
+            className="ghost-button compact text-xs"
             onClick={handleReset}
             title="Reset Zoom & Position"
-            style={{ fontSize: '12px', padding: '3px 8px' }}
+            style={{ padding: '3px 8px' }}
           >
-            ↺ 100%
+            <Icon name="refresh" className="icon inline-icon" />100%
           </button>
-          <span style={{ fontSize: '12px', color: '#94a3b8', marginLeft: '4px', fontFamily: 'monospace' }}>
+          <span className="text-xs font-mono" style={{ color: '#94a3b8', marginLeft: '4px' }}>
             {Math.round(scale * 100)}%
           </span>
-          <span style={{ fontSize: '12px', color: '#64748b', marginLeft: '8px' }}>
+          <span className="text-xs" style={{ color: '#64748b', marginLeft: '8px' }}>
             (Scroll to Zoom · Click & Drag to Pan)
           </span>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div className="hstack gap-md">
           <button
             type="button"
-            className="primary compact"
+            className="primary compact text-xs font-semibold"
             onClick={() => void handleSaveImage()}
             title="Save image to computer"
-            style={{ background: '#0369a1', fontSize: '12px', padding: '4px 12px', fontWeight: 600 }}
+            style={{ background: '#0369a1', padding: '4px 12px' }}
           >
             <Icon name="save" className="icon inline-icon" />Save Image (.jpg)
           </button>
@@ -837,17 +805,18 @@ export function ImageViewer({
             href={src}
             target="_blank"
             rel="noreferrer"
-            className="ghost-button compact"
+            className="ghost-button compact text-xs"
             title="Open image in new tab"
-            style={{ fontSize: '12px', padding: '3px 8px' }}
+            style={{ padding: '3px 8px' }}
           >
-            ↗ New Tab
+            <Icon name="external" className="icon inline-icon" />New Tab
           </a>
         </div>
       </div>
 
       {/* Interactive Canvas */}
       <div
+        className="hstack w-full"
         ref={containerRef}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
@@ -855,10 +824,7 @@ export function ImageViewer({
         onMouseLeave={handleMouseUp}
         style={{
           height: maxHeight,
-          width: '100%',
           overflow: 'hidden',
-          display: 'flex',
-          alignItems: 'center',
           justifyContent: 'center',
           position: 'relative',
           cursor: isDragging ? 'grabbing' : scale > 1 ? 'grab' : 'default',
@@ -999,8 +965,19 @@ export function DefectFeatureInspector({ defect, initialVp }: { defect: DefectRe
   }))
   const [loadingVp, setLoadingVp] = useState<string | null>(null)
   const [crawling, setCrawling] = useState(false)
-  const [crawlNotice, setCrawlNotice] = useState<string | null>(null)
+  // What the last action reported; ok drives the colour, so the text needs no ✓ / ✗ prefix.
+  const [crawlNotice, setCrawlNotice] = useState<{ ok: boolean; text: string } | null>(null)
   const [imageZoomed, setImageZoomed] = useState(false)
+
+  // The enlarged image covers the whole page: Escape closes it, as it does every other dialog in the app.
+  useEffect(() => {
+    if (!imageZoomed) return
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setImageZoomed(false)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [imageZoomed])
 
   const currentImgSrc = vpImages[selectedVp] || ''
 
@@ -1030,12 +1007,12 @@ export function DefectFeatureInspector({ defect, initialVp }: { defect: DefectRe
       if (res.success) {
         const newUrl = res.imageUrl || imageCrawlerApi.previewUrl(defect.id, false, vp)
         setVpImages((prev) => ({ ...prev, [vp]: newUrl }))
-        setCrawlNotice(`✓ Loaded VP${vp} (${res.sizeBytes.toLocaleString()} bytes in ${res.latencyMs}ms)`)
+        setCrawlNotice({ ok: true, text: `Loaded VP${vp} (${res.sizeBytes.toLocaleString()} bytes in ${res.latencyMs}ms)` })
       } else {
-        setCrawlNotice(`✗ VP${vp} load failed: ${res.errorMessage || 'No image found'}`)
+        setCrawlNotice({ ok: false, text: `VP${vp} load failed: ${res.errorMessage || 'No image found'}` })
       }
     } catch (err) {
-      setCrawlNotice(`✗ Error loading VP${vp}: ${err instanceof Error ? err.message : 'Failed to fetch image'}`)
+      setCrawlNotice({ ok: false, text: `Error loading VP${vp}: ${err instanceof Error ? err.message : 'Failed to fetch image'}` })
     } finally {
       setLoadingVp(null)
     }
@@ -1052,10 +1029,10 @@ export function DefectFeatureInspector({ defect, initialVp }: { defect: DefectRe
         const newUrl = res.imageUrl || imageCrawlerApi.previewUrl(defect.id, false, 'original')
         setVpImages((prev) => ({ ...prev, original: newUrl }))
       } else {
-        setCrawlNotice(`Failed to load original image in ZIP: ${res.errorMessage || 'Unknown error'}`)
+        setCrawlNotice({ ok: false, text: `Failed to load original image in ZIP: ${res.errorMessage || 'Unknown error'}` })
       }
     } catch (err) {
-      setCrawlNotice(err instanceof Error ? err.message : 'Failed to load original image in ZIP')
+      setCrawlNotice({ ok: false, text: err instanceof Error ? err.message : 'Failed to load original image in ZIP' })
     } finally {
       setLoadingVp(null)
     }
@@ -1070,45 +1047,45 @@ export function DefectFeatureInspector({ defect, initialVp }: { defect: DefectRe
       if (res.success) {
         const newUrl = `${imageCrawlerApi.previewUrl(defect.id, true, requestVp)}&t=${Date.now()}`
         setVpImages((prev) => ({ ...prev, [selectedVp]: newUrl }))
-        setCrawlNotice(`✓ Force refreshed ${selectedVp === 'original' ? `path original (VP${originalVp})` : `VP${selectedVp}`} (${res.sizeBytes.toLocaleString()} bytes in ${res.latencyMs}ms)!`)
+        setCrawlNotice({ ok: true, text: `Force refreshed ${selectedVp === 'original' ? `path original (VP${originalVp})` : `VP${selectedVp}`} (${res.sizeBytes.toLocaleString()} bytes in ${res.latencyMs}ms)!` })
       } else {
-        setCrawlNotice(`✗ Crawl failed: ${res.errorMessage || 'Unknown error'}`)
+        setCrawlNotice({ ok: false, text: `Crawl failed: ${res.errorMessage || 'Unknown error'}` })
       }
     } catch (err) {
-      setCrawlNotice(`✗ Error: ${err instanceof Error ? err.message : 'Failed to crawl image'}`)
+      setCrawlNotice({ ok: false, text: `Error: ${err instanceof Error ? err.message : 'Failed to crawl image'}` })
     } finally {
       setCrawling(false)
     }
   }
 
   return (
-    <div className="defect-feature-inspector" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+    <div className="defect-feature-inspector vstack gap-lg">
       {/* 1. Defect & Spec Context Card */}
       <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '10px 14px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div className="hstack justify-between flex-wrap gap-md">
+          <div className="hstack gap-md">
             <strong style={{ fontSize: '15px', color: '#0f172a' }}>{defect.defectName}</strong>
             {defect.judge && <JudgeBadge value={defect.judge} />}
             {defect.severity && <StatusPill value={defect.severity} />}
             {defect.defectTable && <span className="tag-badge">Table: {defect.defectTable}</span>}
             {defect.modelCode && (
-              <span className="tag-badge" style={{ background: '#f0fdf4', color: '#166534', borderColor: '#bbf7d0', fontWeight: 600 }}>
+              <span className="tag-badge font-semibold" style={{ background: '#f0fdf4', color: '#166534', borderColor: '#bbf7d0' }}>
                 Model: {defect.modelCode}
               </span>
             )}
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+          <div className="hstack gap-sm flex-wrap">
             {defect.priority != null && (
-              <span className="clean-pill" style={{ background: '#fef3c7', color: '#92400e', fontWeight: 600 }}>
+              <span className="clean-pill font-semibold" style={{ background: '#fef3c7', color: '#92400e' }}>
                 Priority: {defect.priority}
               </span>
             )}
             {defect.featureUrl?.includes('#') ? (
-              <span className="tag-badge" style={{ background: '#f5f3ff', color: '#6d28d9', borderColor: '#ddd6fe', fontWeight: 600 }}>
+              <span className="tag-badge font-semibold" style={{ background: '#f5f3ff', color: '#6d28d9', borderColor: '#ddd6fe' }}>
                 <Icon name="package" className="icon inline-icon" />Unified Defect Pack
               </span>
             ) : (defect.featureUrl || defect.imageUrl) ? (
-              <span className="tag-badge" style={{ background: '#e0f2fe', color: '#0369a1', borderColor: '#bae6fd', fontWeight: 600 }}>
+              <span className="tag-badge font-semibold" style={{ background: '#e0f2fe', color: '#0369a1', borderColor: '#bae6fd' }}>
                 <Icon name="leakage" className="icon inline-icon" />SeaweedFS Offloaded
               </span>
             ) : null}
@@ -1117,21 +1094,20 @@ export function DefectFeatureInspector({ defect, initialVp }: { defect: DefectRe
 
         {/* Defect Thumbnail & Multi-VP Image Crawler Section */}
         {(defect.imageUri || defect.imageUrl) && (
-          <div style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '12px', marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <div className="vstack" style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '12px', marginTop: '10px', gap: '10px' }}>
             {/* VP Navigation Bar: VP0 (Default) + Path Original + VP 1, 2, 3, 4 */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', borderBottom: '1px solid #e2e8f0', paddingBottom: '8px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: '12px', fontWeight: 700, color: '#475569', marginRight: '2px' }}>Camera Angle:</span>
+            <div className="hstack justify-between flex-wrap gap-md" style={{ borderBottom: '1px solid #e2e8f0', paddingBottom: '8px' }}>
+              <div className="hstack gap-sm flex-wrap">
+                <span className="text-xs font-bold" style={{ color: '#475569', marginRight: '2px' }}>Camera Angle:</span>
 
-                {/* 🎯 Real VP Button */}
+                {/* Real VP button */}
                 <button
+                  className="text-xs font-bold"
                   type="button"
                   disabled={loadingVp === 'original'}
                   onClick={() => void handleSelectOriginalVp()}
                   style={{
                     padding: '3px 12px',
-                    fontSize: '12px',
-                    fontWeight: 700,
                     borderRadius: '6px',
                     cursor: 'pointer',
                     border: selectedVp === 'original' ? '1.5px solid #7c3aed' : '1px solid #c4b5fd',
@@ -1147,11 +1123,11 @@ export function DefectFeatureInspector({ defect, initialVp }: { defect: DefectRe
                 >
                   <span>Load Path Original (VP{originalVp})</span>
                   {loadingVp === 'original' ? (
-                    <span style={{ fontSize: '12px' }}><Icon name="clock" className="icon inline-icon" /></span>
+                    <span className="text-xs"><Icon name="clock" className="icon inline-icon" /></span>
                   ) : vpImages.original ? (
                     <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: selectedVp === 'original' ? '#4ade80' : '#16a34a', display: 'inline-block' }} title="Image loaded" />
                   ) : (
-                    <span style={{ fontSize: '12px' }}><Icon name="operations" className="icon inline-icon" /></span>
+                    <span className="text-xs"><Icon name="operations" className="icon inline-icon" /></span>
                   )}
                 </button>
 
@@ -1165,13 +1141,13 @@ export function DefectFeatureInspector({ defect, initialVp }: { defect: DefectRe
                   const isOriginal = vp === originalVp
                   return (
                     <button
+                      className="text-xs gap-xs"
                       key={vp}
                       type="button"
                       disabled={isLoading}
                       onClick={() => void handleSelectVp(vp)}
                       style={{
                         padding: '3px 8px',
-                        fontSize: '12px',
                         fontWeight: isSelected ? 700 : 500,
                         borderRadius: '6px',
                         cursor: 'pointer',
@@ -1180,29 +1156,28 @@ export function DefectFeatureInspector({ defect, initialVp }: { defect: DefectRe
                         color: isSelected ? '#1d4ed8' : isOriginal ? '#7c3aed' : '#475569',
                         display: 'inline-flex',
                         alignItems: 'center',
-                        gap: '4px',
                         transition: 'all 0.15s ease',
                       }}
                       title={vp === '0' ? 'VP0 (Thumbnail - Default)' : isOriginal ? `VP${vp}: Browse image at same angle as image_path` : `VP${vp}: Angle browse image, click to load`}
                     >
                       <span>{vp === '0' ? 'VP0 (Default)' : isOriginal ? `VP${vp} (Path Angle)` : `VP${vp}`}</span>
                       {isLoading ? (
-                        <span style={{ fontSize: '12px', color: '#2563eb' }}><Icon name="clock" className="icon inline-icon" /></span>
+                        <span className="text-xs" style={{ color: '#2563eb' }}><Icon name="clock" className="icon inline-icon" /></span>
                       ) : isLoaded ? (
                         <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#16a34a', display: 'inline-block' }} title="Image loaded" />
                       ) : (
-                        <span style={{ fontSize: '12px', color: '#94a3b8' }}><Icon name="operations" className="icon inline-icon" /></span>
+                        <span className="text-xs" style={{ color: '#94a3b8' }}><Icon name="operations" className="icon inline-icon" /></span>
                       )}
                     </button>
                   )
                 })}
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <div className="hstack gap-sm">
                 <button
                   type="button"
-                  className="secondary compact"
-                  style={{ fontSize: '12px', padding: '3px 8px', background: '#f1f5f9', borderColor: '#cbd5e1', color: '#334155' }}
+                  className="secondary compact text-xs"
+                  style={{ padding: '3px 8px', background: '#f1f5f9', borderColor: '#cbd5e1', color: '#334155' }}
                   disabled={crawling || loadingVp !== null}
                   onClick={() => void handleForceRefreshVp()}
                   title="Re-crawl image from PC API for selected VP"
@@ -1213,16 +1188,15 @@ export function DefectFeatureInspector({ defect, initialVp }: { defect: DefectRe
             </div>
 
             {/* Image Preview & Details Row */}
-            <div style={{ display: 'flex', gap: '14px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <div className="hstack flex-wrap" style={{ gap: '14px' }}>
               <div
+                className="hstack"
                 style={{
                   width: '130px',
                   height: '105px',
                   background: '#090d16',
                   borderRadius: '6px',
                   overflow: 'hidden',
-                  display: 'flex',
-                  alignItems: 'center',
                   justifyContent: 'center',
                   border: '1px solid #334155',
                   flexShrink: 0,
@@ -1233,9 +1207,9 @@ export function DefectFeatureInspector({ defect, initialVp }: { defect: DefectRe
                 title={currentImgSrc ? 'Click to enlarge image' : 'No image available'}
               >
                 {loadingVp === selectedVp ? (
-                  <div style={{ color: '#60a5fa', fontSize: '12px', textAlign: 'center', padding: '6px' }}>
+                  <div className="text-xs" style={{ color: '#60a5fa', textAlign: 'center', padding: '6px' }}>
                     <div><Icon name="clock" className="icon inline-icon" />Loading...</div>
-                    <div style={{ fontSize: '12px', color: '#94a3b8' }}>VP{selectedVp} from PC</div>
+                    <div className="text-xs" style={{ color: '#94a3b8' }}>VP{selectedVp} from PC</div>
                   </div>
                 ) : currentImgSrc ? (
                   <>
@@ -1244,40 +1218,40 @@ export function DefectFeatureInspector({ defect, initialVp }: { defect: DefectRe
                       alt={`${defect.defectName} (VP${selectedVp})`}
                       style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                     />
-                    <span style={{ position: 'absolute', bottom: '2px', right: '4px', fontSize: '12px', fontWeight: 700, color: '#fff', background: 'rgba(0,0,0,0.6)', padding: '1px 4px', borderRadius: '3px' }}>
+                    <span className="text-xs font-bold" style={{ position: 'absolute', bottom: '2px', right: '4px', color: '#fff', background: 'rgba(0,0,0,0.6)', padding: '1px 4px', borderRadius: '3px' }}>
                       VP{selectedVp}
                     </span>
                   </>
                 ) : (
-                  <div style={{ color: '#64748b', textAlign: 'center', fontSize: '12px', padding: '4px' }}>
+                  <div className="text-xs" style={{ color: '#64748b', textAlign: 'center', padding: '4px' }}>
                     <div>VP{selectedVp} not loaded</div>
-                    <div style={{ fontSize: '12px', color: '#3b82f6', marginTop: '2px' }}>Click to load</div>
+                    <div className="text-xs" style={{ color: '#3b82f6', marginTop: '2px' }}>Click to load</div>
                   </div>
                 )}
               </div>
 
               <div style={{ flex: 1, minWidth: '220px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
-                  <span style={{ fontSize: '12px', fontWeight: 700, color: '#334155' }}>
+                <div className="hstack justify-between flex-wrap gap-sm">
+                  <span className="text-xs font-bold" style={{ color: '#334155' }}>
                     <Icon name="image" className="icon inline-icon" />Image Path (PC) & Active Angle: <span style={{ color: '#2563eb' }}>VP{selectedVp}</span>
                   </span>
                   {currentImgSrc && (
                     <button
                       type="button"
-                      className="compact"
-                      style={{ fontSize: '12px', padding: '2px 6px', background: '#f8fafc', border: '1px solid #cbd5e1', cursor: 'pointer' }}
+                      className="compact text-xs"
+                      style={{ padding: '2px 6px', background: '#f8fafc', border: '1px solid #cbd5e1', cursor: 'pointer' }}
                       onClick={() => setImageZoomed(true)}
                     >
                       <Icon name="search" className="icon inline-icon" />Enlarge Image
                     </button>
                   )}
                 </div>
-                <code style={{ display: 'block', margin: '4px 0', fontSize: '12px', color: '#1e293b', background: '#f1f5f9', padding: '4px 8px', borderRadius: '4px', wordBreak: 'break-all' }}>
+                <code className="text-xs" style={{ display: 'block', margin: '4px 0', color: '#1e293b', background: '#f1f5f9', padding: '4px 8px', borderRadius: '4px', wordBreak: 'break-all' }}>
                   {defect.imageUri || defect.imageUrl || 'No image_path recorded'}
                 </code>
                 {crawlNotice && (
-                  <div style={{ fontSize: '12px', fontWeight: 600, color: crawlNotice.startsWith('✓') ? '#16a34a' : '#dc2626', marginTop: '4px' }}>
-                    {crawlNotice}
+                  <div className={`text-xs font-semibold mt-1 ${crawlNotice.ok ? 'text-ok' : 'text-ng'}`} role="status">
+                    {crawlNotice.text}
                   </div>
                 )}
               </div>
@@ -1285,6 +1259,7 @@ export function DefectFeatureInspector({ defect, initialVp }: { defect: DefectRe
 
             {imageZoomed && currentImgSrc && (
               <div
+                className="hstack"
                 style={{
                   position: 'fixed',
                   top: 0,
@@ -1293,16 +1268,17 @@ export function DefectFeatureInspector({ defect, initialVp }: { defect: DefectRe
                   bottom: 0,
                   background: 'rgba(0,0,0,0.85)',
                   zIndex: 9999,
-                  display: 'flex',
                   flexDirection: 'column',
-                  alignItems: 'center',
                   justifyContent: 'center',
                   padding: '20px',
                 }}
+                role="dialog"
+                aria-modal="true"
+                aria-label={`${defect.defectName}, angle VP${selectedVp}`}
                 onClick={() => setImageZoomed(false)}
               >
-                <div style={{ marginBottom: '10px', color: '#fff', fontSize: '14px', fontWeight: 600 }}>
-                  {defect.defectName} — Angle VP{selectedVp} (Click anywhere to close)
+                <div className="text-base font-semibold" style={{ marginBottom: '10px', color: '#fff' }}>
+                  {defect.defectName} — Angle VP{selectedVp} (click anywhere or press Esc to close)
                 </div>
                 <img
                   src={currentImgSrc}
@@ -1316,7 +1292,7 @@ export function DefectFeatureInspector({ defect, initialVp }: { defect: DefectRe
 
         {/* Hyperlinks & Image Bar */}
         {(defect.featureUrl || defect.customFeatureUrl || defect.imageUrl) && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '8px', padding: '6px 10px', background: '#ffffff', borderRadius: '6px', border: '1px solid #e2e8f0', fontSize: '12px' }}>
+          <div className="mt-2 text-xs" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', padding: '6px 10px', background: '#ffffff', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
             {defect.featureUrl && (
               <div>
                 <span className="muted">Feature SeaweedFS: </span>
@@ -1324,10 +1300,11 @@ export function DefectFeatureInspector({ defect, initialVp }: { defect: DefectRe
                   {defect.featureUrl.length > 50 ? defect.featureUrl.slice(0, 48) + '...' : defect.featureUrl}
                 </a>
                 <a
+                  className="font-semibold"
                   href={storageApi.defectFileUrl(defect.id, 'feature')}
                   target="_blank"
                   rel="noreferrer"
-                  style={{ marginLeft: '6px', color: '#0369a1', fontWeight: 600, textDecoration: 'underline' }}
+                  style={{ marginLeft: '6px', color: '#0369a1', textDecoration: 'underline' }}
                   title="Stream & decompress on-demand"
                 >
                   [Stream File]
@@ -1341,10 +1318,11 @@ export function DefectFeatureInspector({ defect, initialVp }: { defect: DefectRe
                   {defect.customFeatureUrl.length > 50 ? defect.customFeatureUrl.slice(0, 48) + '...' : defect.customFeatureUrl}
                 </a>
                 <a
+                  className="font-semibold"
                   href={storageApi.defectFileUrl(defect.id, 'custom')}
                   target="_blank"
                   rel="noreferrer"
-                  style={{ marginLeft: '6px', color: '#0369a1', fontWeight: 600, textDecoration: 'underline' }}
+                  style={{ marginLeft: '6px', color: '#0369a1', textDecoration: 'underline' }}
                   title="Stream & decompress on-demand"
                 >
                   [Stream File]
@@ -1354,14 +1332,15 @@ export function DefectFeatureInspector({ defect, initialVp }: { defect: DefectRe
             {defect.imageUrl && (
               <div>
                 <span className="muted">Defect Image: </span>
-                <a href={defect.imageUrl} target="_blank" rel="noreferrer" style={{ color: '#16a34a', textDecoration: 'underline', fontWeight: 600 }}>
+                <a className="font-semibold" href={defect.imageUrl} target="_blank" rel="noreferrer" style={{ color: '#16a34a', textDecoration: 'underline' }}>
                   <Icon name="image" className="icon inline-icon" />View Photo in SeaweedFS
                 </a>
                 <a
+                  className="font-semibold"
                   href={storageApi.defectImagesUrl(defect.id)}
                   target="_blank"
                   rel="noreferrer"
-                  style={{ marginLeft: '6px', color: '#047857', fontWeight: 600, textDecoration: 'underline' }}
+                  style={{ marginLeft: '6px', color: '#047857', textDecoration: 'underline' }}
                   title="Stream image binary on-demand"
                 >
                   [Stream Image]
@@ -1372,10 +1351,11 @@ export function DefectFeatureInspector({ defect, initialVp }: { defect: DefectRe
               <div>
                 <span className="muted">Defect Pack: </span>
                 <a
+                  className="font-semibold"
                   href={storageApi.productDefectPackUrl(defect.keyId)}
                   target="_blank"
                   rel="noreferrer"
-                  style={{ color: '#7c3aed', fontWeight: 600, textDecoration: 'underline' }}
+                  style={{ color: '#7c3aed', textDecoration: 'underline' }}
                   title="Stream & decompress unified defect pack for this Product ID"
                 >
                   <Icon name="package" className="icon inline-icon" />[All Defects Pack JSON]
@@ -1385,7 +1365,7 @@ export function DefectFeatureInspector({ defect, initialVp }: { defect: DefectRe
           </div>
         )}
 
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '14px', marginTop: '8px', fontSize: '12px' }}>
+        <div className="mt-2 text-xs" style={{ display: 'flex', flexWrap: 'wrap', gap: '14px' }}>
           {defect.reason && (
             <div>
               <span className="muted">Reason: </span>
@@ -1397,7 +1377,7 @@ export function DefectFeatureInspector({ defect, initialVp }: { defect: DefectRe
               <span className="muted">Spec: </span>
               <strong>{defect.specName}</strong>
               {defect.specJudge && (
-                <span style={{ marginLeft: '4px', fontWeight: 600, color: defect.specJudge === 'NG' ? '#dc2626' : '#16a34a' }}>
+                <span className="font-semibold" style={{ marginLeft: '4px', color: defect.specJudge === 'NG' ? '#dc2626' : '#16a34a' }}>
                   ({defect.specJudge})
                 </span>
               )}
@@ -1422,7 +1402,7 @@ export function DefectFeatureInspector({ defect, initialVp }: { defect: DefectRe
 
       {/* 2. Key Coordinates & Dimension Metric Pills */}
       {(metrics.realX != null || metrics.realY != null || metrics.realWidth != null || metrics.pixelX != null) && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px' }}>
+        <div className="gap-md" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(130px, 100%), 1fr))' }}>
           {metrics.realX != null && (
             <div className="metric-pill-box">
               <span className="metric-pill-label">G001 Real X</span>
@@ -1470,17 +1450,17 @@ export function DefectFeatureInspector({ defect, initialVp }: { defect: DefectRe
 
       {/* 3. JSON Payload Viewer (Tabs + Structured Table / Raw Code Toggle) */}
       {availableTabs.length > 0 ? (
-        <div className="json-card" style={{ marginTop: '4px' }}>
-          <div className="json-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ display: 'flex', gap: '6px' }}>
+        <div className="json-card mt-1">
+          <div className="json-card-header hstack justify-between">
+            <div className="gap-sm" style={{ display: 'flex' }}>
               {availableTabs.map((tab) => (
                 <button
+                  className="text-xs"
                   key={tab.id}
                   type="button"
                   onClick={() => setActiveTab(tab.id)}
                   style={{
                     padding: '4px 10px',
-                    fontSize: '12px',
                     fontWeight: activeTab === tab.id ? 700 : 400,
                     background: activeTab === tab.id ? '#334155' : 'transparent',
                     color: activeTab === tab.id ? '#f8fafc' : '#94a3b8',
@@ -1494,13 +1474,13 @@ export function DefectFeatureInspector({ defect, initialVp }: { defect: DefectRe
               ))}
             </div>
 
-            <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+            <div className="hstack gap-sm">
               <button
+                className="text-xs"
                 type="button"
                 onClick={() => setViewMode(viewMode === 'structured' ? 'raw' : 'structured')}
                 style={{
                   padding: '3px 8px',
-                  fontSize: '12px',
                   background: 'rgba(255, 255, 255, 0.1)',
                   color: '#38bdf8',
                   border: '1px solid rgba(56, 189, 248, 0.3)',
@@ -1515,11 +1495,11 @@ export function DefectFeatureInspector({ defect, initialVp }: { defect: DefectRe
 
           {!currentJsonText && currentRemoteUrl ? (
             <div style={{ padding: '24px', textAlign: 'center', background: '#0f172a', borderRadius: '0 0 6px 6px' }}>
-              <p style={{ color: '#94a3b8', margin: '0 0 12px', fontSize: '13px' }}>
+              <p className="text-sm" style={{ color: '#94a3b8', margin: '0 0 12px' }}>
                 This defect payload was offloaded to SeaweedFS (<code>{currentRemoteUrl}</code>) to keep the MariaDB database lean and fast.
               </p>
               {remoteError && (
-                <p style={{ color: '#f87171', margin: '0 0 12px', fontSize: '12px' }}>
+                <p className="text-xs" style={{ color: '#f87171', margin: '0 0 12px' }}>
                   Error: {remoteError}
                 </p>
               )}
@@ -1540,7 +1520,7 @@ export function DefectFeatureInspector({ defect, initialVp }: { defect: DefectRe
             </div>
           ) : viewMode === 'structured' && currentParsed ? (
             <div style={{ maxHeight: '320px', overflowY: 'auto', padding: '8px' }}>
-              <table className="mini-preview-table" style={{ width: '100%', color: '#f1f5f9' }}>
+              <table className="mini-preview-table w-full" style={{ color: '#f1f5f9' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid #334155' }}>
                     <th style={{ color: '#94a3b8', textAlign: 'left', padding: '6px 8px' }}>Metric / Key</th>
@@ -1550,8 +1530,8 @@ export function DefectFeatureInspector({ defect, initialVp }: { defect: DefectRe
                 <tbody>
                   {Object.entries(currentParsed).map(([k, v]) => (
                     <tr key={k} style={{ borderBottom: '1px solid #1e293b' }}>
-                      <td style={{ fontFamily: 'monospace', color: '#38bdf8', padding: '4px 8px', fontSize: '12px' }}>{k}</td>
-                      <td style={{ fontFamily: 'monospace', color: '#f8fafc', padding: '4px 8px', fontSize: '12px' }}>
+                      <td className="font-mono text-xs" style={{ color: '#38bdf8', padding: '4px 8px' }}>{k}</td>
+                      <td className="font-mono text-xs" style={{ color: '#f8fafc', padding: '4px 8px' }}>
                         {typeof v === 'object' && v !== null ? JSON.stringify(v) : String(v ?? '')}
                       </td>
                     </tr>
@@ -1566,7 +1546,7 @@ export function DefectFeatureInspector({ defect, initialVp }: { defect: DefectRe
           )}
         </div>
       ) : (
-        <div style={{ padding: '14px', background: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: '8px', textAlign: 'center', color: '#64748b', fontSize: '12px' }}>
+        <div className="text-xs" style={{ padding: '14px', background: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: '8px', textAlign: 'center', color: '#64748b' }}>
           No JSON feature payload stored for this defect.
         </div>
       )}

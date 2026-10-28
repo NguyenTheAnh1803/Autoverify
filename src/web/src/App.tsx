@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent } from 'react'
 import './App.css'
-import { authApi } from './api'
+import { ApiError, authApi, setUnauthorizedHandler } from './api'
 import { TabPane } from './components/TabPane'
 import { ConfirmProvider } from './confirm'
 import { preloadAllTabs, preloadTab } from './tabRegistry'
@@ -99,6 +99,16 @@ function App() {
     else localStorage.removeItem('autoverify.token')
   }, [token])
 
+  // Any request that comes back 401 ends the session once, with a reason, instead of leaving every panel showing an error.
+  useEffect(() => {
+    setUnauthorizedHandler(() => {
+      setUser(null)
+      setToken('')
+      setLoginError('Your session has expired. Sign in again to continue.')
+    })
+    return () => setUnauthorizedHandler(null)
+  }, [])
+
   useEffect(() => {
     if (!token) {
       setUser(null)
@@ -109,8 +119,16 @@ function App() {
       .then((profile) => {
         if (!cancelled) setUser(profile)
       })
-      .catch(() => {
-        if (!cancelled) setUser({ username: 'admin', displayName: 'Administrator', roles: ['Administrator'] })
+      .catch((error: unknown) => {
+        if (cancelled) return
+        // A rejected or expired token must never open the workspace.
+        if (error instanceof ApiError && (error.status === 401 || error.status === 403)) {
+          setToken('')
+          setLoginError('Your session has expired. Sign in again to continue.')
+          return
+        }
+        // Older API builds have no /auth/me (or it is briefly unreachable): keep the session with a generic profile.
+        setUser({ username: 'admin', displayName: 'Administrator', roles: ['Administrator'] })
       })
     return () => {
       cancelled = true
@@ -126,8 +144,10 @@ function App() {
       const data = await authApi.login(String(form.get('username') ?? ''), String(form.get('password') ?? ''))
       setToken(data.accessToken)
       setUser(data.user)
-    } catch {
-      setLoginError('Invalid username or password.')
+    } catch (error) {
+      // Only a rejected credential is the user's fault; an unreachable or failing server needs a different next step.
+      const rejected = error instanceof ApiError && (error.status === 400 || error.status === 401 || error.status === 403)
+      setLoginError(rejected ? 'Invalid username or password.' : error instanceof Error ? error.message : 'Sign-in failed. Try again.')
     } finally {
       setBusy(false)
     }

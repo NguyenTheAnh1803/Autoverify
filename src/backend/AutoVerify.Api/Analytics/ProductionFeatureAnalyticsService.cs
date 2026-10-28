@@ -79,31 +79,46 @@ public sealed class ProductionFeatureAnalyticsService : IDisposable
     {
         using var scope = _scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AutoVerifyDbContext>();
-        var machines = await db.ProductRecords.AsNoTracking()
-            .Select(p => p.MachineCode)
-            .Where(v => v != "")
-            .Distinct()
-            .OrderBy(v => v)
+
+        var connMeta = await db.DatabaseConnections.AsNoTracking()
+            .Select(c => new { c.MachineCode, c.LineCode })
             .ToArrayAsync(cancellationToken);
-        var lines = await db.ProductRecords.AsNoTracking()
-            .Select(p => p.LineCode)
-            .Where(v => v != "")
-            .Distinct()
-            .OrderBy(v => v)
+        var recentProductMeta = await db.ProductRecords.AsNoTracking()
+            .OrderByDescending(p => p.InspectedAtUtc)
+            .Take(5000)
+            .Select(p => new { p.MachineCode, p.LineCode })
             .ToArrayAsync(cancellationToken);
-        var defectNames = await db.DefectRecords.AsNoTracking()
+        var recentDefectMeta = await db.DefectRecords.AsNoTracking()
+            .OrderByDescending(d => d.CreatedAtUtc)
+            .Take(5000)
+            .Select(d => new { d.DefectName, d.Judge })
+            .ToArrayAsync(cancellationToken);
+
+        var machines = connMeta.Select(c => c.MachineCode)
+            .Concat(recentProductMeta.Select(p => p.MachineCode))
+            .Where(v => !string.IsNullOrWhiteSpace(v))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(v => v, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var lines = connMeta.Select(c => c.LineCode)
+            .Concat(recentProductMeta.Select(p => p.LineCode))
+            .Where(v => !string.IsNullOrWhiteSpace(v))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(v => v, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var defectNames = recentDefectMeta
             .Select(d => d.DefectName)
-            .Where(v => v != "" && v != "None")
-            .Distinct()
-            .OrderBy(v => v)
+            .Where(v => !string.IsNullOrWhiteSpace(v) && !v.Equals("None", StringComparison.OrdinalIgnoreCase))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(v => v, StringComparer.OrdinalIgnoreCase)
             .Take(200)
-            .ToArrayAsync(cancellationToken);
-        var judges = await db.DefectRecords.AsNoTracking()
+            .ToArray();
+        var judges = recentDefectMeta
             .Select(d => d.Judge)
-            .Where(v => v != "")
-            .Distinct()
-            .OrderBy(v => v)
-            .ToArrayAsync(cancellationToken);
+            .Where(v => !string.IsNullOrWhiteSpace(v))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(v => v, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
 
         return new ProductionFeatureJobDto(
             Guid.Empty, "Idle", "1w", null, null,

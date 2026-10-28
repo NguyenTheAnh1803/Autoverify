@@ -8,15 +8,19 @@ import * as echarts from 'echarts/core'
 import { BarChart, HeatmapChart, LineChart, PieChart, ScatterChart } from 'echarts/charts'
 import {
   AxisPointerComponent,
+  DataZoomComponent,
   GraphicComponent,
   GridComponent,
   LegendComponent,
+  MarkAreaComponent,
   MarkLineComponent,
   TitleComponent,
+  ToolboxComponent,
   TooltipComponent,
   VisualMapComponent,
 } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
+import { CHART_THEME_NAME, chartTheme } from './chartTheme'
 
 echarts.use([
   BarChart,
@@ -25,14 +29,19 @@ echarts.use([
   PieChart,
   HeatmapChart,
   AxisPointerComponent,
+  DataZoomComponent,
   GraphicComponent,
   GridComponent,
   LegendComponent,
+  MarkAreaComponent,
   MarkLineComponent,
   TitleComponent,
+  ToolboxComponent,
   TooltipComponent,
   VisualMapComponent,
   CanvasRenderer,
 ])
+
+echarts.registerTheme(CHART_THEME_NAME, chartTheme)
 
 export default echarts

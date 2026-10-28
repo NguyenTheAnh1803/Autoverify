@@ -231,11 +231,11 @@ export function SourcesTab({ onNotice }: { onNotice: (notice: Notice) => void })
           <p className="eyebrow">GET /database-connections</p>
           <h2>Database connections</h2>
         </div>
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+        <div className="gap-md" style={{ display: 'flex', flexWrap: 'wrap' }}>
           <button
             type="button"
-            className="primary"
-            style={{ background: '#2563eb', borderColor: '#3b82f6', fontWeight: 600 }}
+            className="primary font-semibold"
+            style={{ background: '#2563eb', borderColor: '#3b82f6' }}
             onClick={() => setBatchOpen(true)}
             title="Batch register database connections for 80+ lines using Multi-Path paste with preview"
           >
@@ -287,7 +287,7 @@ export function SourcesTab({ onNotice }: { onNotice: (notice: Notice) => void })
             <span key="l" className="line-pill">{connection.lineCode}</span>,
             connection.engine,
             `${connection.databaseName || '—'} (${connection.host}:${connection.port})`,
-            <code key="api" style={{ fontSize: '12px', color: '#7c3aed', background: 'rgba(124, 58, 237, 0.08)', padding: '2px 6px', borderRadius: '4px' }}>
+            <code className="text-xs" key="api" style={{ color: '#7c3aed', background: 'rgba(124, 58, 237, 0.08)', padding: '2px 6px', borderRadius: '4px' }}>
               {connection.imageCrawlerApiUrl || connection.apiBaseUrl || '—'}
             </code>,
             <StatusPill key="h" value={connection.health} />,
@@ -435,9 +435,9 @@ export function SourcesTab({ onNotice }: { onNotice: (notice: Notice) => void })
               hint="Configure crawler VP mode sent to server (Default: VP = 0 thumbnail)"
             >
               <select
+                className="text-xs font-semibold"
                 name="imageCrawlerVpMode"
                 defaultValue={editing?.imageCrawlerVpMode ?? 'all'}
-                style={{ fontSize: '12px', fontWeight: 600 }}
               >
                 <option value="all">All VPs (Auto-try VP 0 & other VPs)</option>
                 <option value="0">VP = 0 (Prefer Thumbnail)</option>

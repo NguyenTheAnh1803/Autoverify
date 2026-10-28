@@ -18,7 +18,7 @@ function countPoints(option: Props['option']): number {
 }
 
 function Placeholder() {
-  return <span className="skeleton-line" style={{ height: '100%', width: '100%', borderRadius: 12 }} aria-hidden="true" />
+  return <span className="skeleton-line w-full" style={{ height: '100%', borderRadius: 12 }} aria-hidden="true" />
 }
 
 /**

@@ -389,7 +389,7 @@ export function PipelineHub({
             <Icon name="play" className="icon inline-icon" />Batch Setup Defect Pipelines
           </button>
           <button type="button" className="ghost-button compact" disabled={refreshing} onClick={() => void handleRefresh()}>
-            ↻ Refresh Pipelines
+            <Icon name="refresh" className="icon inline-icon" />Refresh Pipelines
           </button>
           {pipelines.length > 0 ? (
             <>

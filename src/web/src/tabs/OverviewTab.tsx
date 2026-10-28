@@ -1,3 +1,4 @@
+import { STATUS } from '../lib/status'
 import { useEffect, useMemo, useState } from 'react'
 import ReactECharts from '../components/ReactECharts'
 import { dashboardApi } from '../api'
@@ -18,7 +19,7 @@ function ReportEmptyState({ message }: { message: string }) {
 
 function ProductionReport({ view, report }: { view: DashboardView; report: DashboardSectionReport }) {
   const isOverkill = view === 'overkill'
-  const accent = isOverkill ? '#d97706' : '#db2777'
+  const accent = isOverkill ? STATUS.overkill.fill : STATUS.leakage.fill
   const title = isOverkill ? 'Overkill' : 'Leakage'
 
   const trendOption = useMemo(() => ({
@@ -43,7 +44,7 @@ function ProductionReport({ view, report }: { view: DashboardView; report: Dashb
     xAxis: {
       type: 'category',
       data: report.trend.map((item) => item.date.slice(0, 10)),
-      axisLabel: { color: '#64748b', fontSize: 10, rotate: report.trend.length > 14 ? 35 : 0 },
+      axisLabel: { color: '#64748b', fontSize: 11, rotate: report.trend.length > 14 ? 35 : 0 },
       axisLine: { lineStyle: { color: '#cbd5e1' } },
     },
     yAxis: [
@@ -69,21 +70,20 @@ function ProductionReport({ view, report }: { view: DashboardView; report: Dashb
         type: 'bar',
         barMaxWidth: 28,
         data: report.trend.map((item) => item.productionItems),
-        itemStyle: { borderRadius: [4, 4, 0, 0], color: '#cbd5e1' },
+        itemStyle: { color: '#cbd5e1' },
       },
       {
         name: `${title} rate`,
         type: 'line',
         yAxisIndex: 1,
-        smooth: true,
-        symbolSize: 7,
+        smooth: false,
+        symbolSize: 5,
         data: report.trend.map((item) => item.anomalyRate),
-        lineStyle: { width: 3, color: accent },
+        lineStyle: { width: 1.5, color: accent },
         itemStyle: { color: accent },
-        areaStyle: { color: isOverkill ? 'rgba(217,119,6,.12)' : 'rgba(219,39,119,.12)' },
       },
     ],
-  }), [accent, isOverkill, report.trend, title])
+  }), [accent, report.trend, title])
 
   const defectOption = useMemo(() => ({
     animationDuration: 350,

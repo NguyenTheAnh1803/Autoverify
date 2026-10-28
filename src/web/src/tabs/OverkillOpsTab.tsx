@@ -379,7 +379,7 @@ export function OverkillOpsTab({ onNotice }: { onNotice: (notice: Notice) => voi
             </p>
           </div>
           <button type="button" className="ghost-button compact" onClick={() => void loadCandidates()}>
-            ↻ Refresh Candidates
+            <Icon name="refresh" className="icon inline-icon" />Refresh Candidates
           </button>
         </div>
 
@@ -495,17 +495,15 @@ export function OverkillOpsTab({ onNotice }: { onNotice: (notice: Notice) => voi
             {inspectKey && (
               <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '8px' }}>
                 <a
+                  className="text-xs font-semibold gap-xs"
                   href={storageApi.productDefectPackUrl(inspectKey)}
                   target="_blank"
                   rel="noreferrer"
                   style={{
-                    fontSize: '12px',
                     color: '#7c3aed',
-                    fontWeight: 600,
                     textDecoration: 'underline',
                     display: 'inline-flex',
                     alignItems: 'center',
-                    gap: '4px',
                   }}
                 >
                   <Icon name="package" className="icon inline-icon" />Open Full Product Defect Pack (.json.gz)

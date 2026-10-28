@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react'
+import { activatable } from '../../lib/activatable'
 import ReactECharts from '../ReactECharts'
 import type {
   FeatureRelationshipResult,
@@ -63,24 +64,20 @@ export const FeatureRelationshipChart: React.FC<FeatureRelationshipChartProps> =
       title: {
         text: `Feature Correlation Matrix (${metric.toUpperCase()})`,
         left: 'left',
-        textStyle: { color: '#cbd5e1', fontSize: 13, fontWeight: 'normal' },
       },
       tooltip: {
         position: 'top',
-        backgroundColor: '#1e293b',
-        borderColor: '#475569',
-        textStyle: { color: '#f1f5f9', fontSize: 12 },
         formatter: (params: { data: [number, number, number | null, number] }) => {
           const [colIdx, rowIdx, corrVal, overlap] = params.data
           const fA = features[rowIdx]
           const fB = features[colIdx]
           const corrText = corrVal !== null ? corrVal.toFixed(4) : 'N/A'
           return `
-            <div style="font-family:monospace;font-size:12px;">
+            <div style="font-family:var(--font-mono);font-size:12px;">
               <div><strong>Pair:</strong> ${fA} \u2194 ${fB}</div>
               <div><strong>${metric.toUpperCase()} Correlation:</strong> ${corrText}</div>
               <div><strong>Overlap Observations:</strong> ${overlap.toLocaleString()}</div>
-              <div style="font-size:12px;color:#94a3b8;margin-top:4px;">(Click cell to select pair for scatter plot)</div>
+              <div style="font-size:12px;color:#64748b;margin-top:4px;">(Click cell to select pair for scatter plot)</div>
             </div>
           `
         },
@@ -94,19 +91,11 @@ export const FeatureRelationshipChart: React.FC<FeatureRelationshipChartProps> =
       xAxis: {
         type: 'category',
         data: features,
-        axisLabel: {
-          color: '#94a3b8',
-          fontSize: 10,
-          rotate: 45,
-          interval: 0,
-        },
-        splitArea: { show: true },
+        axisLabel: { rotate: features.length > 8 ? 45 : 0, interval: 0, hideOverlap: false },
       },
       yAxis: {
         type: 'category',
         data: features,
-        axisLabel: { color: '#94a3b8', fontSize: 10 },
-        splitArea: { show: true },
       },
       visualMap: {
         min: -1,
@@ -115,9 +104,8 @@ export const FeatureRelationshipChart: React.FC<FeatureRelationshipChartProps> =
         orient: 'horizontal',
         left: 'center',
         bottom: '10px',
-        textStyle: { color: '#94a3b8', fontSize: 10 },
         inRange: {
-          color: ['#3b82f6', '#1e293b', '#ef4444'],
+          color: ['#5b8fb9', '#ffffff', '#d9695c'],
         },
       },
       series: [
@@ -127,17 +115,13 @@ export const FeatureRelationshipChart: React.FC<FeatureRelationshipChartProps> =
           data,
           label: {
             show: features.length <= 10,
-            color: '#f8fafc',
-            fontSize: 9,
+            color: '#1e293b',
+            fontSize: 11,
             formatter: (p: { data: [number, number, number | null, number] }) =>
               p.data[2] !== null ? p.data[2].toFixed(2) : '',
           },
-          emphasis: {
-            itemStyle: {
-              shadowBlur: 10,
-              shadowColor: 'rgba(0, 0, 0, 0.5)',
-            },
-          },
+          itemStyle: { borderColor: '#ffffff', borderWidth: 1 },
+          emphasis: { itemStyle: { borderColor: '#1e293b', borderWidth: 1.5 } },
         },
       ],
     }
@@ -187,15 +171,10 @@ export const FeatureRelationshipChart: React.FC<FeatureRelationshipChartProps> =
       title: {
         text: `Pair Scatter: ${selectedPair.featureA} vs ${selectedPair.featureB}`,
         left: 'left',
-        textStyle: { color: '#cbd5e1', fontSize: 13, fontWeight: 'normal' },
         subtext: `Overlap: ${selectedPair.overlapCount.toLocaleString()} obs | Pearson: ${selectedPair.pearson !== null && selectedPair.pearson !== undefined ? selectedPair.pearson.toFixed(4) : 'N/A'} | Spearman: ${selectedPair.spearman !== null && selectedPair.spearman !== undefined ? selectedPair.spearman.toFixed(4) : 'N/A'}`,
-        subtextStyle: { color: '#94a3b8', fontSize: 11 },
       },
       tooltip: {
         trigger: 'item',
-        backgroundColor: '#1e293b',
-        borderColor: '#475569',
-        textStyle: { color: '#f1f5f9', fontSize: 12 },
         formatter: (params: {
           data: {
             value: [number, number]
@@ -211,14 +190,14 @@ export const FeatureRelationshipChart: React.FC<FeatureRelationshipChartProps> =
         }) => {
           const { value, obs } = params.data
           return `
-            <div style="font-family:monospace;font-size:12px;">
+            <div style="font-family:var(--font-mono);font-size:12px;">
               <div><strong>Row:</strong> #${obs.rowIndex}</div>
               ${obs.keyId ? `<div><strong>Key:</strong> ${obs.keyId}</div>` : ''}
               ${obs.lineCode || obs.machineCode ? `<div><strong>Scope:</strong> ${obs.lineCode || '?'}/${obs.machineCode || '?'}</div>` : ''}
               ${obs.defectFamily ? `<div><strong>Family:</strong> ${obs.defectFamily}</div>` : ''}
               <div style="margin-top:4px;"><strong>${selectedPair.featureA}:</strong> ${value[0].toFixed(4)}</div>
               <div><strong>${selectedPair.featureB}:</strong> ${value[1].toFixed(4)}</div>
-              <div style="font-size:12px;color:#38bdf8;margin-top:4px;">(Click point to drill down in preview grid)</div>
+              <div style="font-size:12px;color:#2f6f9f;margin-top:4px;">(Click point to drill down in preview grid)</div>
             </div>
           `
         },
@@ -229,18 +208,12 @@ export const FeatureRelationshipChart: React.FC<FeatureRelationshipChartProps> =
         name: selectedPair.featureA,
         nameLocation: 'middle',
         nameGap: 25,
-        axisLine: { lineStyle: { color: '#475569' } },
-        splitLine: { lineStyle: { color: '#1e293b' } },
-        axisLabel: { color: '#94a3b8', fontSize: 10 },
       },
       yAxis: {
         type: 'value',
         name: selectedPair.featureB,
         nameLocation: 'middle',
         nameGap: 35,
-        axisLine: { lineStyle: { color: '#475569' } },
-        splitLine: { lineStyle: { color: '#1e293b' } },
-        axisLabel: { color: '#94a3b8', fontSize: 10 },
       },
       series: [
         {
@@ -249,7 +222,7 @@ export const FeatureRelationshipChart: React.FC<FeatureRelationshipChartProps> =
           symbolSize: 6,
           data: seriesData,
           itemStyle: {
-            color: '#38bdf8',
+            color: '#2f6f9f',
             opacity: 0.7,
           },
         },
@@ -389,7 +362,7 @@ export const FeatureRelationshipChart: React.FC<FeatureRelationshipChartProps> =
                     />
                   </div>
                   {selectedPointPreview && (
-                    <div className="analytics-feature-preview-card" style={{ marginTop: '8px' }}>
+                    <div className="analytics-feature-preview-card mt-2">
                       <div className="preview-header">
                         <span className="badge info">Pair Scatter Observation Preview</span>
                         {selectedPointPreview.rowIndex !== undefined && (
@@ -399,7 +372,7 @@ export const FeatureRelationshipChart: React.FC<FeatureRelationshipChartProps> =
                           <span className="text-xs text-slate-400 font-mono">Key: {selectedPointPreview.keyId}</span>
                         )}
                       </div>
-                      <div className="preview-body" style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
+                      <div className="preview-body hstack gap-xl flex-wrap">
                         <div>
                           <span className="text-xs text-slate-400">{selectedPointPreview.featureA}: </span>
                           <strong className="font-mono text-cyan-400">{selectedPointPreview.xVal.toFixed(4)}</strong>
@@ -523,7 +496,7 @@ export const FeatureRelationshipChart: React.FC<FeatureRelationshipChartProps> =
                   <tr
                     key={idx}
                     className={isSelected ? 'selected-row' : ''}
-                    onClick={() => setSelectedPair(p)}
+                    {...activatable(() => setSelectedPair(p), { row: true, selected: isSelected })}
                     style={{ cursor: 'pointer' }}
                   >
                     <td className="font-mono">{p.featureA}</td>

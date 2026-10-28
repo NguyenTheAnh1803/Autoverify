@@ -1,12 +1,15 @@
 import { lazy, Suspense, useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react'
-import { LazyImage } from '../components/LazyImage'
 import ReactECharts from '../components/ReactECharts'
-import { connectionsApi, productsApi, verificationApi, imageCrawlerApi } from '../api'
+import { connectionsApi, productsApi, verificationApi } from '../api'
 import { formatDateTime, formatPercent, paginate } from '../format'
 import { TabSkeleton } from '../components/TabSkeleton'
-import { Button, ChartSkeleton, DataTable, DefectFeatureInspector, Field, Icon, ImageViewer, JudgeBadge, LoadFailure, MetricCard, Modal, Pagination, StatusPill } from '../ui'
+import { Button, ChartSkeleton, DataTable, DefectFeatureInspector, Field, Icon, JudgeBadge, LoadFailure, MetricCard, Modal, Pagination, StatusPill } from '../ui'
+import { ThumbnailCard } from '../components/overkill/ThumbnailCard'
+import { ThumbnailZoomModal } from '../components/overkill/ThumbnailZoomModal'
+import { originalVpOf } from '../components/overkill/vpImageStore'
 const OpReconciliationTab = lazy(() => import('./OpReconciliationTab').then((m) => ({ default: m.OpReconciliationTab })))
 
+import { STATUS, statusChip, statusSolid } from '../lib/status'
 import type {
   AnomalyThumbnailItem,
   DatabaseConnection,
@@ -18,6 +21,14 @@ import type {
   OverkillTrendResponse,
   TabId,
 } from '../types'
+
+/** Line risk level → verdict colour: only CRITICAL is solid, so it is the one that catches the eye on a long table. */
+function riskBadgeStyle(level: string) {
+  if (level === 'CRITICAL') return statusSolid('ng')
+  if (level === 'HIGH') return statusChip('ng')
+  if (level === 'WARNING') return statusChip('overkill')
+  return statusChip('ok')
+}
 
 type OverkillActiveView = 'trend' | 'lines' | 'reconciliation' | 'thumbnails' | 'leakage' | 'systems'
 
@@ -73,18 +84,13 @@ export function OverkillTab({
   const [loadingThumbnails, setLoadingThumbnails] = useState<boolean>(false)
 
   // Zoom Image & Feature Inspector modals
-  const [zoomedItem, setZoomedItem] = useState<AnomalyThumbnailItem | null>(null)
+  // Zoom dialog: the item and the angle it opens on; null = closed.
+  const [zoomRequest, setZoomRequest] = useState<{ item: AnomalyThumbnailItem; vp: string } | null>(null)
   const [inspectedDefect, setInspectedDefect] = useState<DefectRecord | null>(null)
   const [inspectedVp, setInspectedVp] = useState<string | undefined>(undefined)
   const [loadingDefectInspect, setLoadingDefectInspect] = useState<boolean>(false)
 
   // Multi-VP Image State for Anomaly Cards & Zoom Modal
-  const [cardVpMap, setCardVpMap] = useState<Record<string, string>>({})
-  const [cardVpImages, setCardVpImages] = useState<Record<string, Record<string, string>>>({})
-  const [cardLoadingVp, setCardLoadingVp] = useState<Record<string, string | null>>({})
-  const [zoomVp, setZoomVp] = useState<string>('0')
-  const [zoomVpImages, setZoomVpImages] = useState<Record<string, string>>({})
-  const [zoomLoading, setZoomLoading] = useState<boolean>(false)
 
   // Legacy System Analysis state
   const [analysis, setAnalysis] = useState<OverkillAnalysis | null>(null)
@@ -94,6 +100,7 @@ export function OverkillTab({
   const [page, setPage] = useState(1)
   const [busy, setBusy] = useState(false)
   const [autoSelected, setAutoSelected] = useState(false)
+  const [connectionsLoaded, setConnectionsLoaded] = useState(false)
 
   const machines = useMemo(() => [...new Set(connections.map((item) => item.machineCode))].sort(), [connections])
   const models = useMemo(() => [...new Set(connections.map((item) => item.modelCode).filter(Boolean))].sort(), [connections])
@@ -142,8 +149,15 @@ export function OverkillTab({
     try {
       const payload = await connectionsApi.list({ page: 1, pageSize: 100 })
       setConnections(payload.items)
+      const firstMachine = [...new Set(payload.items.map((item) => item.machineCode).filter(Boolean))].sort()[0]
+      if (firstMachine) {
+        setMachineCode((prev) => (prev === 'All' ? firstMachine : prev))
+        setAutoSelected(true)
+      }
     } catch (error) {
       onNotice({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to load connections.' })
+    } finally {
+      setConnectionsLoaded(true)
     }
   }, [onNotice])
 
@@ -287,8 +301,9 @@ export function OverkillTab({
   }, [loadConnections])
 
   useEffect(() => {
+    if (!connectionsLoaded) return
     void loadTrendData()
-  }, [loadTrendData])
+  }, [connectionsLoaded, loadTrendData])
 
   useEffect(() => {
     if (activeView === 'thumbnails') {
@@ -302,22 +317,10 @@ export function OverkillTab({
     }
   }, [activeView, loadAnalysis])
 
-  // Original VP is defined strictly by the source image_path, not classifier features.
-  function getItemOriginalVp(item: AnomalyThumbnailItem): string {
-    if (item.originalVp != null && item.originalVp !== '') return item.originalVp
-    if (item.imageUri) {
-      const folderMatch = item.imageUri.match(/[\\/]VP0*(\d+)[\\/]/i)
-      if (folderMatch?.[1]) return String(parseInt(folderMatch[1], 10))
-      const fileMatch = item.imageUri.match(/VP0*(\d+)[_.-]/i)
-      if (fileMatch?.[1]) return String(parseInt(fileMatch[1], 10))
-    }
-    return '0'
-  }
-
   // Inspector handler for thumbnail items
-  async function handleInspectDefect(item: AnomalyThumbnailItem, targetVp?: string) {
+  const handleInspectDefect = useCallback(async (item: AnomalyThumbnailItem, targetVp?: string) => {
     if (!item.keyId) return
-    const vp = targetVp || getItemOriginalVp(item)
+    const vp = targetVp || originalVpOf(item)
     setInspectedVp(vp)
     setLoadingDefectInspect(true)
     try {
@@ -354,152 +357,11 @@ export function OverkillTab({
     } finally {
       setLoadingDefectInspect(false)
     }
-  }
+  }, [onNotice])
 
-  async function handleSelectCardVp(item: AnomalyThumbnailItem, vp: string, requestOriginal = false) {
-    if (!item.defectId) return
-    const itemKey = `${item.keyId}_${item.defectId}`
-    const cacheKey = requestOriginal ? 'original' : vp
-    setCardVpMap((prev) => ({ ...prev, [itemKey]: cacheKey }))
-
-    if (cardVpImages[itemKey]?.[cacheKey]) {
-      return
-    }
-
-    setCardLoadingVp((prev) => ({ ...prev, [itemKey]: cacheKey }))
-    try {
-      const res = await imageCrawlerApi.crawlDefect({ defectId: item.defectId, customVp: requestOriginal ? 'original' : vp, forceRefresh: false })
-      if (res.success) {
-        const requestVp = requestOriginal ? 'original' : vp
-        const url = res.imageUrl || imageCrawlerApi.previewUrl(item.defectId, false, requestVp)
-        setCardVpImages((prev) => ({
-          ...prev,
-          [itemKey]: { ...(prev[itemKey] || {}), [cacheKey]: url },
-        }))
-        onNotice({
-          tone: 'success',
-          message: `✓ Loaded VP${vp} image for Defect ${item.defectName || item.keyId} (${res.sizeBytes.toLocaleString()} bytes)`,
-        })
-      } else {
-        onNotice({
-          tone: 'error',
-          message: `✗ Failed to load VP${vp} image: ${res.errorMessage || 'Unknown error'}`,
-        })
-      }
-    } catch (err) {
-      onNotice({
-        tone: 'error',
-        message: err instanceof Error ? err.message : `Failed to load VP${vp} image`,
-      })
-    } finally {
-      setCardLoadingVp((prev) => ({ ...prev, [itemKey]: null }))
-    }
-  }
-
-  async function handleCrawlThumbnailVp(item: AnomalyThumbnailItem, vp: string, requestOriginal = false) {
-    if (!item.defectId) return
-    const itemKey = `${item.keyId}_${item.defectId}`
-    const cacheKey = requestOriginal ? 'original' : vp
-    const requestVp = requestOriginal ? 'original' : vp
-    setCardLoadingVp((prev) => ({ ...prev, [itemKey]: cacheKey }))
-    try {
-      const res = await imageCrawlerApi.crawlDefect({ defectId: item.defectId, customVp: requestOriginal ? 'original' : vp, forceRefresh: true })
-      if (res.success) {
-        const url = `${imageCrawlerApi.previewUrl(item.defectId, true, requestVp)}&t=${Date.now()}`
-        setCardVpImages((prev) => ({
-          ...prev,
-          [itemKey]: { ...(prev[itemKey] || {}), [cacheKey]: url },
-        }))
-        setCardVpMap((prev) => ({ ...prev, [itemKey]: cacheKey }))
-        onNotice({
-          tone: 'success',
-          message: `✓ Crawled VP${vp} image for ${item.defectName || item.keyId} (${res.sizeBytes.toLocaleString()} bytes in ${res.latencyMs}ms)!`,
-        })
-      } else {
-        onNotice({
-          tone: 'error',
-          message: `✗ Failed to crawl VP${vp}: ${res.errorMessage || 'Unknown error'}`,
-        })
-      }
-    } catch (err) {
-      onNotice({
-        tone: 'error',
-        message: err instanceof Error ? err.message : 'Failed to crawl image',
-      })
-    } finally {
-      setCardLoadingVp((prev) => ({ ...prev, [itemKey]: null }))
-    }
-  }
-
-  function openZoomModal(item: AnomalyThumbnailItem, initialVp = '0') {
-    setZoomedItem(item)
-    setZoomVp(initialVp)
-    const itemKey = `${item.keyId}_${item.defectId || ''}`
-    const existing = cardVpImages[itemKey] || {}
-    setZoomVpImages(existing)
-    if (initialVp !== '0' && !existing[initialVp] && item.defectId) {
-      void handleSelectZoomVp(item, initialVp, initialVp === 'original')
-    }
-  }
-
-  async function handleSelectZoomVp(item: AnomalyThumbnailItem, vp: string, requestOriginal = false) {
-    if (!item.defectId) return
-    const itemKey = `${item.keyId}_${item.defectId}`
-    const cacheKey = requestOriginal ? 'original' : vp
-    setZoomVp(cacheKey)
-
-    if (zoomVpImages[cacheKey]) return
-
-    setZoomLoading(true)
-    try {
-      const res = await imageCrawlerApi.crawlDefect({ defectId: item.defectId, customVp: requestOriginal ? 'original' : vp, forceRefresh: false })
-      if (res.success) {
-        const requestVp = requestOriginal ? 'original' : vp
-        const url = res.imageUrl || imageCrawlerApi.previewUrl(item.defectId, false, requestVp)
-        setZoomVpImages((prev) => ({ ...prev, [cacheKey]: url }))
-        setCardVpImages((prev) => ({
-          ...prev,
-          [itemKey]: { ...(prev[itemKey] || {}), [cacheKey]: url },
-        }))
-      }
-    } catch {} finally {
-      setZoomLoading(false)
-    }
-  }
-
-  async function handleForceRefreshZoomVp(item: AnomalyThumbnailItem) {
-    if (!item.defectId) return
-    const itemKey = `${item.keyId}_${item.defectId}`
-    const requestVp = zoomVp === 'original' ? 'original' : zoomVp
-    setZoomLoading(true)
-    try {
-      const res = await imageCrawlerApi.crawlDefect({ defectId: item.defectId, customVp: requestVp, forceRefresh: true })
-      if (res.success) {
-        const url = `${imageCrawlerApi.previewUrl(item.defectId, true, requestVp)}&t=${Date.now()}`
-        setZoomVpImages((prev) => ({ ...prev, [zoomVp]: url }))
-        setCardVpImages((prev) => ({
-          ...prev,
-          [itemKey]: { ...(prev[itemKey] || {}), [zoomVp]: url },
-        }))
-        onNotice({
-          tone: 'success',
-          message: `✓ Force crawled VP${zoomVp} image!`,
-        })
-      } else {
-        onNotice({
-          tone: 'error',
-          message: `✗ Crawl failed: ${res.errorMessage || 'Unknown error'}`,
-        })
-      }
-    } catch (err) {
-      onNotice({
-        tone: 'error',
-        message: err instanceof Error ? err.message : 'Failed to crawl image',
-      })
-    } finally {
-      setZoomLoading(false)
-    }
-  }
+  // Stable identities so the memoised gallery cards do not re-render when unrelated tab state changes.
+  const openZoom = useCallback((item: AnomalyThumbnailItem, vp: string) => setZoomRequest({ item, vp }), [])
+  const inspectThumbnail = useCallback((item: AnomalyThumbnailItem, vp: string) => void handleInspectDefect(item, vp), [handleInspectDefect])
 
   // Dual-Axis Trend Chart Option
   const trendChartOption = useMemo(() => {
@@ -517,8 +379,6 @@ export function OverkillTab({
         text: 'Trend Decomposition: Station NG vs Real NG vs Overkill',
         subtext: `Classifier Rule analysis for Machine: ${trendData.machineCode}, Line: ${trendData.lineCode}`,
         left: 'center',
-        textStyle: { color: '#e2e8f0', fontSize: 13, fontWeight: 600 },
-        subtextStyle: { color: '#94a3b8', fontSize: 11 },
       },
       tooltip: {
         trigger: 'axis',
@@ -532,11 +392,11 @@ export function OverkillTab({
           if (pt) {
             tip += `Inspection Throughput: <b>${pt.totalInspected.toLocaleString()}</b><br/>`
             tip += `Station NG Alarms: <b>${pt.stationNgCount}</b> (${(pt.stationNgRate * 100).toFixed(2)}%)<br/>`
-            tip += `Real Defect: <b style="color:#a855f7">${pt.realNgCount}</b> (${(pt.realNgRate * 100).toFixed(2)}%)<br/>`
-            tip += `Overkill (False Alarm): <b style="color:#f59e0b">${pt.overkillCount}</b> (${(pt.overkillRate * 100).toFixed(2)}%)<br/>`
-            tip += `Overkill Share in NG: <b style="color:#f59e0b">${(pt.overkillShare * 100).toFixed(1)}%</b><br/>`
+            tip += `Real Defect: <b style="color:var(--status-real-text)">${pt.realNgCount}</b> (${(pt.realNgRate * 100).toFixed(2)}%)<br/>`
+            tip += `Overkill (False Alarm): <b style="color:var(--status-overkill-text)">${pt.overkillCount}</b> (${(pt.overkillRate * 100).toFixed(2)}%)<br/>`
+            tip += `Overkill Share in NG: <b style="color:var(--status-overkill-text)">${(pt.overkillShare * 100).toFixed(1)}%</b><br/>`
             if (pt.leakageCount > 0) {
-              tip += `Defect Escape (Leakage): <b style="color:#ef4444">${pt.leakageCount}</b><br/>`
+              tip += `Defect Escape (Leakage): <b style="color:var(--status-leakage-text)">${pt.leakageCount}</b><br/>`
             }
           }
           return tip
@@ -544,29 +404,22 @@ export function OverkillTab({
       },
       legend: {
         bottom: 0,
-        textStyle: { color: '#cbd5e1', fontSize: 11 },
         data: ['Throughput', 'Station NG Rate (%)', 'Real NG Rate (%)', 'Overkill Rate (%)', 'Overkill Share in NG (%)'],
       },
       grid: { left: '3%', right: '4%', bottom: '12%', top: '18%', containLabel: true },
       xAxis: {
         type: 'category',
         data: dates,
-        axisLabel: { color: '#94a3b8', fontSize: 10 },
-        axisLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } },
       },
       yAxis: [
         {
           type: 'value',
           name: 'Throughput',
-          nameTextStyle: { color: '#94a3b8' },
-          axisLabel: { color: '#94a3b8' },
-          splitLine: { lineStyle: { color: 'rgba(255,255,255,0.05)' } },
         },
         {
           type: 'value',
           name: 'Rate (%)',
-          nameTextStyle: { color: '#94a3b8' },
-          axisLabel: { color: '#94a3b8', formatter: '{value}%' },
+          axisLabel: { formatter: '{value}%' },
           splitLine: { show: false },
         },
       ],
@@ -575,7 +428,7 @@ export function OverkillTab({
           name: 'Throughput',
           type: 'bar',
           barMaxWidth: 28,
-          itemStyle: { color: 'rgba(148, 163, 184, 0.3)', borderRadius: [4, 4, 0, 0] },
+          itemStyle: { color: '#cbd5e1' },
           label: {
             show: true,
             position: 'top',
@@ -584,8 +437,8 @@ export function OverkillTab({
               if (!val || val === 0) return ''
               return val >= 1000 ? (val / 1000).toFixed(1) + 'k' : String(val)
             },
-            color: '#cbd5e1',
-            fontSize: 9,
+            color: '#475569',
+            fontSize: 11,
             fontWeight: 600,
           },
           data: production,
@@ -594,24 +447,24 @@ export function OverkillTab({
           name: 'Station NG Rate (%)',
           type: 'line',
           yAxisIndex: 1,
-          smooth: true,
-          itemStyle: { color: '#94a3b8' },
-          lineStyle: { width: 2, type: 'dashed' },
+          smooth: false,
+          itemStyle: { color: STATUS.na.fill },
+          lineStyle: { width: 1.5, type: 'dashed' },
           data: stationNgRates,
         },
         {
           name: 'Real NG Rate (%)',
           type: 'line',
           yAxisIndex: 1,
-          smooth: true,
-          itemStyle: { color: '#a855f7' },
-          lineStyle: { width: 3 },
+          smooth: false,
+          itemStyle: { color: STATUS.real.fill },
+          lineStyle: { width: 1.5 },
           label: {
             show: true,
             position: 'top',
             formatter: '{c}%',
-            color: '#c084fc',
-            fontSize: 9,
+            color: STATUS.real.fill,
+            fontSize: 11,
             fontWeight: 600,
           },
           data: realNgRates,
@@ -620,15 +473,15 @@ export function OverkillTab({
           name: 'Overkill Rate (%)',
           type: 'line',
           yAxisIndex: 1,
-          smooth: true,
-          itemStyle: { color: '#f59e0b' },
-          lineStyle: { width: 3 },
+          smooth: false,
+          itemStyle: { color: STATUS.overkill.fill },
+          lineStyle: { width: 1.5 },
           label: {
             show: true,
             position: 'bottom',
             formatter: '{c}%',
-            color: '#fbbf24',
-            fontSize: 9,
+            color: STATUS.overkill.text,
+            fontSize: 11,
             fontWeight: 700,
           },
           data: overkillRates,
@@ -637,9 +490,9 @@ export function OverkillTab({
           name: 'Overkill Share in NG (%)',
           type: 'line',
           yAxisIndex: 1,
-          smooth: true,
-          itemStyle: { color: '#f97316' },
-          lineStyle: { width: 2, type: 'dotted' },
+          smooth: false,
+          itemStyle: { color: STATUS.overkill.text },
+          lineStyle: { width: 1.5, type: 'dotted' },
           data: overkillShares,
         },
       ],
@@ -667,8 +520,6 @@ export function OverkillTab({
         text: `Cross-Line Comparison: Real Defect & Overkill Detection (${periodLabel})`,
         subtext: 'Detected counts and rates across production lines',
         left: 'center',
-        textStyle: { color: '#e2e8f0', fontSize: 13, fontWeight: 600 },
-        subtextStyle: { color: '#94a3b8', fontSize: 11 },
       },
       tooltip: {
         trigger: 'axis',
@@ -681,16 +532,16 @@ export function OverkillTab({
           let tip = `<strong>Line: ${lineName}</strong> (${item?.machineCode || ''})<br/>`
           if (item) {
             tip += `Throughput: <b>${item.totalInspected.toLocaleString()}</b> units<br/>`
-            tip += `OK Units: <b style="color:#22c55e">${item.okCount.toLocaleString()}</b><br/>`
-            tip += `Station NG Alarms: <b style="color:#ef4444">${item.stationNgCount.toLocaleString()}</b><br/>`
-            tip += `Station NG Rate: <b style="color:#ef4444">${(item.stationNgRate * 100).toFixed(2)}%</b><br/>`
-            tip += `Real Defect Detect: <b style="color:#a855f7">${item.realNgCount}</b> (${(item.realNgRate * 100).toFixed(2)}% of throughput)<br/>`
-            tip += `Overkill Detect: <b style="color:#f59e0b">${item.overkillCount}</b> (${(item.overkillRate * 100).toFixed(2)}% of throughput)<br/>`
+            tip += `OK Units: <b style="color:var(--status-ok-text)">${item.okCount.toLocaleString()}</b><br/>`
+            tip += `Station NG Alarms: <b style="color:var(--status-ng-text)">${item.stationNgCount.toLocaleString()}</b><br/>`
+            tip += `Station NG Rate: <b style="color:var(--status-ng-text)">${(item.stationNgRate * 100).toFixed(2)}%</b><br/>`
+            tip += `Real Defect Detect: <b style="color:var(--status-real-text)">${item.realNgCount}</b> (${(item.realNgRate * 100).toFixed(2)}% of throughput)<br/>`
+            tip += `Overkill Detect: <b style="color:var(--status-overkill-text)">${item.overkillCount}</b> (${(item.overkillRate * 100).toFixed(2)}% of throughput)<br/>`
             if (item.naCount > 0) {
               tip += `Unclassified (N/A): <b>${item.naCount}</b><br/>`
             }
             if (item.leakageCount > 0) {
-              tip += `Defect Escape (Leakage): <b style="color:#dc2626">${item.leakageCount}</b><br/>`
+              tip += `Defect Escape (Leakage): <b style="color:var(--status-leakage-text)">${item.leakageCount}</b><br/>`
             }
             tip += `Assessment: <i>${item.statusAssessment}</i>`
           }
@@ -699,7 +550,6 @@ export function OverkillTab({
       },
       legend: {
         bottom: 0,
-        textStyle: { color: '#cbd5e1', fontSize: 11 },
         data: [
           ...(showLineCounts ? ['OK Units', 'Real Defect Detect', 'Overkill Detect', 'Other / Unclassified NG'] : []),
           ...(showLineRates ? ['NG Rate (%)', 'Real Defect Rate (%)', 'Overkill Rate (%)'] : []),
@@ -709,22 +559,16 @@ export function OverkillTab({
       xAxis: {
         type: 'category',
         data: lines,
-        axisLabel: { color: '#e2e8f0', fontSize: 11, fontWeight: 600 },
-        axisLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } },
       },
       yAxis: [
         {
           type: 'value',
           name: 'Throughput (Units)',
-          nameTextStyle: { color: '#94a3b8' },
-          axisLabel: { color: '#94a3b8' },
-          splitLine: { lineStyle: { color: 'rgba(255,255,255,0.05)' } },
         },
         {
           type: 'value',
           name: 'Rate (%)',
-          nameTextStyle: { color: '#94a3b8' },
-          axisLabel: { color: '#94a3b8', formatter: '{value}%' },
+          axisLabel: { formatter: '{value}%' },
           splitLine: { show: false },
         },
       ],
@@ -734,7 +578,7 @@ export function OverkillTab({
           type: 'bar',
           stack: 'Throughput',
           barMaxWidth: 42,
-          itemStyle: { color: '#22c55e', borderRadius: [0, 0, 0, 0] },
+          itemStyle: { color: STATUS.ok.fill },
           label: {
             show: true,
             position: 'inside',
@@ -747,7 +591,7 @@ export function OverkillTab({
               return `${pct}%\n(${val >= 1000 ? (val / 1000).toFixed(1) + 'k' : val})`
             },
             color: '#ffffff',
-            fontSize: 10,
+            fontSize: 11,
             fontWeight: 700,
             lineHeight: 12,
           },
@@ -758,7 +602,7 @@ export function OverkillTab({
           type: 'bar',
           stack: 'Throughput',
           barMaxWidth: 42,
-          itemStyle: { color: '#8b5cf6' },
+          itemStyle: { color: STATUS.real.fill },
           label: {
             show: true,
             position: 'inside',
@@ -771,7 +615,7 @@ export function OverkillTab({
               return `${pct}%\n(${val})`
             },
             color: '#ffffff',
-            fontSize: 10,
+            fontSize: 11,
             fontWeight: 700,
             lineHeight: 12,
           },
@@ -782,13 +626,13 @@ export function OverkillTab({
           type: 'bar',
           stack: 'Throughput',
           barMaxWidth: 42,
-          itemStyle: { color: '#f59e0b' },
+          itemStyle: { color: STATUS.overkill.fill },
           label: {
             show: true,
             position: 'inside',
             formatter: (p: any) => Number(p.value) > 0 ? String(p.value) : '',
             color: '#ffffff',
-            fontSize: 10,
+            fontSize: 11,
             fontWeight: 700,
           },
           data: overkillCounts,
@@ -798,13 +642,13 @@ export function OverkillTab({
           type: 'bar',
           stack: 'Throughput',
           barMaxWidth: 42,
-          itemStyle: { color: '#ef4444', borderRadius: [4, 4, 0, 0] },
+          itemStyle: { color: STATUS.ng.fill },
           label: {
             show: true,
             position: 'inside',
             formatter: (p: any) => Number(p.value) > 0 ? String(p.value) : '',
             color: '#ffffff',
-            fontSize: 10,
+            fontSize: 11,
             fontWeight: 700,
           },
           data: otherNgCounts,
@@ -813,21 +657,21 @@ export function OverkillTab({
           name: 'NG Rate (%)',
           type: 'line',
           yAxisIndex: 1,
-          smooth: true,
-          itemStyle: { color: '#f87171' },
-          lineStyle: { width: 3 },
+          smooth: false,
+          itemStyle: { color: STATUS.ng.fill },
+          lineStyle: { width: 1.5 },
           label: {
             show: true,
             position: 'top',
             formatter: '{c}%',
-            color: '#f87171',
-            fontSize: 10,
+            color: STATUS.ng.fill,
+            fontSize: 11,
             fontWeight: 700,
-            backgroundColor: 'rgba(15, 23, 42, 0.75)',
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
             padding: [2, 4],
             borderRadius: 3,
             borderWidth: 1,
-            borderColor: 'rgba(248, 113, 113, 0.4)',
+            borderColor: 'rgba(192, 57, 43, 0.35)',
           },
           data: ngRates,
         },
@@ -835,17 +679,17 @@ export function OverkillTab({
           name: 'Real Defect Rate (%)',
           type: 'line',
           yAxisIndex: 1,
-          smooth: true,
-          itemStyle: { color: '#a855f7' },
-          lineStyle: { width: 2 },
+          smooth: false,
+          itemStyle: { color: STATUS.real.fill },
+          lineStyle: { width: 1.5 },
           label: {
             show: true,
             position: 'bottom',
             formatter: '{c}%',
-            color: '#c084fc',
-            fontSize: 9,
+            color: STATUS.real.fill,
+            fontSize: 11,
             fontWeight: 600,
-            backgroundColor: 'rgba(15, 23, 42, 0.75)',
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
             padding: [1, 3],
             borderRadius: 3,
           },
@@ -855,21 +699,21 @@ export function OverkillTab({
           name: 'Overkill Rate (%)',
           type: 'line',
           yAxisIndex: 1,
-          smooth: true,
-          itemStyle: { color: '#f59e0b' },
-          lineStyle: { width: 2, type: 'dashed' },
+          smooth: false,
+          itemStyle: { color: STATUS.overkill.fill },
+          lineStyle: { width: 1.5, type: 'dashed' },
           label: {
             show: true,
             position: 'top',
             formatter: '{c}%',
-            color: '#fbbf24',
-            fontSize: 9,
+            color: STATUS.overkill.text,
+            fontSize: 11,
             fontWeight: 700,
-            backgroundColor: 'rgba(15, 23, 42, 0.75)',
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
             padding: [2, 4],
             borderRadius: 3,
             borderWidth: 1,
-            borderColor: 'rgba(245, 158, 11, 0.4)',
+            borderColor: 'rgba(200, 134, 43, 0.45)',
           },
           data: overkillRates,
         },
@@ -923,12 +767,12 @@ export function OverkillTab({
             <p className="eyebrow">Classifier-Driven Anomaly Verification</p>
             <h2>Anomaly Verification: Real NG vs Overkill & Leakage</h2>
             {detectedMachine && (
-              <span className="tag-badge" style={{ display: 'inline-flex', marginTop: 6, background: '#eff6ff', color: '#1d4ed8' }}>
+              <span className="tag-badge" style={{ display: 'inline-flex', marginTop: 6, background: 'var(--status-info-bg)', color: 'var(--blue-700)' }}>
                 <Icon name="operations" className="icon inline-icon" />Auto machine: {detectedMachine}{machineCode === detectedMachine ? ' (Active)' : ''}
               </span>
             )}
           </div>
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          <div className="gap-md" style={{ display: 'flex', flexWrap: 'wrap' }}>
             <button
               type="button"
               className="secondary"
@@ -939,8 +783,8 @@ export function OverkillTab({
             {onNavigateTab && (
               <button
                 type="button"
-                className="secondary"
-                style={{ background: 'rgba(59, 130, 246, 0.15)', borderColor: '#3b82f6', color: '#93c5fd', fontWeight: 600 }}
+                className="secondary text-info font-semibold"
+                style={{ background: 'var(--status-info-bg)', borderColor: 'var(--status-info-border)' }}
                 onClick={() => onNavigateTab('settings', 'classifier-rules')}
                 title="Configure and test classifier rules (Import JSON, test script logic)"
               >
@@ -961,7 +805,7 @@ export function OverkillTab({
           }}
         >
           <Field label="Machine">
-            <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+            <div className="hstack" style={{ gap: '0.4rem' }}>
               <select
                 value={machineCode}
                 onChange={(event) => {
@@ -972,7 +816,7 @@ export function OverkillTab({
                 <option value="All">All machines</option>
                 {machines.map((machine) => (
                   <option key={machine} value={machine}>
-                    {machine} {machine === detectedMachine ? '★ (Auto)' : ''}
+                    {machine} {machine === detectedMachine ? '(auto-detected)' : ''}
                   </option>
                 ))}
               </select>
@@ -1026,15 +870,15 @@ export function OverkillTab({
 
           {/* Time Window (Day / Week / Month) & Step Navigator */}
           <Field label="Time Window">
-            <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <div className="hstack gap-sm flex-wrap">
               <div
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
-                  background: '#f1f5f9',
+                  background: 'var(--slate-100)',
                   padding: '2px',
                   borderRadius: '7px',
-                  border: '1px solid #cbd5e1',
+                  border: '1px solid var(--slate-300)',
                   gap: '2px',
                 }}
               >
@@ -1042,20 +886,20 @@ export function OverkillTab({
                   const isActive = period === p
                   return (
                     <button
+                      className="text-xs"
                       key={p}
                       type="button"
                       style={{
                         padding: '3px 9px',
-                        fontSize: '12px',
                         fontWeight: isActive ? 700 : 500,
                         height: '24px',
                         lineHeight: '18px',
                         borderRadius: '5px',
                         textTransform: 'capitalize',
                         background: isActive ? '#ffffff' : 'transparent',
-                        color: isActive ? '#1d4ed8' : '#475569',
+                        color: isActive ? 'var(--blue-700)' : 'var(--slate-600)',
                         boxShadow: isActive ? '0 1px 2px rgba(0,0,0,0.08)' : 'none',
-                        border: isActive ? '1px solid #bfdbfe' : '1px solid transparent',
+                        border: isActive ? '1px solid var(--status-info-border)' : '1px solid transparent',
                         cursor: 'pointer',
                         transition: 'all 0.15s ease',
                       }}
@@ -1071,11 +915,11 @@ export function OverkillTab({
               </div>
 
               {period !== 'all' && (
-                <div style={{ display: 'flex', gap: '3px', alignItems: 'center' }}>
+                <div className="hstack" style={{ gap: '3px' }}>
                   <button
                     type="button"
-                    className="ghost-button"
-                    style={{ padding: '2px 8px', fontSize: '12px', height: '26px' }}
+                    className="ghost-button text-xs"
+                    style={{ padding: '2px 8px', height: '26px' }}
                     onClick={() => setPeriodOffset((prev) => prev - 1)}
                     title="Previous Period"
                   >
@@ -1083,8 +927,8 @@ export function OverkillTab({
                   </button>
                   <button
                     type="button"
-                    className="ghost-button"
-                    style={{ padding: '2px 8px', fontSize: '12px', height: '26px' }}
+                    className="ghost-button text-xs"
+                    style={{ padding: '2px 8px', height: '26px' }}
                     onClick={() => setPeriodOffset((prev) => prev + 1)}
                     disabled={periodOffset >= 0}
                     title="Next Period"
@@ -1094,8 +938,8 @@ export function OverkillTab({
                   {periodOffset !== 0 && (
                     <button
                       type="button"
-                      className="ghost-button"
-                      style={{ padding: '2px 7px', fontSize: '12px', height: '26px', color: '#2563eb', fontWeight: 600 }}
+                      className="ghost-button text-xs font-semibold"
+                      style={{ padding: '2px 7px', height: '26px', color: 'var(--blue-600)' }}
                       onClick={() => setPeriodOffset(0)}
                       title="Reset to current period"
                     >
@@ -1112,14 +956,14 @@ export function OverkillTab({
           </button>
         </form>
         {period !== 'all' && (
-          <div style={{ padding: '4px 8px', fontSize: '12px', color: '#2563eb', display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <div className="hstack text-xs gap-sm" style={{ padding: '4px 8px', color: 'var(--blue-600)' }}>
             <span><Icon name="clock" className="icon inline-icon" /><strong>Time Window:</strong> {periodLabel}</span>
           </div>
         )}
       </section>
 
       {/* KPI Metrics Grid */}
-      <section className="metrics-grid" style={{ gridTemplateColumns: 'repeat(5, minmax(150px, 1fr))', gap: 10 }}>
+      <section className="metrics-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(150px, 100%), 1fr))', gap: 10 }}>
         <MetricCard
           label="Total Throughput"
           value={trendData?.summary.totalInspected.toLocaleString() ?? 0}
@@ -1164,23 +1008,23 @@ export function OverkillTab({
           const pendingPct = Math.max(0, 100 - realPct - overkillPct)
           return (
             <>
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', alignItems: 'center', marginBottom: 8 }}>
+              <div className="hstack justify-between gap-lg flex-wrap" style={{ marginBottom: 8 }}>
                 <div>
                   <strong>OP Review Coverage · Real Defect vs Overkill</strong>
                   <div className="text-xs text-muted">{reviewed.toLocaleString()} / {stationNg.toLocaleString()} Station NG confirmed by OP</div>
                 </div>
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                  <span className="tag-badge" style={{ background: '#ede9fe', color: '#6d28d9' }}>Real Defect: {opReal}</span>
-                  <span className="tag-badge" style={{ background: '#fef3c7', color: '#b45309' }}>Overkill: {opOverkill}</span>
-                  <span className="tag-badge" style={{ background: '#e2e8f0', color: '#475569' }}>Pending: {pending}</span>
+                <div className="gap-md" style={{ display: 'flex', flexWrap: 'wrap' }}>
+                  <span className="tag-badge text-real" style={{ background: 'var(--status-real-bg)' }}>Real Defect: {opReal}</span>
+                  <span className="tag-badge text-overkill" style={{ background: 'var(--status-overkill-bg)' }}>Overkill: {opOverkill}</span>
+                  <span className="tag-badge text-soft" style={{ background: 'var(--slate-200)' }}>Pending: {pending}</span>
                 </div>
               </div>
-              <div style={{ display: 'flex', width: '100%', height: 18, borderRadius: 999, overflow: 'hidden', background: '#e2e8f0' }}>
-                {realPct > 0 && <div title={`OP Real Defect ${realPct.toFixed(1)}%`} style={{ width: `${realPct}%`, background: '#8b5cf6', transition: 'width .25s ease' }} />}
-                {overkillPct > 0 && <div title={`OP Overkill ${overkillPct.toFixed(1)}%`} style={{ width: `${overkillPct}%`, background: '#f59e0b', transition: 'width .25s ease' }} />}
-                {pendingPct > 0 && <div title={`Pending ${pendingPct.toFixed(1)}%`} style={{ width: `${pendingPct}%`, background: '#cbd5e1', transition: 'width .25s ease' }} />}
+              <div className="w-full" style={{ display: 'flex', height: 18, borderRadius: 999, overflow: 'hidden', background: 'var(--slate-200)' }}>
+                {realPct > 0 && <div title={`OP Real Defect ${realPct.toFixed(1)}%`} style={{ width: `${realPct}%`, background: 'var(--status-real)' }} />}
+                {overkillPct > 0 && <div title={`OP Overkill ${overkillPct.toFixed(1)}%`} style={{ width: `${overkillPct}%`, background: 'var(--status-overkill)' }} />}
+                {pendingPct > 0 && <div title={`Pending ${pendingPct.toFixed(1)}%`} style={{ width: `${pendingPct}%`, background: 'var(--slate-300)' }} />}
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#64748b', marginTop: 5 }}>
+              <div className="text-xs text-muted" style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5 }}>
                 <span>Reviewed coverage: {stationNg > 0 ? ((reviewed / stationNg) * 100).toFixed(1) : '0.0'}%</span>
                 <span>Real {realPct.toFixed(1)}% · Overkill {overkillPct.toFixed(1)}% · Pending {pendingPct.toFixed(1)}%</span>
               </div>
@@ -1208,7 +1052,7 @@ export function OverkillTab({
           >
             <span><Icon name="analysis" className="icon inline-icon" />Line Comparison</span>
             {trendData?.lineComparison && trendData.lineComparison.length > 0 ? (
-              <span className="tag-badge" style={{ background: '#3b82f6', color: '#fff', marginLeft: '6px', fontSize: '12px' }}>
+              <span className="tag-badge text-xs" style={{ background: 'var(--status-info)', color: '#fff', marginLeft: '6px' }}>
                 {trendData.lineComparison.length} lines
               </span>
             ) : null}
@@ -1229,7 +1073,7 @@ export function OverkillTab({
           >
             <span><Icon name="image" className="icon inline-icon" />Image View</span>
             {trendData?.summary.stationNgCount ? (
-              <span className="tag-badge" style={{ background: '#ef4444', color: '#fff', marginLeft: '6px', fontSize: '12px' }}>
+              <span className="tag-badge text-xs" style={{ background: 'var(--status-ng)', color: '#fff', marginLeft: '6px' }}>
                 {trendData.summary.stationNgCount.toLocaleString()} NG
               </span>
             ) : null}
@@ -1242,7 +1086,7 @@ export function OverkillTab({
           >
             <span><Icon name="overkill" className="icon inline-icon" />Defect Escape Investigation (Leakage)</span>
             {trendData && trendData.summary.leakageCount > 0 ? (
-              <span className="tag-badge" style={{ background: '#ef4444', color: '#fff', marginLeft: '6px', fontSize: '12px' }}>
+              <span className="tag-badge text-xs" style={{ background: 'var(--status-ng)', color: '#fff', marginLeft: '6px' }}>
                 {trendData.summary.leakageCount}
               </span>
             ) : null}
@@ -1302,24 +1146,24 @@ export function OverkillTab({
             <article className="panel risk-panel">
               <p className="eyebrow">Overall Separation Breakdown</p>
               <h3>Machine Efficiency vs Classifier Rules</h3>
-              <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div className="vstack mt-3 gap-md">
                 <div className="risk-row">
                   <span>Station NG Alarms</span>
                   <strong>{trendData?.summary.stationNgCount ?? 0} units</strong>
                 </div>
                 <div className="risk-row">
-                  <span style={{ color: '#a855f7', fontWeight: 600 }}>Confirmed Real NG</span>
-                  <strong style={{ color: '#a855f7' }}>{trendData?.summary.realNgCount ?? 0} units</strong>
+                  <span className="text-real font-semibold">Confirmed Real NG</span>
+                  <strong className="text-real">{trendData?.summary.realNgCount ?? 0} units</strong>
                 </div>
                 <div className="risk-row">
-                  <span style={{ color: '#f59e0b', fontWeight: 600 }}>Overkill (False Alarm)</span>
-                  <strong style={{ color: '#f59e0b' }}>
+                  <span className="text-overkill font-semibold">Overkill (False Alarm)</span>
+                  <strong className="text-overkill">
                     {trendData?.summary.overkillCount ?? 0} ({formatPercent(trendData?.summary.overkillShare ?? 0)})
                   </strong>
                 </div>
                 <div className="risk-row">
-                  <span style={{ color: '#ef4444', fontWeight: 600 }}>Defect Escapes (Leakage)</span>
-                  <strong style={{ color: '#ef4444' }}>{trendData?.summary.leakageCount ?? 0} units</strong>
+                  <span className="text-leakage font-semibold">Defect Escapes (Leakage)</span>
+                  <strong className="text-leakage">{trendData?.summary.leakageCount ?? 0} units</strong>
                 </div>
               </div>
             </article>
@@ -1351,17 +1195,16 @@ export function OverkillTab({
                 <tbody>
                   {(trendData?.familyBreakdown ?? []).map((fam) => (
                     <tr key={fam.defectFamily}>
-                      <td className="font-bold" style={{ color: '#60a5fa' }}>{fam.defectFamily}</td>
+                      <td className="font-bold text-info">{fam.defectFamily}</td>
                       <td>{fam.totalDefects.toLocaleString()}</td>
-                      <td style={{ color: '#a855f7', fontWeight: 600 }}>{fam.realNgCount.toLocaleString()}</td>
-                      <td style={{ color: '#f59e0b', fontWeight: 600 }}>{fam.overkillCount.toLocaleString()}</td>
+                      <td className="text-real font-semibold">{fam.realNgCount.toLocaleString()}</td>
+                      <td className="text-overkill font-semibold">{fam.overkillCount.toLocaleString()}</td>
                       <td>
                         <span
-                          className="tag-badge"
+                          className="tag-badge font-semibold"
                           style={{
-                            background: fam.overkillShare >= 0.5 ? 'rgba(245, 158, 11, 0.2)' : 'rgba(34, 197, 94, 0.15)',
-                            color: fam.overkillShare >= 0.5 ? '#f59e0b' : '#22c55e',
-                            fontWeight: 600,
+                            background: fam.overkillShare >= 0.5 ? 'var(--status-overkill-bg)' : 'var(--status-ok-bg)',
+                            color: fam.overkillShare >= 0.5 ? 'var(--status-overkill-text)' : 'var(--status-ok-text)',
                           }}
                         >
                           {formatPercent(fam.overkillShare)}
@@ -1413,15 +1256,14 @@ export function OverkillTab({
                       <td className="font-bold">{cls.defectName}</td>
                       <td><StatusPill value={cls.defectFamily} /></td>
                       <td>{cls.totalDefects.toLocaleString()}</td>
-                      <td style={{ color: '#a855f7' }}>{cls.realNgCount}</td>
-                      <td style={{ color: '#f59e0b', fontWeight: 600 }}>{cls.overkillCount}</td>
+                      <td className="text-real">{cls.realNgCount}</td>
+                      <td className="text-overkill font-semibold">{cls.overkillCount}</td>
                       <td>
                         <span
-                          className="tag-badge"
+                          className="tag-badge font-semibold"
                           style={{
-                            background: cls.overkillShare >= 0.5 ? 'rgba(239, 68, 68, 0.15)' : 'rgba(16, 185, 129, 0.15)',
-                            color: cls.overkillShare >= 0.5 ? '#ef4444' : '#10b981',
-                            fontWeight: 600,
+                            background: cls.overkillShare >= 0.5 ? 'var(--status-ng-bg)' : 'var(--status-ok-bg)',
+                            color: cls.overkillShare >= 0.5 ? 'var(--status-ng-text)' : 'var(--status-ok-text)',
                           }}
                         >
                           {formatPercent(cls.overkillShare)}
@@ -1452,9 +1294,8 @@ export function OverkillTab({
               </div>
               <button
                 type="button"
-                className="secondary compact"
+                className="secondary compact text-xs"
                 onClick={() => setActiveView('lines')}
-                style={{ fontSize: '12px' }}
               >
                 <Icon name="analysis" className="icon inline-icon" />View Full Line Comparison & Chart →
               </button>
@@ -1480,37 +1321,35 @@ export function OverkillTab({
                 <tbody>
                   {(trendData?.lineComparison ?? []).map((lineItem) => (
                     <tr key={lineItem.lineCode}>
-                      <td className="font-bold" style={{ color: '#60a5fa' }}>{lineItem.lineCode}</td>
+                      <td className="font-bold text-info">{lineItem.lineCode}</td>
                       <td className="font-mono text-xs">{lineItem.machineCode}</td>
                       <td><strong>{lineItem.totalInspected.toLocaleString()}</strong></td>
-                      <td style={{ color: '#22c55e' }}>{lineItem.okCount.toLocaleString()}</td>
-                      <td style={{ color: '#ef4444', fontWeight: 600 }}>{lineItem.stationNgCount.toLocaleString()}</td>
+                      <td className="text-ok">{lineItem.okCount.toLocaleString()}</td>
+                      <td className="text-ng font-semibold">{lineItem.stationNgCount.toLocaleString()}</td>
                       <td>
                         <span
-                          className="tag-badge"
+                          className="tag-badge font-bold"
                           style={{
-                            background: lineItem.stationNgRate >= 0.1 ? 'rgba(239, 68, 68, 0.2)' : 'rgba(34, 197, 94, 0.15)',
-                            color: lineItem.stationNgRate >= 0.1 ? '#ef4444' : '#22c55e',
-                            fontWeight: 700,
+                            background: lineItem.stationNgRate >= 0.1 ? 'var(--status-ng-bg)' : 'var(--status-ok-bg)',
+                            color: lineItem.stationNgRate >= 0.1 ? 'var(--status-ng-text)' : 'var(--status-ok-text)',
                           }}
                         >
                           {formatPercent(lineItem.stationNgRate)}
                         </span>
                       </td>
-                      <td style={{ color: '#a855f7', fontWeight: 700 }}>{lineItem.realNgCount.toLocaleString()}</td>
+                      <td className="text-real font-bold">{lineItem.realNgCount.toLocaleString()}</td>
                       <td>
-                        <span className="tag-badge" style={{ background: 'rgba(139, 92, 246, 0.15)', color: '#7c3aed', fontWeight: 700 }}>
+                        <span className="tag-badge text-real font-bold" style={{ background: 'var(--status-real-bg)' }}>
                           {formatPercent(lineItem.realNgRate)}
                         </span>
                       </td>
-                      <td style={{ color: '#f59e0b', fontWeight: 700 }}>{lineItem.overkillCount.toLocaleString()}</td>
+                      <td className="text-overkill font-bold">{lineItem.overkillCount.toLocaleString()}</td>
                       <td>
                         <span
-                          className="tag-badge"
+                          className="tag-badge font-semibold"
                           style={{
-                            background: lineItem.overkillRate >= 0.05 ? 'rgba(245, 158, 11, 0.2)' : 'rgba(148, 163, 184, 0.15)',
-                            color: lineItem.overkillRate >= 0.05 ? '#f59e0b' : '#cbd5e1',
-                            fontWeight: 600,
+                            background: lineItem.overkillRate >= 0.05 ? 'var(--status-overkill-bg)' : 'var(--status-na-bg)',
+                            color: lineItem.overkillRate >= 0.05 ? 'var(--status-overkill-text)' : 'var(--slate-600)',
                           }}
                         >
                           {formatPercent(lineItem.overkillRate)}
@@ -1518,26 +1357,8 @@ export function OverkillTab({
                       </td>
                       <td>
                         <span
-                          className="tag-badge"
-                          style={{
-                            background:
-                              lineItem.riskLevel === 'CRITICAL'
-                                ? '#ef4444'
-                                : lineItem.riskLevel === 'HIGH'
-                                ? 'rgba(239, 68, 68, 0.2)'
-                                : lineItem.riskLevel === 'WARNING'
-                                ? 'rgba(245, 158, 11, 0.2)'
-                                : 'rgba(34, 197, 94, 0.2)',
-                            color:
-                              lineItem.riskLevel === 'CRITICAL'
-                                ? '#fff'
-                                : lineItem.riskLevel === 'HIGH'
-                                ? '#ef4444'
-                                : lineItem.riskLevel === 'WARNING'
-                                ? '#f59e0b'
-                                : '#22c55e',
-                            fontWeight: 700,
-                          }}
+                          className="tag-badge font-bold"
+                          style={{ ...riskBadgeStyle(lineItem.riskLevel) }}
                         >
                           {lineItem.riskLevel}
                         </span>
@@ -1591,23 +1412,19 @@ export function OverkillTab({
           {/* Cross-Line Chart */}
           <article className="panel">
             <div
+              className="hstack justify-between gap-lg flex-wrap"
               style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                gap: 12,
-                flexWrap: 'wrap',
                 marginBottom: 8,
                 paddingBottom: 8,
                 borderBottom: '1px solid var(--border)',
               }}
             >
               <div>
-                <strong style={{ fontSize: 13 }}>Chart Display Controls</strong>
+                <strong className="text-sm">Chart Display Controls</strong>
                 <div className="text-xs text-muted">Adjust chart size and show or hide count/rate series.</div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-                <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
+              <div className="hstack gap-lg flex-wrap">
+                <label className="gap-sm text-xs font-semibold" style={{ display: 'inline-flex', alignItems: 'center', cursor: 'pointer' }}>
                   <input
                     type="checkbox"
                     checked={showLineCounts}
@@ -1615,7 +1432,7 @@ export function OverkillTab({
                   />
                   Count / Detect
                 </label>
-                <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
+                <label className="gap-sm text-xs font-semibold" style={{ display: 'inline-flex', alignItems: 'center', cursor: 'pointer' }}>
                   <input
                     type="checkbox"
                     checked={showLineRates}
@@ -1623,7 +1440,7 @@ export function OverkillTab({
                   />
                   Rate (%)
                 </label>
-                <label style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 12, fontWeight: 600 }}>
+                <label className="gap-md text-xs font-semibold" style={{ display: 'inline-flex', alignItems: 'center' }}>
                   Chart Size
                   <input
                     type="range"
@@ -1673,7 +1490,7 @@ export function OverkillTab({
               <div>
                 <p className="eyebrow">Production Line Detailed Comparison</p>
                 <h3>Throughput, Station NG Alarms, Real NG vs Overkill Benchmark ({periodLabel})</h3>
-                <p className="text-xs text-muted" style={{ marginTop: '4px' }}>
+                <p className="text-xs text-muted mt-1">
                   Metrics aggregated from all units running through (OK + NG IDs) during inspection window: <strong>{periodLabel}</strong>.
                 </p>
               </div>
@@ -1704,37 +1521,35 @@ export function OverkillTab({
                 <tbody>
                   {(trendData?.lineComparison ?? []).map((l) => (
                     <tr key={l.lineCode}>
-                      <td className="font-bold" style={{ color: '#60a5fa' }}>{l.lineCode}</td>
+                      <td className="font-bold text-info">{l.lineCode}</td>
                       <td className="font-mono text-xs">{l.machineCode}</td>
                       <td><strong>{l.totalInspected.toLocaleString()}</strong></td>
-                      <td style={{ color: '#22c55e' }}>{l.okCount.toLocaleString()}</td>
-                      <td style={{ color: '#ef4444', fontWeight: 600 }}>{l.stationNgCount.toLocaleString()}</td>
+                      <td className="text-ok">{l.okCount.toLocaleString()}</td>
+                      <td className="text-ng font-semibold">{l.stationNgCount.toLocaleString()}</td>
                       <td>
                         <span
-                          className="tag-badge"
+                          className="tag-badge font-bold"
                           style={{
-                            background: l.stationNgRate >= 0.1 ? 'rgba(239, 68, 68, 0.2)' : 'rgba(34, 197, 94, 0.15)',
-                            color: l.stationNgRate >= 0.1 ? '#ef4444' : '#22c55e',
-                            fontWeight: 700,
+                            background: l.stationNgRate >= 0.1 ? 'var(--status-ng-bg)' : 'var(--status-ok-bg)',
+                            color: l.stationNgRate >= 0.1 ? 'var(--status-ng-text)' : 'var(--status-ok-text)',
                           }}
                         >
                           {formatPercent(l.stationNgRate)}
                         </span>
                       </td>
-                      <td style={{ color: '#a855f7', fontWeight: 700 }}>{l.realNgCount.toLocaleString()}</td>
+                      <td className="text-real font-bold">{l.realNgCount.toLocaleString()}</td>
                       <td>
-                        <span className="tag-badge" style={{ background: 'rgba(139, 92, 246, 0.15)', color: '#7c3aed', fontWeight: 700 }}>
+                        <span className="tag-badge text-real font-bold" style={{ background: 'var(--status-real-bg)' }}>
                           {formatPercent(l.realNgRate)}
                         </span>
                       </td>
-                      <td style={{ color: '#f59e0b', fontWeight: 700 }}>{l.overkillCount.toLocaleString()}</td>
+                      <td className="text-overkill font-bold">{l.overkillCount.toLocaleString()}</td>
                       <td>
                         <span
-                          className="tag-badge"
+                          className="tag-badge font-bold"
                           style={{
-                            background: l.overkillRate >= 0.05 ? 'rgba(245, 158, 11, 0.2)' : 'rgba(148, 163, 184, 0.15)',
-                            color: l.overkillRate >= 0.05 ? '#b45309' : '#64748b',
-                            fontWeight: 700,
+                            background: l.overkillRate >= 0.05 ? 'var(--status-overkill-bg)' : 'var(--status-na-bg)',
+                            color: l.overkillRate >= 0.05 ? 'var(--status-overkill-text)' : 'var(--slate-500)',
                           }}
                         >
                           {formatPercent(l.overkillRate)}
@@ -1744,7 +1559,7 @@ export function OverkillTab({
                       <td className="font-mono text-xs">{formatPercent(l.overkillShare)}</td>
                       <td>
                         {l.leakageCount > 0 ? (
-                          <span className="tag-badge" style={{ background: '#ef4444', color: '#fff', fontWeight: 700 }}>
+                          <span className="tag-badge font-bold" style={{ background: 'var(--status-ng)', color: '#fff' }}>
                             {l.leakageCount}
                           </span>
                         ) : (
@@ -1753,26 +1568,8 @@ export function OverkillTab({
                       </td>
                       <td>
                         <span
-                          className="tag-badge"
-                          style={{
-                            background:
-                              l.riskLevel === 'CRITICAL'
-                                ? '#ef4444'
-                                : l.riskLevel === 'HIGH'
-                                ? 'rgba(239, 68, 68, 0.2)'
-                                : l.riskLevel === 'WARNING'
-                                ? 'rgba(245, 158, 11, 0.2)'
-                                : 'rgba(34, 197, 94, 0.2)',
-                            color:
-                              l.riskLevel === 'CRITICAL'
-                                ? '#fff'
-                                : l.riskLevel === 'HIGH'
-                                ? '#ef4444'
-                                : l.riskLevel === 'WARNING'
-                                ? '#f59e0b'
-                                : '#22c55e',
-                            fontWeight: 700,
-                          }}
+                          className="tag-badge font-bold"
+                          style={{ ...riskBadgeStyle(l.riskLevel) }}
                         >
                           {l.riskLevel}
                         </span>
@@ -1781,8 +1578,8 @@ export function OverkillTab({
                       <td>
                         <button
                           type="button"
-                          className="ghost-button compact"
-                          style={{ fontSize: '12px', whiteSpace: 'nowrap' }}
+                          className="ghost-button compact text-xs"
+                          style={{ whiteSpace: 'nowrap' }}
                           onClick={() => {
                             setLineCode(l.lineCode)
                             setActiveView('trend')
@@ -1817,14 +1614,14 @@ export function OverkillTab({
               <div>
                 <p className="eyebrow">Visual Evidence Verification</p>
                 <h2>Image View</h2>
-                <p className="text-xs text-muted" style={{ marginTop: '4px' }}>
+                <p className="text-xs text-muted mt-1">
                   Gallery is paginated. The number on this page is not the full Station NG total.
                   {thumbnailTotalCount > 0
                     ? ` Showing ${thumbnailItems.length.toLocaleString()} of ${thumbnailTotalCount.toLocaleString()} matching records (page ${thumbnailPage}/${thumbnailTotalPages}).`
                     : ' Open a category to load matching records.'}
                 </p>
               </div>
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              <div className="gap-md" style={{ display: 'flex', flexWrap: 'wrap' }}>
                 <button type="button" className="secondary" onClick={() => setGalleryScopeOpen(true)}>
                   <Icon name="target" className="icon inline-icon" />Scope: Model / Line / Defect
                 </button>
@@ -1838,12 +1635,12 @@ export function OverkillTab({
             </div>
 
             {/* Filter Pills */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', marginTop: '12px' }}>
+            <div className="hstack flex-wrap gap-md mt-3">
               <button
                 type="button"
                 className={`ghost-button compact ${thumbnailCategory === 'All' ? 'active' : ''}`}
                 style={{
-                  background: thumbnailCategory === 'All' ? 'rgba(255,255,255,0.1)' : undefined,
+                  background: thumbnailCategory === 'All' ? 'var(--slate-100)' : undefined,
                   fontWeight: thumbnailCategory === 'All' ? 600 : 400,
                 }}
                 onClick={() => {
@@ -1857,8 +1654,8 @@ export function OverkillTab({
                 type="button"
                 className={`ghost-button compact ${thumbnailCategory === 'StationNG' ? 'active' : ''}`}
                 style={{
-                  background: thumbnailCategory === 'StationNG' ? 'rgba(239, 68, 68, 0.2)' : undefined,
-                  color: '#ef4444',
+                  background: thumbnailCategory === 'StationNG' ? 'var(--status-ng-bg)' : undefined,
+                  color: 'var(--status-ng-text)',
                   fontWeight: thumbnailCategory === 'StationNG' ? 600 : 400,
                 }}
                 onClick={() => {
@@ -1872,8 +1669,8 @@ export function OverkillTab({
                 type="button"
                 className={`ghost-button compact ${thumbnailCategory === 'RealNG' ? 'active' : ''}`}
                 style={{
-                  background: thumbnailCategory === 'RealNG' ? 'rgba(168, 85, 247, 0.2)' : undefined,
-                  color: '#a855f7',
+                  background: thumbnailCategory === 'RealNG' ? 'var(--status-real-bg)' : undefined,
+                  color: 'var(--status-real-text)',
                   fontWeight: thumbnailCategory === 'RealNG' ? 600 : 400,
                 }}
                 onClick={() => {
@@ -1881,14 +1678,14 @@ export function OverkillTab({
                   setThumbnailPage(1)
                 }}
               >
-                ✓ Real NG - Confirmed by Script ({categoryBadgeCounts.realNg})
+                Real NG - Confirmed by Script ({categoryBadgeCounts.realNg})
               </button>
               <button
                 type="button"
                 className={`ghost-button compact ${thumbnailCategory === 'NA' ? 'active' : ''}`}
                 style={{
-                  background: thumbnailCategory === 'NA' ? 'rgba(245, 158, 11, 0.2)' : undefined,
-                  color: '#f59e0b',
+                  background: thumbnailCategory === 'NA' ? 'var(--status-overkill-bg)' : undefined,
+                  color: 'var(--status-overkill-text)',
                   fontWeight: thumbnailCategory === 'NA' ? 600 : 400,
                 }}
                 onClick={() => {
@@ -1902,8 +1699,8 @@ export function OverkillTab({
                 type="button"
                 className={`ghost-button compact ${thumbnailCategory === 'Leakage' ? 'active' : ''}`}
                 style={{
-                  background: thumbnailCategory === 'Leakage' ? 'rgba(239, 68, 68, 0.2)' : undefined,
-                  color: '#ef4444',
+                  background: thumbnailCategory === 'Leakage' ? 'var(--status-leakage-bg)' : undefined,
+                  color: 'var(--status-ng-text)',
                   fontWeight: thumbnailCategory === 'Leakage' ? 600 : 400,
                 }}
                 onClick={() => {
@@ -1917,8 +1714,8 @@ export function OverkillTab({
                 type="button"
                 className={`ghost-button compact ${thumbnailCategory === 'ConsistentOK' ? 'active' : ''}`}
                 style={{
-                  background: thumbnailCategory === 'ConsistentOK' ? 'rgba(34, 197, 94, 0.2)' : undefined,
-                  color: '#22c55e',
+                  background: thumbnailCategory === 'ConsistentOK' ? 'var(--status-ok-bg)' : undefined,
+                  color: 'var(--status-ok-text)',
                   fontWeight: thumbnailCategory === 'ConsistentOK' ? 600 : 400,
                 }}
                 onClick={() => {
@@ -1926,11 +1723,12 @@ export function OverkillTab({
                   setThumbnailPage(1)
                 }}
               >
-                ✓ Clean OK Units
+                Clean OK Units
               </button>
 
-              <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
+              <div className="gap-md" style={{ marginLeft: 'auto', display: 'flex' }}>
                 <input
+                  className="text-xs"
                   type="text"
                   placeholder="Search KeyId, defect, component..."
                   value={thumbnailSearch}
@@ -1942,7 +1740,7 @@ export function OverkillTab({
                       setThumbnailPage(1)
                     }
                   }}
-                  style={{ width: 220, fontSize: '12px', padding: '4px 10px' }}
+                  style={{ width: 220, padding: '4px 10px' }}
                 />
                 <button
                   type="button"
@@ -1972,403 +1770,29 @@ export function OverkillTab({
               <span>Adjust classification filters or synchronize inspection records from the database.</span>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+            <div className="vstack" style={{ gap: '18px' }}>
               {[...new Set(thumbnailItems.map((item) => `${item.modelCode || 'UNASSIGNED'}|${item.lineCode}|${item.defectFamily || item.defectType || 'Unclassified'}`))].map((groupKey) => {
                 const [groupModel, groupLine, groupCluster] = groupKey.split('|')
                 const groupItems = thumbnailItems.filter((item) => `${item.modelCode || 'UNASSIGNED'}|${item.lineCode}|${item.defectFamily || item.defectType || 'Unclassified'}` === groupKey)
                 return (
                   <section key={groupKey}>
-                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '8px' }}>
-                      <strong style={{ color: '#38bdf8' }}>{groupModel}</strong>
+                    <div className="hstack gap-md" style={{ marginBottom: '8px' }}>
+                      <strong className="text-info">{groupModel}</strong>
                       <span className="line-pill">{groupLine}</span>
                       <StatusPill value={groupCluster} />
                       <span className="text-xs text-muted">{groupItems.length} images</span>
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
-              {groupItems.map((item, idx) => {
-                const isNa = item.anomalyCategory.toLowerCase() === 'na' || item.anomalyCategory === 'N/A'
-                const isLeakage = item.anomalyCategory.toLowerCase() === 'leakage'
-                const isRealNg = item.anomalyCategory.toLowerCase() === 'realng'
-                const isOpReviewed = item.opReviewMark === 'Overkill' || item.opReviewMark === 'Real Defect'
-
-                const badgeBg = isRealNg
-                  ? 'rgba(168, 85, 247, 0.2)'
-                  : isLeakage
-                  ? 'rgba(239, 68, 68, 0.2)'
-                  : isNa
-                  ? 'rgba(245, 158, 11, 0.2)'
-                  : 'rgba(34, 197, 94, 0.2)'
-                const badgeColor = isRealNg
-                  ? '#a855f7'
-                  : isLeakage
-                  ? '#ef4444'
-                  : isNa
-                  ? '#f59e0b'
-                  : '#22c55e'
-                const badgeLabel = isRealNg
-                  ? (item.opReviewMark === 'Real Defect' ? 'REAL DEFECT (OP)' : 'REAL NG (SCRIPT)')
-                  : isLeakage
-                  ? 'LEAKAGE'
-                  : isNa
-                  ? 'N/A'
-                  : item.opReviewMark === 'Overkill'
-                  ? 'OVERKILL (OP)'
-                  : 'CLEAN OK'
-
-                const itemKey = `${item.keyId}_${item.defectId || ''}`
-                const originalVp = getItemOriginalVp(item)
-                const activeVp = cardVpMap[itemKey] || '0'
-                const activeImgSrc = cardVpImages[itemKey]?.[activeVp] ||
-                  (activeVp === '0'
-                    ? (item.thumbnailUrl || (item.defectId ? imageCrawlerApi.previewUrl(item.defectId, false, '0') : ''))
-                    : (item.defectId ? imageCrawlerApi.previewUrl(item.defectId, false, activeVp) : ''))
-                const isCardLoading = cardLoadingVp[itemKey] !== null && cardLoadingVp[itemKey] !== undefined
-
-                return (
-                  <article
-                    key={item.defectId ?? `${item.keyId}-${idx}`}
-                    className="panel"
-                    style={{
-                      padding: 0,
-                      overflow: 'hidden',
-                      border: `1px solid ${isRealNg || isLeakage || isNa ? badgeColor : 'rgba(255,255,255,0.08)'}`,
-                      display: 'flex',
-                      flexDirection: 'column',
-                    }}
-                  >
-                    {/* Thumbnail Image Container */}
-                    <div
-                      style={{
-                        position: 'relative',
-                        height: '160px',
-                        background: '#090d16',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: activeImgSrc ? 'pointer' : 'default',
-                      }}
-                      onClick={() => activeImgSrc && openZoomModal(item, activeVp)}
-                      title={activeImgSrc ? 'Click to enlarge image' : 'No image available'}
-                    >
-                      {isCardLoading ? (
-                        <div style={{ color: '#60a5fa', textAlign: 'center', fontSize: '12px' }}>
-                          <div><Icon name="clock" className="icon inline-icon" />Loading image...</div>
-                          <div style={{ fontSize: '12px', color: '#94a3b8' }}>VP{cardLoadingVp[itemKey]} from PC</div>
-                        </div>
-                      ) : activeImgSrc ? (
-                        <LazyImage
-                          src={activeImgSrc}
-                          alt={item.defectName ?? 'Defect'}
-                          style={{
-                            maxWidth: '100%',
-                            maxHeight: '100%',
-                            objectFit: 'contain',
-                          }}
-                        />
-                      ) : (
-                        <div style={{ color: '#475569', textAlign: 'center', fontSize: '12px' }}>
-                          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                            <circle cx="8.5" cy="8.5" r="1.5" />
-                            <polyline points="21 15 16 10 5 21" />
-                          </svg>
-                          <div style={{ marginTop: '4px' }}>No thumbnail image</div>
-                        </div>
-                      )}
-
-                      {/* Status Badge Overlay */}
-                      <span
-                        className="tag-badge"
-                        style={{
-                          position: 'absolute',
-                          top: '8px',
-                          left: '8px',
-                          background: badgeBg,
-                          color: badgeColor,
-                          fontWeight: 700,
-                          fontSize: '12px',
-                          padding: '3px 8px',
-                          border: `1px solid ${badgeColor}`,
-                          borderRadius: '4px',
-                          backdropFilter: 'blur(4px)',
-                        }}
-                      >
-                        {badgeLabel}
-                      </span>
-
-                      {isOpReviewed && (
-                        <span
-                          className="tag-badge"
-                          style={{
-                            position: 'absolute',
-                            top: '38px',
-                            left: '8px',
-                            background: item.opReviewMark === 'Overkill' ? 'rgba(245, 158, 11, 0.9)' : 'rgba(124, 58, 237, 0.9)',
-                            color: '#fff',
-                            border: '1px solid rgba(255,255,255,.45)',
-                            fontWeight: 700,
-                            fontSize: '12px',
-                          }}
-                        >
-                          OP: {item.opReviewMark}
-                        </span>
-                      )}
-
-                      {/* Real Defect Camera Angle Badge */}
-                      <span
-                        className="tag-badge"
-                        style={{
-                          position: 'absolute',
-                          top: '8px',
-                          right: '8px',
-                          background: 'rgba(124, 58, 237, 0.9)',
-                          color: '#fff',
-                          fontWeight: 700,
-                          fontSize: '12px',
-                          padding: '2px 7px',
-                          borderRadius: '4px',
-                          backdropFilter: 'blur(4px)',
-                          border: '1px solid rgba(196, 181, 253, 0.6)',
-                          boxShadow: '0 1px 3px rgba(0,0,0,0.4)',
-                        }}
-                        title={`Original VP from image_path: VP${originalVp}`}
-                      >
-                        Original VP: VP{originalVp}
-                      </span>
-
-                      {/* Station Judge vs Rule Verdict Overlay */}
-                      <div
-                        style={{
-                          position: 'absolute',
-                          bottom: '6px',
-                          right: '6px',
-                          display: 'flex',
-                          gap: '4px',
-                        }}
-                      >
-                        <span
-                          className="tag-badge"
-                          style={{
-                            background: item.stationJudge === 'NG' ? 'rgba(239, 68, 68, 0.85)' : 'rgba(34, 197, 94, 0.85)',
-                            color: '#fff',
-                            fontSize: '12px',
-                            fontWeight: 700,
-                          }}
-                        >
-                          Station: {item.stationJudge}
-                        </span>
-                        <span
-                          className="tag-badge"
-                          style={{
-                            background: item.ruleVerdict === 'TrueDefect' || item.ruleVerdict === 'RealNG' ? 'rgba(168, 85, 247, 0.85)' : 'rgba(245, 158, 11, 0.85)',
-                            color: '#fff',
-                            fontSize: '12px',
-                            fontWeight: 700,
-                          }}
-                        >
-                          Rule: {item.ruleVerdict === 'TrueDefect' || item.ruleVerdict === 'RealNG' ? 'NG' : 'OK'}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Card Content Body */}
-                    <div style={{ padding: '12px', flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                        <div>
-                          <strong className="mono-code" style={{ fontSize: '13px', color: '#e2e8f0' }}>
-                            {item.keyId}
-                          </strong>
-                          {item.componentName && (
-                            <span className="text-xs text-muted" style={{ marginLeft: '6px' }}>
-                              ({item.componentName})
-                            </span>
-                          )}
-                          {item.panelId ? (
-                            <div className="text-xs text-muted" style={{ marginTop: '2px' }}>
-                              Panel: <span className="mono-code">{item.panelId}</span>
-                            </div>
-                          ) : null}
-                        </div>
-                        <span className="text-xs font-mono text-muted">{item.lineCode}</span>
-                      </div>
-
-                      <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                        <strong style={{ fontSize: '12px', color: '#cbd5e1' }}>{item.defectName || 'Unnamed defect'}</strong>
-                        {item.defectFamily && <StatusPill value={item.defectFamily} />}
-                      </div>
-
-                      {(item.productNameDefect || item.productDefectName) && (
-                        <div className="text-xs" style={{ color: '#93c5fd' }}>
-                          Product defect: <strong>{item.productNameDefect || item.productDefectName}</strong>
-                          {item.productDefectName && item.productDefectName !== item.productNameDefect ? ` · ${item.productDefectName}` : ''}
-                        </div>
-                      )}
-
-                      {/* Decision Reason */}
-                      <p
-                        className="text-xs"
-                        style={{
-                          color: '#94a3b8',
-                          margin: '4px 0',
-                          lineHeight: 1.4,
-                          display: '-webkit-box',
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: 'vertical',
-                          overflow: 'hidden',
-                        }}
-                        title={item.decisionReason}
-                      >
-                        {item.decisionReason}
-                      </p>
-
-                      {/* Feature Chips */}
-                      {item.keyFeatures && Object.keys(item.keyFeatures).length > 0 && (
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: 'auto' }}>
-                          {Object.entries(item.keyFeatures)
-                            .slice(0, 3)
-                            .map(([k, v]) => (
-                              <span
-                                key={k}
-                                className="font-mono"
-                                style={{
-                                  background: 'rgba(255,255,255,0.05)',
-                                  padding: '1px 6px',
-                                  borderRadius: '3px',
-                                  fontSize: '12px',
-                                  color: '#cbd5e1',
-                                }}
-                              >
-                                {k}: <b>{typeof v === 'number' ? v.toFixed(1) : v}</b>
-                              </span>
-                            ))}
-                        </div>
-                      )}
-
-                      {/* Camera Angle Selector Bar */}
-                      {item.defectId && (
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '4px', flexWrap: 'wrap', padding: '6px 0', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-                          <span style={{ fontSize: '12px', color: '#94a3b8', fontWeight: 600 }}>Camera Angle:</span>
-                          <div style={{ display: 'flex', gap: '3px', alignItems: 'center', flexWrap: 'wrap' }}>
-                            <button
-                              type="button"
-                              onClick={() => void handleSelectCardVp(item, '0')}
-                              disabled={cardLoadingVp[itemKey] === '0'}
-                              style={{
-                                padding: '2px 6px',
-                                fontSize: '12px',
-                                fontWeight: activeVp === '0' ? 700 : 500,
-                                borderRadius: '4px',
-                                cursor: 'pointer',
-                                border: activeVp === '0' ? '1px solid #3b82f6' : '1px solid rgba(255,255,255,0.15)',
-                                background: activeVp === '0' ? '#1e3a8a' : 'rgba(255,255,255,0.05)',
-                                color: activeVp === '0' ? '#93c5fd' : '#cbd5e1',
-                              }}
-                              title="VP0 (Default thumbnail)"
-                            >
-                              VP0
-                            </button>
-
-                            <button
-                              type="button"
-                              onClick={() => void handleSelectCardVp(item, originalVp, true)}
-                              disabled={cardLoadingVp[itemKey] === originalVp}
-                              style={{
-                                padding: '2px 8px',
-                                fontSize: '12px',
-                                fontWeight: 700,
-                                borderRadius: '4px',
-                                cursor: 'pointer',
-                                border: activeVp === 'original' ? '1.5px solid #a855f7' : '1px solid rgba(168, 85, 247, 0.4)',
-                                background: activeVp === 'original' ? '#6b21a8' : 'rgba(168, 85, 247, 0.15)',
-                                color: activeVp === 'original' ? '#f3e8ff' : '#d8b4fe',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '3px',
-                              }}
-                              title={`Load original VP from image_path (VP${originalVp})`}
-                            >
-                              <span>VP{originalVp} (Path original)</span>
-                              {cardLoadingVp[itemKey] === originalVp ? (
-                                <span style={{ fontSize: '12px' }}><Icon name="clock" className="icon inline-icon" /></span>
-                              ) : cardVpImages[itemKey]?.original ? (
-                                <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#4ade80', display: 'inline-block' }} />
-                              ) : null}
-                            </button>
-
-                            {['1', '2', '3', '4'].map((vp) => (
-                              <button
-                                key={vp}
-                                type="button"
-                                onClick={() => void handleSelectCardVp(item, vp)}
-                                disabled={cardLoadingVp[itemKey] === vp}
-                                style={{
-                                  padding: '2px 5px',
-                                  fontSize: '12px',
-                                  fontWeight: activeVp === vp ? 700 : 500,
-                                  borderRadius: '4px',
-                                  cursor: 'pointer',
-                                  border: activeVp === vp ? '1px solid #3b82f6' : '1px solid rgba(255,255,255,0.1)',
-                                  background: activeVp === vp ? '#1e3a8a' : 'transparent',
-                                  color: activeVp === vp ? '#93c5fd' : '#94a3b8',
-                                }}
-                                title={`Load camera angle VP${vp}`}
-                              >
-                                VP{vp}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Card Actions */}
-                      <div
-                        style={{
-                          display: 'flex',
-                          gap: '6px',
-                          marginTop: '6px',
-                          paddingTop: '6px',
-                          borderTop: '1px solid rgba(255,255,255,0.05)',
-                        }}
-                      >
-                        <button
-                          type="button"
-                          className="ghost-button compact"
-                          style={{ fontSize: '12px', flex: 1 }}
-                          onClick={() => openZoomModal(item, activeVp)}
-                        >
-                          <Icon name="search" className="icon inline-icon" />Zoom
-                        </button>
-                        {item.defectId && (
-                          <button
-                            type="button"
-                            className="secondary compact"
-                            style={{
-                              fontSize: '12px',
-                              padding: '3px 8px',
-                              background: activeVp === 'original' ? 'rgba(168, 85, 247, 0.25)' : 'rgba(168, 85, 247, 0.15)',
-                              borderColor: 'rgba(168, 85, 247, 0.4)',
-                              color: '#d8b4fe',
-                            }}
-                            onClick={() => void handleCrawlThumbnailVp(item, activeVp === 'original' ? originalVp : activeVp, activeVp === 'original')}
-                            title={activeVp === 'original' ? `Force crawl path original VP${originalVp}` : `Force crawl angle VP${activeVp} from PC API`}
-                          >
-                            <Icon name="operations" className="icon inline-icon" />Crawl {activeVp === 'original' ? `Path VP${originalVp}` : `VP${activeVp}`}
-                          </button>
-                        )}
-                        <button
-                          type="button"
-                          className="secondary compact"
-                          style={{ fontSize: '12px', flex: 1 }}
-                          onClick={() => void handleInspectDefect(item, activeVp)}
-                          disabled={loadingDefectInspect}
-                        >
-                          <Icon name="search" className="icon inline-icon" />Inspect
-                        </button>
-                      </div>
-                    </div>
-                  </article>
-                )
-              })}
+                    <div className="gap-xl" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(280px, 100%), 1fr))' }}>
+              {groupItems.map((item, idx) => (
+                <ThumbnailCard
+                  key={item.defectId ?? `${item.keyId}-${idx}`}
+                  item={item}
+                  inspectBusy={loadingDefectInspect}
+                  onZoom={openZoom}
+                  onInspect={inspectThumbnail}
+                  onNotice={onNotice}
+                />
+              ))}
                     </div>
                   </section>
                 )
@@ -2376,13 +1800,13 @@ export function OverkillTab({
             </div>
           )}
 
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div className="hstack flex-wrap gap-lg justify-between">
             <span className="text-xs text-muted">
               Image View page size is only the current grid. Station NG total is { (trendData?.summary.stationNgCount ?? 0).toLocaleString() } products.
               Matching gallery records: <strong>{thumbnailTotalCount.toLocaleString()}</strong>
               {thumbnailTotalCount > 0 ? ` · this page ${thumbnailItems.length}` : ''}.
             </span>
-            <label className="text-xs text-muted" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <label className="text-xs text-muted hstack gap-sm">
               Per page
               <select
                 value={thumbnailPageSize}
@@ -2414,13 +1838,13 @@ export function OverkillTab({
               <div>
                 <p className="eyebrow">Defect Escape Investigation</p>
                 <h2>Defect Escape (Leakage) Investigation</h2>
-                <p className="text-xs text-muted" style={{ marginTop: '4px' }}>
+                <p className="text-xs text-muted mt-1">
                   Products judged Pass (OK/G) by inspection stations that actually contain severe defects or violate classifier rule scripts.
                 </p>
               </div>
             </div>
 
-            <div className="metrics-grid" style={{ marginTop: '12px' }}>
+            <div className="metrics-grid mt-3">
               <MetricCard
                 label="Total Defect Escapes"
                 value={trendData?.summary.leakageCount ?? 0}
@@ -2459,7 +1883,7 @@ export function OverkillTab({
                   cells: [
                     <strong key="k" className="mono-code">{item.keyId}</strong>,
                     <JudgeBadge key="j" value={item.stationJudge} />,
-                    <span key="r" className="tag-badge" style={{ background: 'rgba(239,68,68,0.2)', color: '#ef4444', fontWeight: 700 }}>
+                    <span key="r" className="tag-badge text-ng font-bold" style={{ background: 'var(--status-ng-bg)' }}>
                       TRUE DEFECT ({item.ruleCode || 'DEFAULT'})
                     </span>,
                     item.productNameDefect || item.productDefectName || '',
@@ -2565,16 +1989,16 @@ export function OverkillTab({
                 item.keyId,
                 <JudgeBadge key="j" value={item.judge} />,
                 item.zone ? (
-                  <span key="z" className="tag-badge" style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', fontWeight: 600 }}>
+                  <span key="z" className="tag-badge text-ok font-semibold" style={{ background: 'var(--status-ok-bg)' }}>
                     {item.zone}
                   </span>
                 ) : '—',
                 item.defectName ? (
-                  <span key="dn" className="tag-badge" style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', fontWeight: 600 }}>
+                  <span key="dn" className="tag-badge text-ng font-semibold" style={{ background: 'var(--status-ng-bg)' }}>
                     {item.defectName}
                   </span>
                 ) : item.nameDefect && item.nameDefect !== 'None' ? (
-                  <span key="dn-legacy" className="tag-badge" style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', fontWeight: 600 }}>
+                  <span key="dn-legacy" className="tag-badge text-ng font-semibold" style={{ background: 'var(--status-ng-bg)' }}>
                     {item.nameDefect}
                   </span>
                 ) : 'None',
@@ -2656,164 +2080,18 @@ export function OverkillTab({
         </div>
       </Modal>
 
-      {/* MODAL: Full Resolution Zoom Image */}
-      {zoomedItem && (() => {
-        const zoomOriginalVp = getItemOriginalVp(zoomedItem)
-        const currentZoomImgSrc = zoomVpImages[zoomVp] ||
-          (zoomVp === '0'
-            ? (zoomedItem.thumbnailUrl || (zoomedItem.defectId ? imageCrawlerApi.previewUrl(zoomedItem.defectId, false, '0') : ''))
-            : (zoomedItem.defectId ? imageCrawlerApi.previewUrl(zoomedItem.defectId, false, zoomVp) : ''))
-
-        return (
-        <Modal
-          title={`Evidence Image Inspection · ${zoomedItem.keyId} · VP${zoomVp}`}
-          description={`Station Judgment: ${zoomedItem.stationJudge} · Rule Verdict: ${zoomedItem.ruleVerdict} · Category: ${zoomedItem.anomalyCategory}`}
-          open={Boolean(zoomedItem)}
-          onClose={() => setZoomedItem(null)}
-          wide
-        >
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            {/* Camera Angle Selector Bar */}
-            {zoomedItem.defectId && (
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  background: 'rgba(255,255,255,0.04)',
-                  padding: '8px 12px',
-                  borderRadius: '6px',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  flexWrap: 'wrap',
-                  gap: '8px',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                  <span style={{ fontSize: '12px', fontWeight: 700, color: '#94a3b8' }}>Camera Angle:</span>
-                  <button
-                    type="button"
-                    disabled={zoomLoading && zoomVp === 'original'}
-                    onClick={() => void handleSelectZoomVp(zoomedItem, zoomOriginalVp, true)}
-                    style={{
-                      padding: '4px 12px',
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      borderRadius: '6px',
-                      cursor: 'pointer',
-                      border: zoomVp === 'original' ? '1.5px solid #a855f7' : '1px solid rgba(168, 85, 247, 0.4)',
-                      background: zoomVp === 'original' ? '#7c3aed' : 'rgba(168, 85, 247, 0.15)',
-                      color: '#fff',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '5px',
-                    }}
-                    title={`Load original VP from image_path (VP${zoomOriginalVp})`}
-                  >
-                    <span>Load Path Original VP (VP{zoomOriginalVp})</span>
-                    {zoomLoading && zoomVp === 'original' ? <span><Icon name="clock" className="icon inline-icon" /></span> : null}
-                  </button>
-
-                  <span style={{ width: '1px', height: '16px', background: 'rgba(255,255,255,0.15)', margin: '0 2px' }} />
-
-                  {['0', '1', '2', '3', '4'].map((vp) => {
-                    const isSelected = zoomVp === vp
-                    const isOriginal = vp === zoomOriginalVp
-                    return (
-                      <button
-                        key={vp}
-                        type="button"
-                        onClick={() => void handleSelectZoomVp(zoomedItem, vp, false)}
-                        style={{
-                          padding: '4px 9px',
-                          fontSize: '12px',
-                          fontWeight: isSelected ? 700 : 500,
-                          borderRadius: '6px',
-                          cursor: 'pointer',
-                          border: isSelected ? '1.5px solid #3b82f6' : isOriginal ? '1px dashed #a855f7' : '1px solid rgba(255,255,255,0.12)',
-                          background: isSelected ? '#1d4ed8' : isOriginal ? 'rgba(168, 85, 247, 0.1)' : 'rgba(255,255,255,0.03)',
-                          color: isSelected ? '#fff' : isOriginal ? '#d8b4fe' : '#cbd5e1',
-                        }}
-                      >
-                        {vp === '0' ? 'VP0 (Default)' : isOriginal ? `VP${vp} (Path Angle)` : `VP${vp}`}
-                      </button>
-                    )
-                  })}
-                </div>
-
-                <button
-                  type="button"
-                  className="secondary compact"
-                  style={{ fontSize: '12px', padding: '4px 10px', background: 'rgba(255,255,255,0.08)' }}
-                  disabled={zoomLoading}
-                  onClick={() => void handleForceRefreshZoomVp(zoomedItem)}
-                >
-                  {zoomLoading ? 'Loading...' : zoomVp === 'original' ? `Force Crawl Path Original VP${zoomOriginalVp}` : `Force Crawl VP${zoomVp}`}
-                </button>
-              </div>
-            )}
-
-            <ImageViewer
-              src={currentZoomImgSrc}
-              alt={`${zoomedItem.keyId} · ${zoomedItem.defectName || 'Defect Visual'} · VP${zoomVp}`}
-              maxHeight="520px"
-            />
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
-              <div>
-                <span className="text-xs text-muted">Product:</span>
-                <div><strong className="mono-code">{zoomedItem.keyId}</strong></div>
-              </div>
-              <div>
-                <span className="text-xs text-muted">Panel ID:</span>
-                <div><strong className="mono-code">{zoomedItem.panelId || '—'}</strong></div>
-              </div>
-              <div>
-                <span className="text-xs text-muted">Category:</span>
-                <div>
-                  <span className="tag-badge" style={{ background: zoomedItem.anomalyCategory === 'Overkill' ? '#f59e0b' : '#ef4444', color: '#fff' }}>
-                    {zoomedItem.anomalyCategory}
-                  </span>
-                </div>
-              </div>
-              <div>
-                <span className="text-xs text-muted">Defect & Family:</span>
-                <div><strong>{zoomedItem.defectName}</strong> ({zoomedItem.defectFamily})</div>
-              </div>
-              <div>
-                <span className="text-xs text-muted">Coordinates:</span>
-                <div className="font-mono">{zoomedItem.coordinates || '—'}</div>
-              </div>
-              <div>
-                <span className="text-xs text-muted">Classifier Rule:</span>
-                <div className="font-mono text-xs">{zoomedItem.ruleCode} v{zoomedItem.ruleVersion}</div>
-              </div>
-            </div>
-
-            <div style={{ background: 'rgba(255,255,255,0.03)', padding: '12px', borderRadius: '6px' }}>
-              <span className="text-xs text-muted">Decision Explanation from Rule Classifier Engine:</span>
-              <p style={{ marginTop: '4px', fontSize: '13px', color: '#cbd5e1' }}>{zoomedItem.decisionReason}</p>
-            </div>
-
-            <div className="actions" style={{ justifyContent: 'flex-end' }}>
-              <button
-                type="button"
-                className="secondary"
-                onClick={() => {
-                  const it = zoomedItem
-                  setZoomedItem(null)
-                  void handleInspectDefect(it, zoomVp)
-                }}
-              >
-                <Icon name="search" className="icon inline-icon" />Inspect Features & JSON
-              </button>
-              <button type="button" className="ghost-button" onClick={() => setZoomedItem(null)}>
-                Close
-              </button>
-            </div>
-          </div>
-        </Modal>
-        )
-      })()}
+      {zoomRequest && (
+        <ThumbnailZoomModal
+          item={zoomRequest.item}
+          initialVp={zoomRequest.vp}
+          onClose={() => setZoomRequest(null)}
+          onInspect={(item, vp) => {
+            setZoomRequest(null)
+            inspectThumbnail(item, vp)
+          }}
+          onNotice={onNotice}
+        />
+      )}
 
       {/* MODAL: Defect Feature Inspector */}
       {inspectedDefect && (

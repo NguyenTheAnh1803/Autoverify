@@ -52,6 +52,9 @@ public sealed class AutoVerifyDbContext(DbContextOptions<AutoVerifyDbContext> op
         modelBuilder.Entity<ProductRecordEntity>().HasIndex(x => x.KeyId);
         modelBuilder.Entity<ProductRecordEntity>().HasIndex(x => x.PanelId);
         modelBuilder.Entity<ProductRecordEntity>().HasIndex(x => x.Judge);
+        modelBuilder.Entity<ProductRecordEntity>().HasIndex(x => x.InspectedAtUtc);
+        modelBuilder.Entity<ProductRecordEntity>().HasIndex(x => new { x.MachineCode, x.LineCode, x.InspectedAtUtc });
+        modelBuilder.Entity<ProductRecordEntity>().HasIndex(x => new { x.Judge, x.InspectedAtUtc });
         modelBuilder.Entity<DefectRecordEntity>().HasIndex(x => x.KeyId);
         modelBuilder.Entity<DefectRecordEntity>().HasIndex(x => x.DefectTable);
         modelBuilder.Entity<DefectRecordEntity>().HasIndex(x => x.ModelCode);

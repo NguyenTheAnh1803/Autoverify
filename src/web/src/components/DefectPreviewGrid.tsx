@@ -2,7 +2,7 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } fro
 import { defectPreviewApi, storageApi } from '../api'
 import { formatDate } from '../format'
 import { usePolling } from '../lib/usePolling'
-import { Modal } from '../ui'
+import { Icon, Modal } from '../ui'
 // The analytics dashboard (and its charts) is opened on demand, so it is downloaded the first time it is opened.
 const DefectFeatureAnalyticsDashboard = lazy(() =>
   import('./analytics/DefectFeatureAnalyticsDashboard').then((m) => ({ default: m.DefectFeatureAnalyticsDashboard })),
@@ -86,6 +86,25 @@ export function DefectPreviewGrid({
     })
     setPage(1)
   }
+  /** Column header that sorts on click or Enter/Space and tells assistive tech which way it is sorted. */
+  const sortableHeader = (columnId: PreviewSortId) => ({
+    'aria-sort': (sorting[0]?.id === columnId ? (sorting[0].desc ? 'descending' : 'ascending') : 'none') as 'ascending' | 'descending' | 'none',
+    tabIndex: 0,
+    onClick: () => handleSort(columnId),
+    onKeyDown: (event: React.KeyboardEvent<HTMLTableCellElement>) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault()
+        handleSort(columnId)
+      }
+    },
+  })
+  const sortIcon = (columnId: PreviewSortId) => (
+    <Icon
+      name={sorting[0]?.id === columnId ? (sorting[0].desc ? 'sort-desc' : 'sort-asc') : 'sort'}
+      className="icon sort-indicator"
+    />
+  )
+
 
   // Filter Bar State
   const [searchInput, setSearchInput] = useState('')
@@ -323,8 +342,8 @@ export function DefectPreviewGrid({
       <div className="preview-top-bar">
         <div className="preview-title-block">
           <div className="preview-title-row">
-            <span className="preview-sparkle-icon">🔬</span>
-            <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700 }}>
+            <span className="preview-sparkle-icon"><Icon name="flask" className="icon inline-icon" /></span>
+            <h3 className="m-0 font-bold" style={{ fontSize: '16px' }}>
               Large-Scale Defect Preview (Server-Side Staged)
             </h3>
             <span className={`status-pill ${sessionStatus.toLowerCase()}`}>
@@ -351,15 +370,15 @@ export function DefectPreviewGrid({
         <div className="preview-top-actions">
           <button
             type="button"
-            className="compact-button primary"
-            style={{ background: '#2563eb', borderColor: '#3b82f6', fontWeight: 600 }}
+            className="compact-button primary font-semibold"
+            style={{ background: '#2563eb', borderColor: '#3b82f6' }}
             onClick={() => {
               setAnalyticsInitialTab('script_condition')
               setShowAnalyticsModal(true)
             }}
             title="Paste and evaluate Python AOI script for in-depth defect condition breakdown"
           >
-            <span style={{ marginRight: '6px' }}>⚡</span>
+            <Icon name="operations" className="icon inline-icon" />
             <span>AOI Script Analysis</span>
           </button>
           <button
@@ -396,7 +415,7 @@ export function DefectPreviewGrid({
             disabled={loadingRows}
             title="Refresh current page"
           >
-            🔄 Refresh
+            <Icon name="refresh" className="icon inline-icon" />Refresh
           </button>
           <button
             type="button"
@@ -404,7 +423,7 @@ export function DefectPreviewGrid({
             onClick={() => void handleClose()}
             title="Close preview and release server staging table"
           >
-            ✕ Close Preview
+            <Icon name="close" className="icon inline-icon" />Close Preview
           </button>
         </div>
       </div>
@@ -475,7 +494,7 @@ export function DefectPreviewGrid({
       {/* Product & Defect Inspection Context Banner */}
       <div className="preview-product-banner">
         <div className="preview-product-identity">
-          <span className="product-icon">📦</span>
+          <span className="product-icon"><Icon name="package" className="icon inline-icon" /></span>
           <div>
             <div className="product-title">
               Product Key / ID: <strong className="mono-code">{keyId || items[0]?.keyId || 'Batch / Multi-product Stream'}</strong>
@@ -513,7 +532,7 @@ export function DefectPreviewGrid({
       {/* Filter Toolbar */}
       <div className="preview-filter-toolbar">
         <div className="filter-group search-group">
-          <span className="filter-icon">🔍</span>
+          <span className="filter-icon"><Icon name="search" className="icon inline-icon" /></span>
           <input
             type="text"
             placeholder="Search defect name, component, defect ID..."
@@ -529,7 +548,7 @@ export function DefectPreviewGrid({
               onClick={() => setSearchInput('')}
               aria-label="Clear search"
             >
-              ✕
+              <Icon name="close" className="icon" />
             </button>
           )}
         </div>
@@ -644,7 +663,7 @@ export function DefectPreviewGrid({
 
         {fetchError && !loadingRows && (
           <div className="grid-fetch-error">
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+            <span className="gap-sm" style={{ display: 'inline-flex', alignItems: 'center' }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
                 <line x1="12" y1="9" x2="12" y2="13" />
@@ -666,52 +685,52 @@ export function DefectPreviewGrid({
           <table className="preview-excel-table" role="table">
             <thead>
               <tr>
-                <th className="excel-th col-index sortable" onClick={() => handleSort('rowIndex')}>
+                <th className="excel-th col-index sortable" {...sortableHeader('rowIndex')}>
                   <span>#</span>
-                  <span className="sort-indicator">{sorting[0]?.id === 'rowIndex' ? (sorting[0].desc ? ' ▼' : ' ▲') : ' ↕'}</span>
+                  {sortIcon('rowIndex')}
                 </th>
-                <th className="excel-th col-key sortable" onClick={() => handleSort('keyId')}>
+                <th className="excel-th col-key sortable" {...sortableHeader('keyId')}>
                   <span>Product / Key ID</span>
-                  <span className="sort-indicator">{sorting[0]?.id === 'keyId' ? (sorting[0].desc ? ' ▼' : ' ▲') : ' ↕'}</span>
+                  {sortIcon('keyId')}
                 </th>
-                <th className="excel-th col-defect-id sortable" onClick={() => handleSort('defectId')}>
+                <th className="excel-th col-defect-id sortable" {...sortableHeader('defectId')}>
                   <span>Defect ID</span>
-                  <span className="sort-indicator">{sorting[0]?.id === 'defectId' ? (sorting[0].desc ? ' ▼' : ' ▲') : ' ↕'}</span>
+                  {sortIcon('defectId')}
                 </th>
-                <th className="excel-th col-name sortable" onClick={() => handleSort('defectName')}>
+                <th className="excel-th col-name sortable" {...sortableHeader('defectName')}>
                   <span>Defect Name</span>
-                  <span className="sort-indicator">{sorting[0]?.id === 'defectName' ? (sorting[0].desc ? ' ▼' : ' ▲') : ' ↕'}</span>
+                  {sortIcon('defectName')}
                 </th>
-                <th className="excel-th col-judge sortable" onClick={() => handleSort('judge')}>
+                <th className="excel-th col-judge sortable" {...sortableHeader('judge')}>
                   <span>Judge</span>
-                  <span className="sort-indicator">{sorting[0]?.id === 'judge' ? (sorting[0].desc ? ' ▼' : ' ▲') : ' ↕'}</span>
+                  {sortIcon('judge')}
                 </th>
-                <th className="excel-th col-severity sortable" onClick={() => handleSort('severity')}>
+                <th className="excel-th col-severity sortable" {...sortableHeader('severity')}>
                   <span>Severity</span>
-                  <span className="sort-indicator">{sorting[0]?.id === 'severity' ? (sorting[0].desc ? ' ▼' : ' ▲') : ' ↕'}</span>
+                  {sortIcon('severity')}
                 </th>
-                <th className="excel-th col-type sortable" onClick={() => handleSort('defectType')}>
+                <th className="excel-th col-type sortable" {...sortableHeader('defectType')}>
                   <span>Type</span>
-                  <span className="sort-indicator">{sorting[0]?.id === 'defectType' ? (sorting[0].desc ? ' ▼' : ' ▲') : ' ↕'}</span>
+                  {sortIcon('defectType')}
                 </th>
-                <th className="excel-th col-component sortable" onClick={() => handleSort('componentName')}>
+                <th className="excel-th col-component sortable" {...sortableHeader('componentName')}>
                   <span>Component</span>
-                  <span className="sort-indicator">{sorting[0]?.id === 'componentName' ? (sorting[0].desc ? ' ▼' : ' ▲') : ' ↕'}</span>
+                  {sortIcon('componentName')}
                 </th>
                 <th className="excel-th col-coords">
                   <span>Coord (X, Y)</span>
                 </th>
-                <th className="excel-th col-table sortable" onClick={() => handleSort('defectTable')}>
+                <th className="excel-th col-table sortable" {...sortableHeader('defectTable')}>
                   <span>Table</span>
-                  <span className="sort-indicator">{sorting[0]?.id === 'defectTable' ? (sorting[0].desc ? ' ▼' : ' ▲') : ' ↕'}</span>
+                  {sortIcon('defectTable')}
                 </th>
-                <th className="excel-th col-confidence sortable" onClick={() => handleSort('confidenceScore')}>
+                <th className="excel-th col-confidence sortable" {...sortableHeader('confidenceScore')}>
                   <span>Confidence</span>
-                  <span className="sort-indicator">{sorting[0]?.id === 'confidenceScore' ? (sorting[0].desc ? ' ▼' : ' ▲') : ' ↕'}</span>
+                  {sortIcon('confidenceScore')}
                 </th>
-                <th className="excel-th col-time sortable" onClick={() => handleSort('inspectedAtUtc')}>
+                <th className="excel-th col-time sortable" {...sortableHeader('inspectedAtUtc')}>
                   <span>Inspected Time</span>
-                  <span className="sort-indicator">{sorting[0]?.id === 'inspectedAtUtc' ? (sorting[0].desc ? ' ▼' : ' ▲') : ' ↕'}</span>
+                  {sortIcon('inspectedAtUtc')}
                 </th>
                 <th className="excel-th col-actions">
                   <span>Image / Inspect</span>
@@ -723,9 +742,9 @@ export function DefectPreviewGrid({
                 <tr>
                   <td colSpan={13} className="empty-preview-cell">
                     <div className="empty-state-content">
-                      <span style={{ fontSize: '24px' }}>🔍</span>
-                      <p style={{ margin: '4px 0 0', fontWeight: 600 }}>No defects match the current filter criteria</p>
-                      <span style={{ fontSize: '12px', color: '#64748b' }}>
+                      <Icon name="search" className="icon" />
+                      <p className="font-semibold" style={{ margin: '4px 0 0' }}>No defects match the current filter criteria</p>
+                      <span className="text-xs" style={{ color: '#64748b' }}>
                         Try adjusting keywords or clearing active filter constraints.
                       </span>
                     </div>
@@ -752,9 +771,19 @@ export function DefectPreviewGrid({
                         isSelected ? 'row-selected' : '',
                         isHighlighted ? 'row-highlighted' : '',
                       ].filter(Boolean).join(' ')}
+                      tabIndex={0}
+                      aria-selected={isSelected}
                       onClick={() => {
                         setSelectedRecord(record)
                         setHighlightedRowIndex(record.rowIndex)
+                      }}
+                      onKeyDown={(event) => {
+                        // Keyboard parity with the mouse: Space selects the row, Enter opens it (as a double-click does).
+                        if (event.target !== event.currentTarget || (event.key !== 'Enter' && event.key !== ' ')) return
+                        event.preventDefault()
+                        setSelectedRecord(record)
+                        setHighlightedRowIndex(record.rowIndex)
+                        if (event.key === 'Enter') setInspectorOpen(true)
                       }}
                       onDoubleClick={() => {
                         setSelectedRecord(record)
@@ -816,7 +845,7 @@ export function DefectPreviewGrid({
                             }}
                             title="Inspect feature values and raw JSON"
                           >
-                            🔍 Details
+                            <Icon name="search" className="icon inline-icon" />Details
                           </button>
                         </div>
                       </td>
@@ -838,7 +867,7 @@ export function DefectPreviewGrid({
             <strong>{totalCount.toLocaleString()}</strong> matching defect records
           </span>
           {sessionStatus === 'Ingesting' && (
-            <span className="live-indexing-tag">⚡ Live indexing in progress</span>
+            <span className="live-indexing-tag"><Icon name="operations" className="icon inline-icon" />Live indexing in progress</span>
           )}
         </div>
 
@@ -922,7 +951,7 @@ export function DefectPreviewGrid({
               </div>
               <div className="meta-item">
                 <span className="meta-label">Judge / Severity</span>
-                <div className="meta-value" style={{ display: 'flex', gap: '6px' }}>
+                <div className="meta-value gap-sm" style={{ display: 'flex' }}>
                   <span className={`preview-badge badge-${selectedRecord.judge?.toLowerCase() || 'default'}`}>
                     {selectedRecord.judge || '—'}
                   </span>
@@ -977,7 +1006,7 @@ export function DefectPreviewGrid({
                     rel="noreferrer"
                     className="compact-button secondary"
                   >
-                    ⚡ Stream Raw Feature File
+                    <Icon name="operations" className="icon inline-icon" />Stream Raw Feature File
                   </a>
                   <a
                     href={storageApi.defectFileUrl(selectedRecord.defectId!, 'image')}
@@ -985,7 +1014,7 @@ export function DefectPreviewGrid({
                     rel="noreferrer"
                     className="compact-button secondary"
                   >
-                    🖼️ View Defect Image
+                    <Icon name="image" className="icon inline-icon" />View Defect Image
                   </a>
                 </>
               )}
@@ -1000,7 +1029,7 @@ export function DefectPreviewGrid({
                   rel="noreferrer"
                   className="compact-button secondary"
                 >
-                  🖼️ View Raw Image Link
+                  <Icon name="image" className="icon inline-icon" />View Raw Image Link
                 </a>
               )}
               {Boolean(
@@ -1014,7 +1043,7 @@ export function DefectPreviewGrid({
                   rel="noreferrer"
                   className="compact-button secondary"
                 >
-                  ⚡ Open Raw Feature URL
+                  <Icon name="external" className="icon inline-icon" />Open Raw Feature URL
                 </a>
               )}
               {selectedRecord.rawFeatureUri &&
@@ -1036,7 +1065,7 @@ export function DefectPreviewGrid({
                     className="compact-button ghost"
                     onClick={copySnippetToClipboard}
                   >
-                    {copySuccess ? '✓ Copied!' : '📋 Copy JSON'}
+                    {copySuccess ? <><Icon name="check" className="icon inline-icon" />Copied!</> : <><Icon name="clipboard" className="icon inline-icon" />Copy JSON</>}
                   </button>
                 )}
               </div>
@@ -1045,7 +1074,7 @@ export function DefectPreviewGrid({
               </pre>
             </div>
 
-            <div className="actions" style={{ justifyContent: 'flex-end', marginTop: 12 }}>
+            <div className="actions mt-3" style={{ justifyContent: 'flex-end' }}>
               <button
                 type="button"
                 className="compact-button secondary"

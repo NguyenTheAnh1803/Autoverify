@@ -1,9 +1,11 @@
+import { STATUS, statusChip, type StatusName } from '../lib/status'
 import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import ReactECharts from '../components/ReactECharts'
 import { opReconciliationApi } from '../api'
 import { useConfirm } from '../confirm'
 import { formatDateTime, formatPercent } from '../format'
 import { Button, DebouncedInput, Field, Icon, MetricCard, Modal, StatusPill } from '../ui'
+import { activatable } from '../lib/activatable'
 import type {
   Notice,
   OpDefectMappingDto,
@@ -29,15 +31,16 @@ A0E5670P15B134314228\tFOP bonding dent\tNG`
 
 type OpRecord = NonNullable<OpReconciliationRecordsResponse['items']>[number]
 
+const CLASSIFICATION_TONE: Record<string, StatusName> = {
+  'Real Defect': 'real',
+  Overkill: 'overkill',
+  Leakage: 'leakage',
+  'Consistent OK': 'ok',
+  'No Detect': 'info',
+}
+
 function classificationStyle(value: string) {
-  switch (value) {
-    case 'Real Defect': return { background: '#ede9fe', color: '#6d28d9', border: '1px solid #c4b5fd' }
-    case 'Overkill': return { background: '#fef3c7', color: '#b45309', border: '1px solid #fcd34d' }
-    case 'Leakage': return { background: '#fee2e2', color: '#b91c1c', border: '1px solid #fca5a5' }
-    case 'Consistent OK': return { background: '#d1fae5', color: '#047857', border: '1px solid #6ee7b7' }
-    case 'No Detect': return { background: '#e0f2fe', color: '#0369a1', border: '1px solid #7dd3fc' }
-    default: return { background: '#e2e8f0', color: '#475569', border: '1px solid #cbd5e1' }
-  }
+  return statusChip(CLASSIFICATION_TONE[value] ?? 'na')
 }
 
 /** The ledger rows. Memoised: typing in the search box or changing a filter does not redraw a hundred rows. */
@@ -47,7 +50,7 @@ const RecordRows = memo(function RecordRows({ items, offset }: { items?: OpRecor
       {(items ?? []).map((row, index) => (
                         <tr key={row.id}>
                           <td className="text-muted">{offset + index + 1}</td>
-                          <td className="font-mono" style={{ fontWeight: 700 }}>{row.keyId}</td>
+                          <td className="font-mono font-bold">{row.keyId}</td>
                           <td>
                             <div>{row.opDefectName || '—'}</div>
                             {row.mappedMachineDefect && (
@@ -64,7 +67,7 @@ const RecordRows = memo(function RecordRows({ items, offset }: { items?: OpRecor
                           </td>
                           <td style={{ minWidth: 260 }}>
                             {row.defects.length > 0 ? (
-                              <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                              <div className="gap-xs" style={{ display: 'flex', flexWrap: 'wrap' }}>
                                 {row.defects.map((defect) => (
                                   <span
                                     key={defect.id}
@@ -79,7 +82,7 @@ const RecordRows = memo(function RecordRows({ items, offset }: { items?: OpRecor
                             ) : null}
                           </td>
                           <td>
-                            <span className="tag-badge" style={{ ...classificationStyle(row.classification), fontWeight: 700 }}>
+                            <span className="tag-badge font-bold" style={{ ...classificationStyle(row.classification) }}>
                               {row.classification}
                             </span>
                           </td>
@@ -444,19 +447,24 @@ export function OpReconciliationTab({
   }, [subView, loadMappings])
 
   // Handle Save Mapping
+  // A second click while the first save is in flight would create the mapping twice.
+  const [savingMapping, setSavingMapping] = useState(false)
+
   async function handleSaveMapping() {
+    if (savingMapping) return
     if (!mappingForm.opDefectName.trim() || !mappingForm.machineDefectName.trim()) {
       onNotice({ tone: 'error', message: 'Both OP defect name and Machine defect name are required.' })
       return
     }
 
+    setSavingMapping(true)
     try {
       if (editingMapping) {
         await opReconciliationApi.updateMapping(editingMapping.id, mappingForm)
-        onNotice({ tone: 'success', message: `✓ Updated defect mapping [${mappingForm.opDefectName}] successfully!` })
+        onNotice({ tone: 'success', message: `Updated defect mapping [${mappingForm.opDefectName}] successfully!` })
       } else {
         await opReconciliationApi.createMapping(mappingForm)
-        onNotice({ tone: 'success', message: `✓ Created defect mapping [${mappingForm.opDefectName}] successfully!` })
+        onNotice({ tone: 'success', message: `Created defect mapping [${mappingForm.opDefectName}] successfully!` })
       }
       setShowMappingModal(false)
       setEditingMapping(null)
@@ -464,6 +472,8 @@ export function OpReconciliationTab({
       await loadAnalysis()
     } catch (err) {
       onNotice({ tone: 'error', message: err instanceof Error ? err.message : 'Failed to save mapping.' })
+    } finally {
+      setSavingMapping(false)
     }
   }
 
@@ -480,7 +490,7 @@ export function OpReconciliationTab({
     if (!ok) return
     try {
       await opReconciliationApi.deleteMapping(id)
-      onNotice({ tone: 'success', message: `✓ Deleted defect mapping [${name}].` })
+      onNotice({ tone: 'success', message: `Deleted defect mapping [${name}].` })
       await loadMappings()
     } catch (err) {
       onNotice({ tone: 'error', message: err instanceof Error ? err.message : 'Failed to delete mapping.' })
@@ -519,7 +529,7 @@ export function OpReconciliationTab({
           left: 'center',
           top: 4,
           textStyle: { fontSize: 13, fontWeight: 700, color: '#0f172a' },
-          subtextStyle: { fontSize: 11, color: '#64748b' },
+          subtextStyle: { fontSize: 11, color: '#6b7a90' },
         },
         tooltip: {
           trigger: 'item',
@@ -539,7 +549,7 @@ export function OpReconciliationTab({
           style: {
             text: `${formatPercent(records?.overkillRate ?? 0)}\nOverkill Rate`,
             textAlign: 'center',
-            fill: '#b45309',
+            fill: STATUS.overkill.text,
             fontSize: 15,
             fontWeight: 800,
             lineHeight: 20,
@@ -551,7 +561,7 @@ export function OpReconciliationTab({
           style: {
             text: '0 Machine NG',
             textAlign: 'center',
-            fill: '#94a3b8',
+            fill: '#64748b',
             fontSize: 13,
             fontWeight: 600,
           },
@@ -562,7 +572,7 @@ export function OpReconciliationTab({
           radius: ['52%', '76%'],
           center: ['50%', '48%'],
           avoidLabelOverlap: true,
-          itemStyle: { borderRadius: 6, borderColor: '#ffffff', borderWidth: 2 },
+          itemStyle: { borderColor: '#ffffff', borderWidth: 1.5 },
           label: {
             color: '#334155',
             fontSize: 11,
@@ -570,20 +580,20 @@ export function OpReconciliationTab({
             formatter: '{b}\n{d}%',
           },
           data: machineNg > 0 ? [
-            { value: overkill, name: 'Overkill (False Alarm)', itemStyle: { color: '#f59e0b' } },
-            { value: realDefect, name: 'Real Defect (Confirmed)', itemStyle: { color: '#8b5cf6' } },
+            { value: overkill, name: 'Overkill (False Alarm)', itemStyle: { color: STATUS.overkill.fill } },
+            { value: realDefect, name: 'Real Defect (Confirmed)', itemStyle: { color: STATUS.real.fill } },
           ] : [{ value: 0, name: 'No Machine NG', itemStyle: { color: '#e2e8f0' } }],
         }],
       }
     }
 
     const slices = [
-      { value: realDefect, name: 'Real Defect', itemStyle: { color: '#8b5cf6' } },
-      { value: overkill, name: 'Overkill', itemStyle: { color: '#f59e0b' } },
-      { value: leakage, name: 'Leakage', itemStyle: { color: '#ef4444' } },
-      { value: consistentOk, name: 'Consistent OK', itemStyle: { color: '#10b981' } },
-      { value: noDetect, name: 'No Detect', itemStyle: { color: '#0369a1' } },
-      { value: notFound, name: 'Product Not Found', itemStyle: { color: '#64748b' } },
+      { value: realDefect, name: 'Real Defect', itemStyle: { color: STATUS.real.fill } },
+      { value: overkill, name: 'Overkill', itemStyle: { color: STATUS.overkill.fill } },
+      { value: leakage, name: 'Leakage', itemStyle: { color: STATUS.leakage.fill } },
+      { value: consistentOk, name: 'Consistent OK', itemStyle: { color: STATUS.ok.fill } },
+      { value: noDetect, name: 'No Detect', itemStyle: { color: STATUS.info.fill } },
+      { value: notFound, name: 'Product Not Found', itemStyle: { color: STATUS.na.fill } },
     ].filter((s) => s.value > 0)
 
     return {
@@ -593,7 +603,7 @@ export function OpReconciliationTab({
         left: 'center',
         top: 4,
         textStyle: { fontSize: 13, fontWeight: 700, color: '#0f172a' },
-        subtextStyle: { fontSize: 11, color: '#64748b' },
+        subtextStyle: { fontSize: 11, color: '#6b7a90' },
       },
       tooltip: {
         trigger: 'item',
@@ -625,7 +635,7 @@ export function OpReconciliationTab({
         style: {
           text: 'No Records',
           textAlign: 'center',
-          fill: '#94a3b8',
+          fill: '#64748b',
           fontSize: 13,
           fontWeight: 600,
         },
@@ -636,7 +646,7 @@ export function OpReconciliationTab({
         radius: ['52%', '76%'],
         center: ['50%', '48%'],
         avoidLabelOverlap: true,
-        itemStyle: { borderRadius: 6, borderColor: '#ffffff', borderWidth: 2 },
+        itemStyle: { borderColor: '#ffffff', borderWidth: 1.5 },
         label: {
           color: '#334155',
           fontSize: 11,
@@ -657,10 +667,10 @@ export function OpReconciliationTab({
         label: 'Real Defect',
         count: records?.realDefectCount ?? 0,
         rate: (records?.realDefectCount ?? 0) / safeTotal,
-        color: '#8b5cf6',
-        bg: '#ede9fe',
-        border: '#c4b5fd',
-        textColor: '#6d28d9',
+        color: STATUS.real.fill,
+        bg: STATUS.real.bg,
+        border: STATUS.real.border,
+        textColor: STATUS.real.text,
         hint: 'Machine NG confirmed as real defect by OP',
       },
       {
@@ -668,10 +678,10 @@ export function OpReconciliationTab({
         label: 'Overkill',
         count: records?.overkillCount ?? 0,
         rate: (records?.overkillCount ?? 0) / safeTotal,
-        color: '#f59e0b',
-        bg: '#fef3c7',
-        border: '#fcd34d',
-        textColor: '#b45309',
+        color: STATUS.overkill.fill,
+        bg: STATUS.overkill.bg,
+        border: STATUS.overkill.border,
+        textColor: STATUS.overkill.text,
         hint: 'Machine NG confirmed as OK/false alarm by OP',
       },
       {
@@ -679,10 +689,10 @@ export function OpReconciliationTab({
         label: 'Leakage',
         count: records?.leakageCount ?? 0,
         rate: (records?.leakageCount ?? 0) / safeTotal,
-        color: '#ef4444',
-        bg: '#fee2e2',
-        border: '#fca5a5',
-        textColor: '#b91c1c',
+        color: STATUS.leakage.fill,
+        bg: STATUS.leakage.bg,
+        border: STATUS.leakage.border,
+        textColor: STATUS.leakage.text,
         hint: 'Machine OK/PASS found to have defect by OP',
       },
       {
@@ -690,10 +700,10 @@ export function OpReconciliationTab({
         label: 'Consistent OK',
         count: records?.consistentOkCount ?? 0,
         rate: (records?.consistentOkCount ?? 0) / safeTotal,
-        color: '#10b981',
-        bg: '#d1fae5',
-        border: '#6ee7b7',
-        textColor: '#047857',
+        color: STATUS.ok.fill,
+        bg: STATUS.ok.bg,
+        border: STATUS.ok.border,
+        textColor: STATUS.ok.text,
         hint: 'Both Machine and OP judged as OK/PASS',
       },
       {
@@ -701,10 +711,10 @@ export function OpReconciliationTab({
         label: 'No Detect',
         count: records?.noDetectCount ?? 0,
         rate: (records?.noDetectCount ?? 0) / safeTotal,
-        color: '#0369a1',
-        bg: '#e0f2fe',
-        border: '#7dd3fc',
-        textColor: '#0369a1',
+        color: STATUS.info.fill,
+        bg: STATUS.info.bg,
+        border: STATUS.info.border,
+        textColor: STATUS.info.text,
         hint: 'Excluded Key ID < 10 or unmarked defect',
       },
       {
@@ -712,10 +722,10 @@ export function OpReconciliationTab({
         label: 'Product Not Found',
         count: records?.notFoundCount ?? 0,
         rate: (records?.notFoundCount ?? 0) / safeTotal,
-        color: '#64748b',
-        bg: '#e2e8f0',
-        border: '#cbd5e1',
-        textColor: '#475569',
+        color: STATUS.na.fill,
+        bg: STATUS.na.bg,
+        border: STATUS.na.border,
+        textColor: STATUS.na.text,
         hint: 'OP review has no matching Product row in DB',
       },
     ]
@@ -729,13 +739,13 @@ export function OpReconciliationTab({
           <div>
             <p className="eyebrow">Reconciliation & Overkill Deep-Dive</p>
             <h2>Overkill Classification & Operator Reconciliation</h2>
-            <p className="text-xs text-muted" style={{ marginTop: '4px' }}>
+            <p className="text-xs text-muted mt-1">
               Upload Operator (OP) Excel/CSV review sheets with defect mapping dictionaries to accurately separate <strong>Real Defects</strong> from <strong>Overkill</strong>, then deep-dive into feature distributions to establish Gold Thresholds.
             </p>
           </div>
 
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
-            <span className="tag-badge" style={{ background: '#dbeafe', color: '#1d4ed8' }}>
+          <div className="hstack gap-md flex-wrap">
+            <span className="tag-badge" style={{ background: 'var(--status-info-bg)', color: 'var(--blue-700)' }}>
               Input managed at Operations → OP Review Input
             </span>
             <Button type="button" onClick={() => void loadAnalysis()} variant="ghost" loading={loading}>
@@ -745,7 +755,7 @@ export function OpReconciliationTab({
         </div>
 
         {/* Filter bar */}
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginTop: '12px', flexWrap: 'wrap' }}>
+        <div className="hstack gap-lg mt-3 flex-wrap">
           <Field label="Production Machine">
             <input
               type="text"
@@ -792,14 +802,13 @@ export function OpReconciliationTab({
 
         {uploadResultMsg && (
           <div
+            className="text-ok text-xs"
             style={{
               marginTop: '10px',
               padding: '8px 12px',
               borderRadius: '4px',
-              background: 'rgba(16, 185, 129, 0.15)',
-              border: '1px solid #10b981',
-              color: '#10b981',
-              fontSize: '12px',
+              background: 'var(--status-ok-bg)',
+              border: '1px solid var(--status-ok-border)',
             }}
           >
             {uploadResultMsg}
@@ -850,7 +859,7 @@ export function OpReconciliationTab({
             onClick={() => setSubView('records')}
           >
             <span><Icon name="clipboard" className="icon inline-icon" />All OP + Product Records</span>
-            <span className="tag-badge" style={{ background: '#2563eb', color: '#fff', marginLeft: '6px', fontSize: '12px' }}>
+            <span className="tag-badge text-xs" style={{ background: 'var(--blue-600)', color: '#fff', marginLeft: '6px' }}>
               {records?.totalCount ?? 0}
             </span>
           </button>}
@@ -870,7 +879,7 @@ export function OpReconciliationTab({
           >
             <span><Icon name="search" className="icon inline-icon" />Overkill Deep-Dive & Gold Thresholds</span>
             {analysis?.deepDive?.overkillCount ? (
-              <span className="tag-badge" style={{ background: '#f59e0b', color: '#000', marginLeft: '6px', fontSize: '12px' }}>
+              <span className="tag-badge text-xs" style={{ background: 'var(--status-overkill)', color: '#000', marginLeft: '6px' }}>
                 {analysis.deepDive.overkillCount} Overkill
               </span>
             ) : null}
@@ -882,7 +891,7 @@ export function OpReconciliationTab({
             onClick={() => setSubView('mapping')}
           >
             <span><Icon name="book" className="icon inline-icon" />Defect Mapping Dictionary (OP → Machine AOI)</span>
-            <span className="tag-badge" style={{ background: '#3b82f6', color: '#fff', marginLeft: '6px', fontSize: '12px' }}>
+            <span className="tag-badge text-xs" style={{ background: 'var(--status-info)', color: '#fff', marginLeft: '6px' }}>
               {mappings.length || 'Dictionary'}
             </span>
           </button>
@@ -893,7 +902,7 @@ export function OpReconciliationTab({
       {(mode === 'records' || subView === 'records') && (
         <div className="tab-stack">
           {/* 1. Rate KPI Report Cards */}
-          <section className="metrics-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 10 }}>
+          <section className="metrics-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(170px, 100%), 1fr))', gap: 10 }}>
             <MetricCard
               label="Total OP Records"
               value={records?.totalCount.toLocaleString() ?? 0}
@@ -937,24 +946,24 @@ export function OpReconciliationTab({
               <div>
                 <p className="eyebrow">Rate Report & Donut Visualization</p>
                 <h3>All OP Records Reconciled with Product by FOG ID</h3>
-                <p className="text-xs text-muted" style={{ marginTop: 4 }}>
+                <p className="text-xs text-muted mt-1">
                   Comprehensive breakdown of OP reviews against Machine AOI judgments with interactive donut analytics.
                 </p>
               </div>
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-                <div style={{ display: 'inline-flex', background: '#f1f5f9', padding: '2px', borderRadius: '7px', border: '1px solid #cbd5e1', gap: '2px' }}>
+              <div className="hstack gap-md flex-wrap">
+                <div style={{ display: 'inline-flex', background: 'var(--slate-100)', padding: '2px', borderRadius: '7px', border: '1px solid var(--slate-300)', gap: '2px' }}>
                   <button
+                    className="text-xs"
                     type="button"
                     style={{
                       padding: '3px 10px',
-                      fontSize: '12px',
                       fontWeight: donutView === 'all' ? 700 : 500,
                       height: '26px',
                       borderRadius: '5px',
                       background: donutView === 'all' ? '#ffffff' : 'transparent',
-                      color: donutView === 'all' ? '#1d4ed8' : '#475569',
+                      color: donutView === 'all' ? 'var(--blue-700)' : 'var(--slate-600)',
                       boxShadow: donutView === 'all' ? '0 1px 2px rgba(0,0,0,0.08)' : 'none',
-                      border: donutView === 'all' ? '1px solid #bfdbfe' : '1px solid transparent',
+                      border: donutView === 'all' ? '1px solid var(--status-info-border)' : '1px solid transparent',
                       cursor: 'pointer',
                     }}
                     onClick={() => setDonutView('all')}
@@ -962,17 +971,17 @@ export function OpReconciliationTab({
                     <Icon name="analysis" className="icon inline-icon" />All Categories
                   </button>
                   <button
+                    className="text-xs"
                     type="button"
                     style={{
                       padding: '3px 10px',
-                      fontSize: '12px',
                       fontWeight: donutView === 'overkill' ? 700 : 500,
                       height: '26px',
                       borderRadius: '5px',
                       background: donutView === 'overkill' ? '#ffffff' : 'transparent',
-                      color: donutView === 'overkill' ? '#1d4ed8' : '#475569',
+                      color: donutView === 'overkill' ? 'var(--blue-700)' : 'var(--slate-600)',
                       boxShadow: donutView === 'overkill' ? '0 1px 2px rgba(0,0,0,0.08)' : 'none',
-                      border: donutView === 'overkill' ? '1px solid #bfdbfe' : '1px solid transparent',
+                      border: donutView === 'overkill' ? '1px solid var(--status-info-border)' : '1px solid transparent',
                       cursor: 'pointer',
                     }}
                     onClick={() => setDonutView('overkill')}
@@ -986,21 +995,21 @@ export function OpReconciliationTab({
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 420px) minmax(320px, 1fr)', gap: 20, alignItems: 'center', marginTop: 12 }}>
+            <div className="stack-md mt-3" style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 420px) minmax(320px, 1fr)', gap: 20, alignItems: 'center' }}>
               {/* Donut Chart */}
-              <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 8, padding: '12px 8px', minHeight: 290, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div className="hstack" style={{ background: '#ffffff', border: '1px solid var(--slate-200)', borderRadius: 8, padding: '12px 8px', minHeight: 290, justifyContent: 'center' }}>
                 <ReactECharts option={reconciliationDonutOption} style={{ height: 280, width: '100%' }} notMerge />
               </div>
 
               {/* Rate Breakdown Table / Progress List */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
-                  <span style={{ fontSize: '12px', fontWeight: 700, color: '#334155' }}>Classification Rate Breakdown</span>
+              <div className="vstack gap-md">
+                <div className="hstack justify-between" style={{ marginBottom: 2 }}>
+                  <span className="text-xs font-bold" style={{ color: 'var(--slate-700)' }}>Classification Rate Breakdown</span>
                   {recordsClassification !== 'All' && (
                     <button
                       type="button"
-                      className="ghost-button compact"
-                      style={{ fontSize: '12px', color: '#2563eb' }}
+                      className="ghost-button compact text-xs"
+                      style={{ color: 'var(--blue-600)' }}
                       onClick={() => { setRecordsClassification('All'); setRecordsPage(1); }}
                     >
                       Reset filter ({recordsClassification})
@@ -1013,36 +1022,34 @@ export function OpReconciliationTab({
                   return (
                     <div
                       key={item.key}
-                      onClick={() => {
+                      {...activatable(() => {
                         setRecordsClassification(recordsClassification === item.key ? 'All' : item.key)
                         setRecordsPage(1)
-                      }}
+                      }, { selected: isFiltered })}
                       style={{
                         padding: '8px 12px',
                         borderRadius: 6,
-                        border: `1px solid ${isFiltered ? item.color : '#e2e8f0'}`,
+                        border: `1px solid ${isFiltered ? item.color : 'var(--slate-200)'}`,
                         background: isFiltered ? item.bg : '#ffffff',
                         cursor: 'pointer',
                         transition: 'all 0.15s ease',
                       }}
                       title={`Click to filter table by ${item.label}`}
                     >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <div className="hstack justify-between" style={{ marginBottom: 4 }}>
+                        <div className="hstack gap-sm">
                           <span style={{ width: 8, height: 8, borderRadius: '50%', background: item.color, display: 'inline-block' }} />
-                          <strong style={{ fontSize: '12px', color: item.textColor }}>{item.label}</strong>
-                          <span style={{ fontSize: '12px', color: '#64748b' }}>({item.hint})</span>
+                          <strong className="text-xs" style={{ color: item.textColor }}>{item.label}</strong>
+                          <span className="text-xs text-muted">({item.hint})</span>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <span style={{ fontSize: '12px', fontWeight: 700, color: '#0f172a' }}>{item.count.toLocaleString()}</span>
+                        <div className="hstack gap-md">
+                          <span className="text-xs font-bold text-strong">{item.count.toLocaleString()}</span>
                           <span
-                            className="tag-badge"
+                            className="tag-badge text-xs font-bold"
                             style={{
                               background: item.bg,
                               color: item.textColor,
                               borderColor: item.border,
-                              fontSize: '12px',
-                              fontWeight: 700,
                               minWidth: 50,
                               textAlign: 'center',
                             }}
@@ -1051,14 +1058,15 @@ export function OpReconciliationTab({
                           </span>
                         </div>
                       </div>
-                      <div style={{ width: '100%', height: 6, borderRadius: 999, background: '#f1f5f9', overflow: 'hidden' }}>
+                      <div className="w-full" style={{ height: 6, borderRadius: 999, background: 'var(--slate-100)', overflow: 'hidden' }}>
                         <div
                           style={{
                             height: '100%',
-                            width: `${Math.min(100, item.rate * 100)}%`,
+                            width: '100%',
                             background: item.color,
-                            borderRadius: 999,
-                            transition: 'width 0.25s ease',
+                            transform: `scaleX(${Math.min(1, Math.max(0, item.rate))})`,
+                            transformOrigin: 'left center',
+                            transition: 'transform 0.25s ease',
                           }}
                         />
                       </div>
@@ -1072,12 +1080,13 @@ export function OpReconciliationTab({
           {/* 3. Search & Filter Bar */}
           <section className="panel" style={{ padding: '12px 14px' }}>
             <form
+              className="gap-md"
               onSubmit={(e) => {
                 e.preventDefault()
                 setRecordsPage(1)
                 setAppliedRecordsSearch(recordsSearch.trim())
               }}
-              style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'end' }}
+              style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'end' }}
             >
               <Field label="Search FOG ID / Defect / Mapping">
                 <DebouncedInput
@@ -1177,11 +1186,11 @@ export function OpReconciliationTab({
               </table>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', marginTop: 12, flexWrap: 'wrap' }}>
+            <div className="hstack justify-between gap-lg mt-3 flex-wrap">
               <span className="text-xs text-muted">
                 Showing {records?.items.length ?? 0} of {records?.totalCount ?? 0} rows · Page {records?.page ?? 1} of {Math.max(records?.totalPages ?? 0, 1)}
               </span>
-              <div style={{ display: 'flex', gap: 8 }}>
+              <div className="gap-md" style={{ display: 'flex' }}>
                 <button
                   type="button"
                   className="ghost-button compact"
@@ -1245,24 +1254,23 @@ export function OpReconciliationTab({
                     <th>Overkill Rate (%)</th>
                     <th>Mapped OP Defect Names</th>
                     <th>Assessment & Action</th>
-                    <th style={{ textAlign: 'right' }}>Action</th>
+                    <th className="text-right">Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   {(analysis?.defectBreakdown ?? []).map((item) => (
                     <tr key={item.machineDefectName}>
-                      <td className="font-bold" style={{ color: '#60a5fa' }}>{item.machineDefectName}</td>
+                      <td className="font-bold text-info">{item.machineDefectName}</td>
                       <td><StatusPill value={item.defectFamily} /></td>
                       <td><strong>{item.totalMachineNg.toLocaleString()}</strong></td>
-                      <td style={{ color: '#a855f7', fontWeight: 600 }}>{item.realDefectCount}</td>
-                      <td style={{ color: '#f59e0b', fontWeight: 600 }}>{item.overkillCount}</td>
+                      <td className="text-real font-semibold">{item.realDefectCount}</td>
+                      <td className="text-overkill font-semibold">{item.overkillCount}</td>
                       <td>
                         <span
-                          className="tag-badge"
+                          className="tag-badge font-bold"
                           style={{
-                            background: item.overkillRate >= 0.5 ? 'rgba(239, 68, 68, 0.2)' : 'rgba(245, 158, 11, 0.15)',
-                            color: item.overkillRate >= 0.5 ? '#ef4444' : '#f59e0b',
-                            fontWeight: 700,
+                            background: item.overkillRate >= 0.5 ? 'var(--status-ng-bg)' : 'var(--status-overkill-bg)',
+                            color: item.overkillRate >= 0.5 ? 'var(--status-ng-text)' : 'var(--status-overkill-text)',
                           }}
                         >
                           {formatPercent(item.overkillRate)}
@@ -1272,11 +1280,11 @@ export function OpReconciliationTab({
                         {item.associatedOpDefectNames.length > 0 ? item.associatedOpDefectNames.join(', ') : '—'}
                       </td>
                       <td className="text-xs" style={{ maxWidth: 300 }}>{item.overkillSeverityAssessment}</td>
-                      <td style={{ textAlign: 'right' }}>
+                      <td className="text-right">
                         <button
                           type="button"
-                          className="secondary compact"
-                          style={{ fontSize: '12px', whiteSpace: 'nowrap' }}
+                          className="secondary compact text-xs"
+                          style={{ whiteSpace: 'nowrap' }}
                           onClick={() => {
                             setTargetDefect(item.machineDefectName)
                             setSubView('deepdive')
@@ -1310,12 +1318,12 @@ export function OpReconciliationTab({
               <div>
                 <p className="eyebrow">Feature Separation & Threshold Tuning</p>
                 <h2>Deep-Dive Feature Analysis: [{analysis?.deepDive?.targetDefectName || 'None Selected'}]</h2>
-                <p className="text-xs text-muted" style={{ marginTop: '4px' }}>
+                <p className="text-xs text-muted mt-1">
                   Compare feature distributions (Area, Width, Height, GrayMin, DL Confidence...) between <strong>Overkill</strong> and <strong>Real Defect</strong> samples to establish Gold Thresholds.
                 </p>
               </div>
 
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <div className="hstack gap-md">
                 <Field label="Target Defect Class">
                   <select
                     value={targetDefect}
@@ -1336,16 +1344,16 @@ export function OpReconciliationTab({
             {/* Threshold recommendations */}
             {analysis?.deepDive?.thresholdTuningRecommendations && analysis.deepDive.thresholdTuningRecommendations.length > 0 && (
               <div
+                className="mt-3"
                 style={{
-                  marginTop: '12px',
-                  background: 'rgba(59, 130, 246, 0.1)',
-                  border: '1px solid rgba(59, 130, 246, 0.3)',
+                  background: 'var(--status-info-bg)',
+                  border: '1px solid var(--status-info-border)',
                   borderRadius: '6px',
                   padding: '12px',
                 }}
               >
-                <strong style={{ color: '#93c5fd', fontSize: '13px' }}><Icon name="target" className="icon inline-icon" />Recommended Gold Thresholds:</strong>
-                <ul style={{ margin: '6px 0 0 16px', fontSize: '12px', color: '#cbd5e1' }}>
+                <strong className="text-info text-sm"><Icon name="target" className="icon inline-icon" />Recommended Gold Thresholds:</strong>
+                <ul className="text-xs text-soft" style={{ margin: '6px 0 0 16px' }}>
                   {analysis.deepDive.thresholdTuningRecommendations.map((rec, i) => (
                     <li key={i} style={{ marginBottom: '4px' }}>
                       {rec}
@@ -1370,10 +1378,10 @@ export function OpReconciliationTab({
                 <thead>
                   <tr>
                     <th>Feature Parameter</th>
-                    <th style={{ color: '#f59e0b' }}>Overkill Mean</th>
-                    <th style={{ color: '#f59e0b' }}>Overkill [Min - Max]</th>
-                    <th style={{ color: '#a855f7' }}>Real Defect Mean</th>
-                    <th style={{ color: '#a855f7' }}>Real Defect [Min - Max]</th>
+                    <th className="text-overkill">Overkill Mean</th>
+                    <th className="text-overkill">Overkill [Min - Max]</th>
+                    <th className="text-real">Real Defect Mean</th>
+                    <th className="text-real">Real Defect [Min - Max]</th>
                     <th>Separation Assessment</th>
                   </tr>
                 </thead>
@@ -1384,21 +1392,21 @@ export function OpReconciliationTab({
                       <tr
                         key={f.featureName}
                         style={{
-                          background: isGold ? 'rgba(16, 185, 129, 0.08)' : undefined,
+                          background: isGold ? 'var(--status-ok-bg)' : undefined,
                         }}
                       >
-                        <td className="font-mono font-bold" style={{ color: isGold ? '#34d399' : '#e2e8f0' }}>
+                        <td className="font-mono font-bold" style={{ color: isGold ? 'var(--status-ok-text)' : 'var(--slate-900)' }}>
                           {isGold && ''}
                           {f.featureName}
                         </td>
-                        <td className="font-mono" style={{ color: '#f59e0b' }}>{f.overkillMean.toFixed(1)}</td>
+                        <td className="font-mono text-overkill">{f.overkillMean.toFixed(1)}</td>
                         <td className="font-mono text-xs text-muted">[{f.overkillMin} - {f.overkillMax}]</td>
-                        <td className="font-mono" style={{ color: '#a855f7' }}>{f.realDefectMean.toFixed(1)}</td>
+                        <td className="font-mono text-real">{f.realDefectMean.toFixed(1)}</td>
                         <td className="font-mono text-xs text-muted">[{f.realDefectMin} - {f.realDefectMax}]</td>
                         <td className="text-xs" style={{ maxWidth: 360 }}>
                           <span
                             style={{
-                              color: isGold ? '#10b981' : '#cbd5e1',
+                              color: isGold ? 'var(--status-ok-text)' : 'var(--slate-600)',
                               fontWeight: isGold ? 700 : 400,
                             }}
                           >
@@ -1432,7 +1440,7 @@ export function OpReconciliationTab({
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(min(260px, 100%), 1fr))',
                 gap: '14px',
               }}
             >
@@ -1442,36 +1450,34 @@ export function OpReconciliationTab({
                   className="panel"
                   style={{
                     padding: '12px',
-                    border: '1px solid rgba(245, 158, 11, 0.3)',
-                    background: 'rgba(245, 158, 11, 0.03)',
+                    border: '1px solid var(--status-overkill-border)',
+                    background: 'var(--status-overkill-bg)',
                   }}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                    <strong className="mono-code" style={{ color: '#f59e0b' }}>{sample.keyId}</strong>
-                    <span className="tag-badge" style={{ background: 'rgba(245, 158, 11, 0.2)', color: '#f59e0b', fontSize: '12px' }}>
+                  <div className="hstack justify-between" style={{ marginBottom: '6px' }}>
+                    <strong className="mono-code text-overkill">{sample.keyId}</strong>
+                    <span className="tag-badge text-overkill text-xs" style={{ background: 'var(--status-overkill-bg)' }}>
                       OVERKILL
                     </span>
                   </div>
 
-                  <div style={{ fontSize: '12px', color: '#cbd5e1', marginBottom: '4px' }}>
-                    Machine NG: <strong style={{ color: '#ef4444' }}>{sample.machineDefectName}</strong>
+                  <div className="text-xs text-soft" style={{ marginBottom: '4px' }}>
+                    Machine NG: <strong className="text-ng">{sample.machineDefectName}</strong>
                   </div>
-                  <div style={{ fontSize: '12px', color: '#cbd5e1', marginBottom: '6px' }}>
-                    OP Verdict: <strong style={{ color: '#22c55e' }}>{sample.opJudge} ({sample.opDefectName || 'No defect'})</strong>
+                  <div className="text-xs text-soft" style={{ marginBottom: '6px' }}>
+                    OP Verdict: <strong className="text-ok">{sample.opJudge} ({sample.opDefectName || 'No defect'})</strong>
                   </div>
 
                   {sample.keyFeatures && Object.keys(sample.keyFeatures).length > 0 && (
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '6px' }}>
+                    <div className="gap-xs" style={{ display: 'flex', flexWrap: 'wrap', marginTop: '6px' }}>
                       {Object.entries(sample.keyFeatures).slice(0, 4).map(([k, v]) => (
                         <span
                           key={k}
-                          className="font-mono"
+                          className="font-mono text-xs text-soft"
                           style={{
-                            background: 'rgba(255,255,255,0.05)',
+                            background: 'var(--slate-50)',
                             padding: '1px 5px',
                             borderRadius: '3px',
-                            fontSize: '12px',
-                            color: '#cbd5e1',
                           }}
                         >
                           {k}: <b>{typeof v === 'number' ? v.toFixed(1) : v}</b>
@@ -1480,7 +1486,7 @@ export function OpReconciliationTab({
                     </div>
                   )}
 
-                  <p className="text-xs text-muted" style={{ marginTop: '8px', lineHeight: 1.3 }}>
+                  <p className="text-xs text-muted mt-2" style={{ lineHeight: 1.3 }}>
                     {sample.reason}
                   </p>
                 </div>
@@ -1503,12 +1509,12 @@ export function OpReconciliationTab({
               <div>
                 <p className="eyebrow">Dictionary Management</p>
                 <h2>Defect Mapping Dictionary (OP Defect Name → Machine AOI Defect)</h2>
-                <p className="text-xs text-muted" style={{ marginTop: '4px' }}>
+                <p className="text-xs text-muted mt-1">
                   Translates manual operator entries from Excel review sheets into standard machine defect classes (`DIC_Crack`, `Light_Fail`, `Bridging`...), designating whether the item is a confirmed Real Defect or an Overkill false alarm.
                 </p>
               </div>
 
-              <div style={{ display: 'flex', gap: '8px' }}>
+              <div className="gap-md" style={{ display: 'flex' }}>
                 <label className="secondary" style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center' }}>
                   {clsfAnalyzing ? 'Analyzing CLSF...' : 'Upload CLSF & Analyze'}
                   <input type="file" accept=".clsf,.json" onChange={(e) => void handleClsfUpload(e)} disabled={clsfAnalyzing} style={{ display: 'none' }} />
@@ -1539,7 +1545,7 @@ export function OpReconciliationTab({
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginTop: '12px' }}>
+            <div className="hstack gap-lg mt-3">
               <select value={mappingMachine} onChange={(e) => setMappingMachine(e.target.value)} style={{ maxWidth: 180 }}>
                 <option value="All">All Machines</option>
                 <option value="CP_AOI">CP_AOI</option>
@@ -1569,9 +1575,9 @@ export function OpReconciliationTab({
                   <h2>{clsfAnalysis.packageName}</h2>
                   <p className="text-xs text-muted">Machine {clsfAnalysis.machineCode} · Model {clsfAnalysis.modelCode} · {clsfAnalysis.activeRuleCount}/{clsfAnalysis.totalRules} active rules producing alarms.</p>
                 </div>
-                <div style={{ display: 'flex', gap: 8 }}>
+                <div className="gap-md" style={{ display: 'flex' }}>
                   <span className="tag-badge">Total defects: {clsfAnalysis.totalDefectOccurrences}</span>
-                  <span className="tag-badge" style={{ background: '#047857', color: '#fff' }}>Active rules: {clsfAnalysis.activeRuleCount}</span>
+                  <span className="tag-badge" style={{ background: 'var(--status-ok)', color: '#fff' }}>Active rules: {clsfAnalysis.activeRuleCount}</span>
                 </div>
               </div>
               <div className="table-responsive" style={{ maxHeight: 480 }}>
@@ -1583,13 +1589,13 @@ export function OpReconciliationTab({
                         <td>{rule.priority}</td>
                         <td><strong className="font-mono">{rule.ruleName}</strong></td>
                         <td>{rule.vpScope || '—'}</td>
-                        <td><span className="tag-badge" style={{ background: rule.isOccurring ? '#dc2626' : '#334155', color: '#fff' }}>{rule.isOccurring ? 'ACTIVE ALARMS' : '0 alarms'}</span></td>
+                        <td><span className="tag-badge" style={{ background: rule.isOccurring ? 'var(--status-ng)' : '#334155', color: '#fff' }}>{rule.isOccurring ? 'ACTIVE ALARMS' : '0 alarms'}</span></td>
                         <td><strong>{rule.occurrenceCount.toLocaleString()}</strong></td>
                         <td>
                           <div style={{ minWidth: 130 }}>
                             <strong>{rule.occurrencePercent.toFixed(2)}%</strong>
-                            <div style={{ height: 5, background: '#1e293b', borderRadius: 4, overflow: 'hidden', marginTop: 3 }}>
-                              <div style={{ width: `${Math.min(100, rule.occurrencePercent)}%`, height: '100%', background: rule.isOccurring ? '#ef4444' : '#475569' }} />
+                            <div style={{ height: 5, background: 'var(--slate-50)', borderRadius: 4, overflow: 'hidden', marginTop: 3 }}>
+                              <div style={{ width: `${Math.min(100, rule.occurrencePercent)}%`, height: '100%', background: rule.isOccurring ? 'var(--status-ng)' : '#475569' }} />
                             </div>
                           </div>
                         </td>
@@ -1615,32 +1621,31 @@ export function OpReconciliationTab({
                     <th>Classification</th>
                     <th>Description / Notes</th>
                     <th>Updated</th>
-                    <th style={{ textAlign: 'right' }}>Actions</th>
+                    <th className="text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredMappings.map((m) => (
                     <tr key={m.id}>
-                      <td className="font-bold" style={{ color: '#e2e8f0' }}>{m.opDefectName}</td>
+                      <td className="font-bold text-strong">{m.opDefectName}</td>
                       <td><strong>{m.machineCode}</strong><div className="text-xs text-muted">{m.packageName}</div></td>
-                      <td className="font-mono" style={{ color: '#60a5fa', fontWeight: 600 }}>{m.machineDefectName}</td>
+                      <td className="font-mono text-info font-semibold">{m.machineDefectName}</td>
                       <td><StatusPill value={m.defectFamily} /></td>
                       <td>{m.componentGroup || '—'}</td>
                       <td>
                         <span
-                          className="tag-badge"
+                          className="tag-badge font-bold"
                           style={{
-                            background: m.isConfirmedDefect ? 'rgba(168, 85, 247, 0.2)' : 'rgba(245, 158, 11, 0.2)',
-                            color: m.isConfirmedDefect ? '#a855f7' : '#f59e0b',
-                            fontWeight: 700,
+                            background: m.isConfirmedDefect ? 'var(--status-real-bg)' : 'var(--status-overkill-bg)',
+                            color: m.isConfirmedDefect ? 'var(--status-real-text)' : 'var(--status-overkill-text)',
                           }}
                         >
-                          {m.isConfirmedDefect ? '✓ REAL DEFECT' : 'OVERKILL (FALSE ALARM)'}
+                          {m.isConfirmedDefect ? 'REAL DEFECT' : 'OVERKILL (FALSE ALARM)'}
                         </span>
                       </td>
                       <td className="text-xs text-muted" style={{ maxWidth: 280 }}>{m.description || '—'}</td>
                       <td className="text-xs font-mono text-muted">{formatDateTime(m.updatedAtUtc || m.createdAtUtc)}</td>
-                      <td style={{ textAlign: 'right' }}>
+                      <td className="text-right">
                         <button
                           type="button"
                           className="ghost-button compact"
@@ -1694,7 +1699,7 @@ export function OpReconciliationTab({
           open={showMappingModal}
           onClose={() => setShowMappingModal(false)}
         >
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div className="vstack gap-lg">
             <div className="query-form-grid">
               <Field label="Machine Package">
                 <input value={mappingForm.machineCode ?? ''} onChange={(e) => setMappingForm({ ...mappingForm, machineCode: e.target.value.toUpperCase() })} placeholder="CP_AOI" />
@@ -1743,17 +1748,17 @@ export function OpReconciliationTab({
             </Field>
 
             <Field label="Operator Judgment Nature">
-              <label style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', cursor: 'pointer', marginTop: '4px' }}>
+              <label className="gap-md mt-1" style={{ display: 'inline-flex', alignItems: 'center', cursor: 'pointer' }}>
                 <input
                   type="checkbox"
                   checked={mappingForm.isConfirmedDefect}
                   onChange={(e) => setMappingForm({ ...mappingForm, isConfirmedDefect: e.target.checked })}
                 />
-                <span style={{ fontSize: '13px', fontWeight: 600 }}>
-                  {mappingForm.isConfirmedDefect ? '✓ Confirmed Real Defect' : 'Overkill / False Alarm (Cleanable/Noise)'}
+                <span className="text-sm font-semibold">
+                  {mappingForm.isConfirmedDefect ? 'Confirmed Real Defect' : 'Overkill / False Alarm (Cleanable/Noise)'}
                 </span>
               </label>
-              <small className="text-muted" style={{ display: 'block', marginTop: '4px' }}>
+              <small className="text-muted mt-1" style={{ display: 'block' }}>
                 Uncheck if operator considers this defect false alarm, cleanable dust, or acceptable within tolerance (Overkill).
               </small>
             </Field>
@@ -1767,12 +1772,12 @@ export function OpReconciliationTab({
               />
             </Field>
 
-            <div className="actions" style={{ justifyContent: 'flex-end', marginTop: '8px' }}>
+            <div className="actions mt-2" style={{ justifyContent: 'flex-end' }}>
               <button type="button" className="ghost-button" onClick={() => setShowMappingModal(false)}>
                 Cancel
               </button>
-              <button type="button" className="primary" onClick={() => void handleSaveMapping()}>
-                Save Mapping
+              <button type="button" className="primary" onClick={() => void handleSaveMapping()} disabled={savingMapping} aria-busy={savingMapping || undefined}>
+                {savingMapping ? 'Saving…' : 'Save Mapping'}
               </button>
             </div>
           </div>
@@ -1798,17 +1803,18 @@ export function OpReconciliationTab({
             </div>
             <Field label="Paste Mapping Rows" hint="Copy 4 columns from Excel; tab or multiple spaces are automatically parsed.">
               <textarea
+                className="font-mono text-xs"
                 rows={16}
                 value={bulkMappingText}
                 onChange={(e) => setBulkMappingText(e.target.value)}
                 placeholder={'COP Bonding Particle\tParticle\tCOP\tSR_Bonding_Particle\nCOP DIC Damage\tOptical\tCOP\tDIC_Crack\nMCL Small Bubble\tOptical\tMCL\tMCL_AA_Bubble'}
-                style={{ fontFamily: 'monospace', fontSize: '12px', whiteSpace: 'pre' }}
+                style={{ whiteSpace: 'pre' }}
               />
             </Field>
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            <div className="gap-md" style={{ display: 'flex', flexWrap: 'wrap' }}>
               <span className="tag-badge">Machine: {mappingMachine}</span>
               <span className="tag-badge">Package: {mappingPackage}</span>
-              <span className="tag-badge" style={{ background: '#047857', color: '#fff' }}>{parsedBulkMappings.length} rules parsed</span>
+              <span className="tag-badge" style={{ background: 'var(--status-ok)', color: '#fff' }}>{parsedBulkMappings.length} rules parsed</span>
             </div>
             {parsedBulkMappings.length > 0 && (
               <div className="table-responsive" style={{ maxHeight: 280 }}>
@@ -1839,20 +1845,20 @@ export function OpReconciliationTab({
           wide
         >
           <div className="modal-form">
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center', marginBottom: '8px' }}>
+            <div className="hstack gap-md flex-wrap" style={{ marginBottom: '8px' }}>
               <button
                 type="button"
-                className="secondary"
+                className="secondary gap-sm font-semibold"
                 onClick={() => void handleReadFromClipboard()}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontWeight: 600 }}
+                style={{ display: 'inline-flex', alignItems: 'center' }}
               >
                 <Icon name="clipboard" className="icon inline-icon" />Read from Clipboard (Auto-paste)
               </button>
               <button
                 type="button"
-                className="secondary"
+                className="secondary gap-sm"
                 onClick={() => setPasteText(CONCEPT_SAMPLE_DATA)}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                style={{ display: 'inline-flex', alignItems: 'center' }}
                 title="Load 9 sample rows for FOP, POL, COP, B/P"
               >
                 <Icon name="info" className="icon inline-icon" />Load Concept Sample (FOP, POL, COP, B/P)
@@ -1860,16 +1866,15 @@ export function OpReconciliationTab({
               {pasteText && (
                 <button
                   type="button"
-                  className="ghost-button"
+                  className="ghost-button text-ng"
                   onClick={() => setPasteText('')}
-                  style={{ color: '#ef4444' }}
                 >
                   <Icon name="trash" className="icon inline-icon" />Clear
                 </button>
               )}
             </div>
 
-            <div className="query-form-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
+            <div className="query-form-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(220px, 100%), 1fr))' }}>
               <Field label="Production Machine *" required>
                 <input
                   value={pasteMachine}
@@ -1893,27 +1898,28 @@ export function OpReconciliationTab({
               hint="Paste columns FOG ID, Defect Name, Judgment. You can copy table rows directly from Excel."
             >
               <textarea
+                className="font-mono text-xs"
                 rows={10}
                 value={pasteText}
                 onChange={(e) => setPasteText(e.target.value)}
                 placeholder={`FOG ID\tDefect Name\tJudge\nA0E7670S19B134214228\tDent\tNG\nA0B265KC29B125613228\tDamage\tNG\nA0AE65D318A125713228\tCrack\tNG`}
-                style={{ fontFamily: 'monospace', fontSize: '12px', whiteSpace: 'pre' }}
+                style={{ whiteSpace: 'pre' }}
               />
             </Field>
 
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+            <div className="hstack gap-md flex-wrap">
               <span className="tag-badge">Machine: {pasteMachine || 'CP_AOI'}</span>
-              <span className="tag-badge" style={{ background: '#dbeafe', color: '#1d4ed8' }}>Line: Auto-resolved from Product by FOG ID</span>
-              <span className="tag-badge" style={{ background: '#2563eb', color: '#fff', fontWeight: 600 }}>
+              <span className="tag-badge" style={{ background: 'var(--status-info-bg)', color: 'var(--blue-700)' }}>Line: Auto-resolved from Product by FOG ID</span>
+              <span className="tag-badge font-semibold" style={{ background: 'var(--blue-600)', color: '#fff' }}>
                 {pasteStats.total} rows parsed ({pasteStats.uniqueKeys} FOG IDs)
               </span>
-              <span className="tag-badge" style={{ background: '#ef4444', color: '#fff' }}>
+              <span className="tag-badge" style={{ background: 'var(--status-ng)', color: '#fff' }}>
                 {pasteStats.ngCount} NG (Defect)
               </span>
-              <span className="tag-badge" style={{ background: '#10b981', color: '#fff' }}>
+              <span className="tag-badge" style={{ background: 'var(--status-ok)', color: '#fff' }}>
                 {pasteStats.okCount} OK (Overkill)
               </span>
-              <span className="tag-badge" style={{ background: '#047857', color: '#fff' }}>
+              <span className="tag-badge" style={{ background: 'var(--status-ok)', color: '#fff' }}>
                 {pasteStats.mappedCount}/{pasteStats.total} Dictionary Mapped
               </span>
             </div>
@@ -1934,15 +1940,14 @@ export function OpReconciliationTab({
                     {parsedPasteRows.map((row, idx) => (
                       <tr key={`${row.keyId}-${idx}`}>
                         <td className="text-muted">{idx + 1}</td>
-                        <td className="font-mono" style={{ fontWeight: 600 }}>{row.keyId}</td>
+                        <td className="font-mono font-semibold">{row.keyId}</td>
                         <td>{row.opDefectName || <span className="text-muted italic">(Empty)</span>}</td>
                         <td>
                           <span
-                            className="tag-badge"
+                            className="tag-badge font-bold"
                             style={{
-                              background: row.judge === 'NG' ? '#fee2e2' : '#d1fae5',
-                              color: row.judge === 'NG' ? '#b91c1c' : '#047857',
-                              fontWeight: 700,
+                              background: row.judge === 'NG' ? 'var(--status-ng-bg)' : 'var(--status-ok-bg)',
+                              color: row.judge === 'NG' ? 'var(--status-ng-text)' : 'var(--status-ok-text)',
                               padding: '2px 8px',
                               borderRadius: '4px',
                             }}
@@ -1954,14 +1959,14 @@ export function OpReconciliationTab({
                           {row.matchedMapping ? (
                             <span
                               className="tag-badge"
-                              style={{ background: '#ecfdf5', color: '#065f46', border: '1px solid #a7f3d0' }}
+                              style={{ background: 'var(--status-ok-bg)', color: '#065f46', border: '1px solid #a7f3d0' }}
                             >
-                              ✓ {row.matchedMapping.machineDefectName} ({row.matchedMapping.defectFamily})
+                              <Icon name="check" className="icon inline-icon" />{row.matchedMapping.machineDefectName} ({row.matchedMapping.defectFamily})
                             </span>
                           ) : (
                             <span
-                              className="tag-badge"
-                              style={{ background: '#fffbeb', color: '#b45309', border: '1px solid #fde68a' }}
+                              className="tag-badge text-overkill"
+                              style={{ background: 'var(--status-overkill-bg)', border: '1px solid var(--status-overkill-border)' }}
                             >
                               <Icon name="warning" className="icon inline-icon" />Not in dictionary
                             </span>

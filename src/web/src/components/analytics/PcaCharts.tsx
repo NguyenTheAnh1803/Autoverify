@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react'
+import { Icon } from '../../ui'
 import ReactECharts from '../ReactECharts'
 import type { PcaResult } from '../../types'
 
@@ -43,15 +44,11 @@ export const PcaCharts: React.FC<PcaChartsProps> = ({ result, onSelectRowIndex }
       title: {
         text: 'PCA Scree Plot (Explained & Cumulative Variance)',
         left: 'left',
-        textStyle: { color: '#cbd5e1', fontSize: 13, fontWeight: 'normal' },
       },
       tooltip: {
         trigger: 'axis',
-        backgroundColor: '#1e293b',
-        borderColor: '#475569',
-        textStyle: { color: '#f1f5f9', fontSize: 12 },
         formatter: (params: Array<{ seriesName: string; value: string; axisValue: string }>) => `
-          <div style="font-family:monospace;">
+          <div style="font-family:var(--font-mono);">
             <div><strong>${params[0].axisValue}</strong></div>
             <div>Explained Var: ${params[0].value}%</div>
             <div>Cumulative Var: ${params[1]?.value}%</div>
@@ -60,35 +57,25 @@ export const PcaCharts: React.FC<PcaChartsProps> = ({ result, onSelectRowIndex }
       },
       legend: {
         data: ['Explained Variance (%)', 'Cumulative Variance (%)'],
-        textStyle: { color: '#94a3b8' },
         right: '20px',
         top: '5px',
       },
-      grid: { left: '45px', right: '45px', top: '40px', bottom: '30px' },
+      grid: { left: 12, right: 12, top: 44, bottom: 14 },
       xAxis: {
         type: 'category',
         data: xData,
-        axisLine: { lineStyle: { color: '#475569' } },
-        axisLabel: { color: '#94a3b8', fontSize: 10 },
       },
       yAxis: [
         {
           type: 'value',
           name: '% Explained',
           max: 100,
-          axisLine: { lineStyle: { color: '#475569' } },
-          splitLine: { lineStyle: { color: '#1e293b' } },
-          axisLabel: { color: '#94a3b8', fontSize: 10 },
-          nameTextStyle: { color: '#94a3b8', fontSize: 10 },
         },
         {
           type: 'value',
           name: '% Cumulative',
           max: 100,
-          axisLine: { lineStyle: { color: '#475569' } },
           splitLine: { show: false },
-          axisLabel: { color: '#94a3b8', fontSize: 10 },
-          nameTextStyle: { color: '#94a3b8', fontSize: 10 },
         },
       ],
       series: [
@@ -96,15 +83,15 @@ export const PcaCharts: React.FC<PcaChartsProps> = ({ result, onSelectRowIndex }
           name: 'Explained Variance (%)',
           type: 'bar',
           data: varData,
-          itemStyle: { color: '#0369a1' },
+          itemStyle: { color: '#2f6f9f' },
         },
         {
           name: 'Cumulative Variance (%)',
           type: 'line',
           yAxisIndex: 1,
           data: cumData,
-          itemStyle: { color: '#10b981' },
-          lineStyle: { color: '#10b981', width: 2 },
+          itemStyle: { color: '#3a9d8a' },
+          lineStyle: { color: '#3a9d8a', width: 1.5 },
           symbol: 'circle',
           symbolSize: 6,
         },
@@ -117,13 +104,13 @@ export const PcaCharts: React.FC<PcaChartsProps> = ({ result, onSelectRowIndex }
     if (!sampledPoints || sampledPoints.length === 0) return null
 
     const data = sampledPoints.map((p) => {
-      let color = '#38bdf8'
+      let color = '#2f6f9f'
       if (p.isHotellingOutlier && p.isSpeOutlier) {
-        color = '#ef4444' // both
+        color = '#c0392b' // both
       } else if (p.isHotellingOutlier) {
-        color = '#f97316' // Hotelling T2
+        color = '#c8862b' // Hotelling T2
       } else if (p.isSpeOutlier) {
-        color = '#a855f7' // SPE Q
+        color = '#8a5a9c' // SPE Q
       }
 
       return {
@@ -141,31 +128,27 @@ export const PcaCharts: React.FC<PcaChartsProps> = ({ result, onSelectRowIndex }
       title: {
         text: 'PCA Score Plot (PC1 vs PC2) & Multivariate Outliers',
         left: 'left',
-        textStyle: { color: '#cbd5e1', fontSize: 13, fontWeight: 'normal' },
       },
       tooltip: {
         trigger: 'item',
-        backgroundColor: '#1e293b',
-        borderColor: '#475569',
-        textStyle: { color: '#f1f5f9', fontSize: 12 },
         formatter: (params: { data: { value: [number, number]; rowIndex: number; hotellingT2: number; speQ: number; isHotellingOutlier: boolean; isSpeOutlier: boolean } }) => {
           const pt = params.data
           const outlierStatus = []
           if (pt.isHotellingOutlier) outlierStatus.push('T² Outlier')
           if (pt.isSpeOutlier) outlierStatus.push('SPE/Q Outlier')
           const badge = outlierStatus.length > 0
-            ? `<div style="color:#f87171;font-weight:bold;margin-top:4px;">[Outlier] ${outlierStatus.join(' + ')}</div>`
-            : '<div style="color:#10b981;font-size:12px;">Within Normal Boundaries</div>'
+            ? `<div style="color:#c0392b;font-weight:bold;margin-top:4px;">[Outlier] ${outlierStatus.join(' + ')}</div>`
+            : '<div style="color:#3a9d8a;font-size:12px;">Within Normal Boundaries</div>'
 
           return `
-            <div style="font-family:monospace;">
+            <div style="font-family:var(--font-mono);">
               <div><strong>Grid Row:</strong> #${pt.rowIndex}</div>
               <div><strong>PC1:</strong> ${pt.value[0].toFixed(3)}</div>
               <div><strong>PC2:</strong> ${pt.value[1].toFixed(3)}</div>
               <div><strong>Hotelling T²:</strong> ${pt.hotellingT2.toFixed(2)} (Thresh: ${hotellingT2Threshold.toFixed(2)})</div>
               <div><strong>SPE / Q:</strong> ${pt.speQ.toFixed(2)} (Thresh: ${speQThreshold.toFixed(2)})</div>
               ${badge}
-              <div style="font-size:12px;color:#94a3b8;margin-top:4px;">(Click point to locate in preview grid)</div>
+              <div style="font-size:12px;color:#64748b;margin-top:4px;">(Click point to locate in preview grid)</div>
             </div>
           `
         },
@@ -174,18 +157,10 @@ export const PcaCharts: React.FC<PcaChartsProps> = ({ result, onSelectRowIndex }
       xAxis: {
         type: 'value',
         name: 'PC1',
-        axisLine: { lineStyle: { color: '#475569' } },
-        splitLine: { lineStyle: { color: '#1e293b' } },
-        axisLabel: { color: '#94a3b8', fontSize: 10 },
-        nameTextStyle: { color: '#94a3b8', fontSize: 10 },
       },
       yAxis: {
         type: 'value',
         name: 'PC2',
-        axisLine: { lineStyle: { color: '#475569' } },
-        splitLine: { lineStyle: { color: '#1e293b' } },
-        axisLabel: { color: '#94a3b8', fontSize: 10 },
-        nameTextStyle: { color: '#94a3b8', fontSize: 10 },
       },
       series: [
         {
@@ -210,39 +185,29 @@ export const PcaCharts: React.FC<PcaChartsProps> = ({ result, onSelectRowIndex }
       title: {
         text: 'Feature Loadings (Component Contributions)',
         left: 'left',
-        textStyle: { color: '#cbd5e1', fontSize: 13, fontWeight: 'normal' },
       },
       tooltip: {
         trigger: 'axis',
-        backgroundColor: '#1e293b',
-        borderColor: '#475569',
-        textStyle: { color: '#f1f5f9', fontSize: 12 },
       },
       legend: {
         data: ['PC1 Loading', 'PC2 Loading'],
-        textStyle: { color: '#94a3b8' },
         right: '20px',
         top: '5px',
       },
       grid: { left: '100px', right: '30px', top: '40px', bottom: '30px' },
       xAxis: {
         type: 'value',
-        axisLine: { lineStyle: { color: '#475569' } },
-        splitLine: { lineStyle: { color: '#1e293b' } },
-        axisLabel: { color: '#94a3b8', fontSize: 10 },
       },
       yAxis: {
         type: 'category',
         data: categories,
-        axisLine: { lineStyle: { color: '#475569' } },
-        axisLabel: { color: '#94a3b8', fontSize: 10 },
       },
       series: [
         {
           name: 'PC1 Loading',
           type: 'bar',
           data: categories.map((k) => pc1Loadings[k]?.toFixed(3) ?? 0),
-          itemStyle: { color: '#0369a1' },
+          itemStyle: { color: '#2f6f9f' },
         },
         ...(components.length > 1
           ? [
@@ -250,7 +215,7 @@ export const PcaCharts: React.FC<PcaChartsProps> = ({ result, onSelectRowIndex }
                 name: 'PC2 Loading',
                 type: 'bar',
                 data: categories.map((k) => pc2Loadings[k]?.toFixed(3) ?? 0),
-                itemStyle: { color: '#a855f7' },
+                itemStyle: { color: '#8a5a9c' },
               },
             ]
           : []),
@@ -359,7 +324,7 @@ export const PcaCharts: React.FC<PcaChartsProps> = ({ result, onSelectRowIndex }
       )}
 
       {selectedPointPreview && (
-        <div className="analytics-feature-preview-card" style={{ marginTop: '8px' }}>
+        <div className="analytics-feature-preview-card mt-2">
           <div className="preview-header">
             <span className="badge info">PCA Score Observation Preview</span>
             <span className="sample-name font-mono">Row #{selectedPointPreview.rowIndex}</span>
@@ -374,7 +339,7 @@ export const PcaCharts: React.FC<PcaChartsProps> = ({ result, onSelectRowIndex }
               <span className="badge success">Normal Boundary</span>
             )}
           </div>
-          <div className="preview-body" style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <div className="preview-body hstack gap-xl flex-wrap">
             <div>
               <span className="text-xs text-slate-400">PC1: </span>
               <strong className="font-mono text-cyan-400">{selectedPointPreview.pc1.toFixed(3)}</strong>
@@ -411,7 +376,7 @@ export const PcaCharts: React.FC<PcaChartsProps> = ({ result, onSelectRowIndex }
         </div>
         {outliers.length === 0 ? (
           <div className="analytics-empty-note success">
-            ✓ No multivariate outliers exceeding Hotelling T² or SPE/Q thresholds.
+            <Icon name="check" className="icon inline-icon" />No multivariate outliers exceeding Hotelling T² or SPE/Q thresholds.
           </div>
         ) : (
           <div className="table-responsive">

@@ -864,6 +864,7 @@ export const DefectFeatureAnalyticsDashboard: React.FC<DefectFeatureAnalyticsDas
                                     type="button"
                                     className="btn btn-ghost btn-sm text-rose-400"
                                     onClick={() => void handleDeleteJob(job.jobId)}
+                                    disabled={deletingJob}
                                   >
                                     Delete
                                   </button>

@@ -315,71 +315,69 @@ export function StorageTab({ onNotice }: { onNotice: (notice: Notice) => void })
 
       {/* Path Sharding & Deep Compression Architecture Banner */}
       <div
+        className="text-strong gap-lg"
         style={{
-          background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
-          color: '#f8fafc',
+          background: 'var(--white)',
           borderRadius: '10px',
           padding: '16px 20px',
-          border: '1px solid #334155',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+          border: '1px solid var(--slate-200)',
           display: 'grid',
-          gap: '12px',
         }}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div className="hstack justify-between flex-wrap gap-md">
+          <div className="hstack" style={{ gap: '10px' }}>
             <span style={{ fontSize: '22px' }}><Icon name="overkill" className="icon inline-icon" /></span>
             <div>
               <strong style={{ fontSize: '15px', letterSpacing: '0.2px' }}>
                 Deep Compression & 4-Tier Path Sharding Architecture
               </strong>
-              <div style={{ fontSize: '12px', color: '#94a3b8' }}>
+              <div className="text-xs text-muted">
                 Prevents filesystem inode exhaustion & directory lock contention (Max 256 folders per tier).
               </div>
             </div>
           </div>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <span style={{ background: '#0369a1', color: '#ffffff', padding: '3px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 600 }}>
+          <div className="gap-md" style={{ display: 'flex' }}>
+            <span className="text-xs font-semibold" style={{ background: '#0369a1', color: '#ffffff', padding: '3px 8px', borderRadius: '4px' }}>
               GZIP Compression (Optimal)
             </span>
-            <span style={{ background: '#0f766e', color: '#ffffff', padding: '3px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 600 }}>
+            <span className="text-xs font-semibold" style={{ background: '#0f766e', color: '#ffffff', padding: '3px 8px', borderRadius: '4px' }}>
               Product ZIP Bundling
             </span>
-            <span style={{ background: '#4f46e5', color: '#ffffff', padding: '3px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 600 }}>
+            <span className="text-xs font-semibold" style={{ background: 'var(--blue-700)', color: '#ffffff', padding: '3px 8px', borderRadius: '4px' }}>
               On-Demand Streaming
             </span>
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px', paddingTop: '6px' }}>
-          <div style={{ background: 'rgba(255,255,255,0.05)', padding: '10px 14px', borderRadius: '6px', fontSize: '12px' }}>
-            <div style={{ color: '#38bdf8', fontWeight: 600, marginBottom: '4px' }}>Hierarchical Hash Sharding</div>
-            <div style={{ color: '#cbd5e1' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))', gap: '14px', paddingTop: '6px' }}>
+          <div className="text-xs" style={{ background: 'var(--slate-50)', border: '1px solid var(--slate-200)', padding: '10px 14px', borderRadius: '6px' }}>
+            <div className="font-semibold" style={{ color: '#0369a1', marginBottom: '4px' }}>Hierarchical Hash Sharding</div>
+            <div className="text-soft">
               MD5 hash partitioned into 4 levels of 2 hex chars:
               <br />
-              <code style={{ background: 'rgba(0,0,0,0.3)', padding: '2px 6px', borderRadius: '3px', color: '#a5f3fc' }}>
+              <code style={{ background: 'var(--white)', border: '1px solid var(--slate-200)', padding: '2px 6px', borderRadius: '3px', color: 'var(--slate-800)', overflowWrap: 'anywhere' }}>
                 {shardingInfo?.samplePath || '/defects/a1/b2/c3/d4/prod123/defect_feature.json.gz'}
               </code>
             </div>
           </div>
 
-          <div style={{ background: 'rgba(255,255,255,0.05)', padding: '10px 14px', borderRadius: '6px', fontSize: '12px' }}>
-            <div style={{ color: '#2dd4bf', fontWeight: 600, marginBottom: '4px' }}>Product Defect & Image Bundle</div>
-            <div style={{ color: '#cbd5e1' }}>
+          <div className="text-xs" style={{ background: 'var(--slate-50)', border: '1px solid var(--slate-200)', padding: '10px 14px', borderRadius: '6px' }}>
+            <div className="font-semibold" style={{ color: '#0f766e', marginBottom: '4px' }}>Product Defect & Image Bundle</div>
+            <div className="text-soft">
               Packages 10~50 defect feature JSONs + images per product into single ZIP:
               <br />
-              <code style={{ background: 'rgba(0,0,0,0.3)', padding: '2px 6px', borderRadius: '3px', color: '#99f6e4' }}>
+              <code style={{ background: 'var(--white)', border: '1px solid var(--slate-200)', padding: '2px 6px', borderRadius: '3px', color: 'var(--slate-800)', overflowWrap: 'anywhere' }}>
                 {shardingInfo?.bundleSamplePath || '/defects/a1/b2/c3/d4/prod123/prod123_bundle.zip'}
               </code>
             </div>
           </div>
 
-          <div style={{ background: 'rgba(255,255,255,0.05)', padding: '10px 14px', borderRadius: '6px', fontSize: '12px' }}>
-            <div style={{ color: '#c084fc', fontWeight: 600, marginBottom: '4px' }}>Unified Defect Pack (1 Pack / Product)</div>
-            <div style={{ color: '#cbd5e1' }}>
+          <div className="text-xs" style={{ background: 'var(--slate-50)', border: '1px solid var(--slate-200)', padding: '10px 14px', borderRadius: '6px' }}>
+            <div className="font-semibold" style={{ color: '#7e22ce', marginBottom: '4px' }}>Unified Defect Pack (1 Pack / Product)</div>
+            <div className="text-soft">
               Consolidates all defect NG rows for 1 Product ID into a single compressed JSON pack:
               <br />
-              <code style={{ background: 'rgba(0,0,0,0.3)', padding: '2px 6px', borderRadius: '3px', color: '#e9d5ff' }}>
+              <code style={{ background: 'var(--white)', border: '1px solid var(--slate-200)', padding: '2px 6px', borderRadius: '3px', color: 'var(--slate-800)', overflowWrap: 'anywhere' }}>
                 {shardingInfo?.samplePath ? shardingInfo.samplePath.replace(/[^/]+$/, '{keyId}_defects.json.gz') : '/defects/a1/b2/c3/d4/{keyId}_defects.json.gz'}
               </code>
             </div>
@@ -392,23 +390,22 @@ export function StorageTab({ onNotice }: { onNotice: (notice: Notice) => void })
         <div className="section-heading" style={{ marginBottom: '14px' }}>
           <div>
             <p className="eyebrow">SEAWEEDFS STORAGE CONFIGURATION & TEST</p>
-            <h2 style={{ fontSize: '18px', margin: 0 }}>SeaweedFS Cluster Connection</h2>
+            <h2 className="m-0" style={{ fontSize: '18px' }}>SeaweedFS Cluster Connection</h2>
           </div>
           <div className="actions">
             <button
               type="button"
-              className="secondary"
+              className="secondary hstack gap-sm"
               disabled={testingConnection}
               onClick={() => void handleTestConnection()}
-              style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
             >
               {testingConnection ? 'Testing Connection...' : 'Test Connection'}
             </button>
             <button
+              className="hstack gap-sm"
               type="button"
               disabled={configBusy}
               onClick={(e) => void handleSaveConfig(e)}
-              style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
             >
               {configBusy ? 'Saving...' : 'Save Settings'}
             </button>
@@ -416,7 +413,7 @@ export function StorageTab({ onNotice }: { onNotice: (notice: Notice) => void })
         </div>
 
         <form onSubmit={(e) => void handleSaveConfig(e)} style={{ display: 'grid', gap: '14px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px' }}>
+          <div className="gap-lg" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(240px, 100%), 1fr))' }}>
             <Field label="Filer URL (HTTP File API)" required>
               <input
                 type="text"
@@ -454,8 +451,8 @@ export function StorageTab({ onNotice }: { onNotice: (notice: Notice) => void })
             </Field>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '2px' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>
+          <div className="hstack" style={{ gap: '10px', marginTop: '2px' }}>
+            <label className="hstack gap-md text-sm font-semibold" style={{ cursor: 'pointer' }}>
               <input
                 type="checkbox"
                 style={{ width: '16px', height: '16px' }}
@@ -470,42 +467,40 @@ export function StorageTab({ onNotice }: { onNotice: (notice: Notice) => void })
         {/* Live Diagnostics Card */}
         {testResult && (
           <div
+            className="mt-4"
             style={{
-              marginTop: '16px',
               padding: '14px',
               borderRadius: '10px',
-              background: testResult.success ? '#f0fdf4' : '#fffbeb',
-              border: `1px solid ${testResult.success ? '#bbf7d0' : '#fde68a'}`,
+              background: testResult.success ? 'var(--status-ok-bg)' : 'var(--status-overkill-bg)',
+              border: `1px solid ${testResult.success ? 'var(--status-ok-border)' : 'var(--status-overkill-border)'}`,
             }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div className="hstack justify-between" style={{ marginBottom: '10px' }}>
+              <div className="hstack gap-md">
                 <span style={{ fontSize: '16px' }}>{testResult.success ? '' : ''}</span>
-                <strong style={{ color: testResult.success ? '#166534' : '#92400e', fontSize: '14px' }}>
+                <strong className="text-base" style={{ color: testResult.success ? 'var(--status-ok-text)' : 'var(--status-overkill-text)' }}>
                   {testResult.statusMessage}
                 </strong>
               </div>
-              <span style={{ fontSize: '12px', color: '#64748b' }}>
+              <span className="text-xs text-muted">
                 Probe Latency: <strong>{testResult.writeReadDeleteTest.responseTimeMs} ms</strong>
               </span>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '10px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(260px, 100%), 1fr))', gap: '10px' }}>
               {checksList.map((chk, idx) => (
                 <div
+                  className="vstack gap-xs"
                   key={idx}
                   style={{
                     background: '#fff',
                     padding: '10px 12px',
                     borderRadius: '8px',
-                    border: `1px solid ${chk.reachable ? '#dcfce7' : '#fee2e2'}`,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '4px',
+                    border: `1px solid ${chk.reachable ? 'var(--status-ok-border)' : 'var(--status-ng-border)'}`,
                   }}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <strong style={{ fontSize: '12px', color: '#1e293b' }}>{chk.name}</strong>
+                  <div className="hstack justify-between">
+                    <strong className="text-xs" style={{ color: 'var(--slate-800)' }}>{chk.name}</strong>
                     <span
                       className={`judge-badge ${chk.reachable ? 'ok' : 'ng'}`}
                       style={{ fontSize: '12px', padding: '1px 6px' }}
@@ -513,9 +508,9 @@ export function StorageTab({ onNotice }: { onNotice: (notice: Notice) => void })
                       {chk.reachable ? 'PASS' : 'FAIL'}
                     </span>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
-                    <span style={{ fontSize: '12px', color: chk.reachable ? '#15803d' : '#b91c1c' }}>{chk.details}</span>
-                    <span style={{ fontSize: '12px', color: '#94a3b8' }}>{chk.responseTimeMs}ms</span>
+                  <div className="hstack justify-between mt-1">
+                    <span className="text-xs" style={{ color: chk.reachable ? 'var(--status-ok-text)' : 'var(--status-ng-text)' }}>{chk.details}</span>
+                    <span className="text-xs text-muted">{chk.responseTimeMs}ms</span>
                   </div>
                 </div>
               ))}
@@ -529,40 +524,35 @@ export function StorageTab({ onNotice }: { onNotice: (notice: Notice) => void })
         <div className="section-heading" style={{ marginBottom: '14px' }}>
           <div>
             <p className="eyebrow">MARIADB DEFECT SEARCH & SEAWEEDFS MIGRATION</p>
-            <h2 style={{ fontSize: '18px', margin: 0 }}>Defect Feature Offload Workbench</h2>
+            <h2 className="m-0" style={{ fontSize: '18px' }}>Defect Feature Offload Workbench</h2>
           </div>
           <div className="actions">
             <button
               type="button"
-              className="secondary"
+              className="secondary hstack gap-sm"
               onClick={() => void loadDefects()}
               disabled={searchingDefects}
-              style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
             >
               {searchingDefects ? 'Refreshing...' : 'Search / Refresh'}
             </button>
             <button
+              className="hstack gap-sm"
               type="button"
               onClick={() => setBundleModalOpen(true)}
               style={{
                 background: '#0f766e',
                 borderColor: '#0f766e',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
               }}
             >
               <Icon name="package" className="icon inline-icon" />Pack Product Bundles (ZIP)
             </button>
             <button
+              className="hstack gap-sm"
               type="button"
               onClick={() => setBatchModalOpen(true)}
               style={{
                 background: '#0369a1',
                 borderColor: '#0369a1',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
               }}
             >
               <Icon name="operations" className="icon inline-icon" />Batch Offload (GZIP)
@@ -601,7 +591,7 @@ export function StorageTab({ onNotice }: { onNotice: (notice: Notice) => void })
               <option value={100}>100</option>
             </select>
           </Field>
-          <div style={{ display: 'flex', gap: '8px' }}>
+          <div className="gap-md" style={{ display: 'flex' }}>
             <button
               type="button"
               className="secondary"
@@ -628,90 +618,88 @@ export function StorageTab({ onNotice }: { onNotice: (notice: Notice) => void })
               id: defect.id,
               cells: [
                 <div key="key">
-                  <strong style={{ fontSize: '12px', color: '#1e293b' }}>{defect.keyId}</strong>
+                  <strong className="text-xs" style={{ color: 'var(--slate-800)' }}>{defect.keyId}</strong>
                   {defect.productName && (
-                    <div style={{ fontSize: '12px', color: '#64748b' }}>{defect.productName}</div>
+                    <div className="text-xs text-muted">{defect.productName}</div>
                   )}
                 </div>,
                 <div key="defect">
-                  <span style={{ fontWeight: 600 }}>{defect.defectName}</span>
-                  <div style={{ fontSize: '12px', color: '#64748b' }}>{defect.defectTable}</div>
+                  <span className="font-semibold">{defect.defectName}</span>
+                  <div className="text-xs text-muted">{defect.defectTable}</div>
                 </div>,
-                <div key="judge" style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                <div className="hstack gap-xs" key="judge" >
                   <span className={`judge-badge ${(defect.judge || 'review').toLowerCase()}`}>{defect.judge || 'N/A'}</span>
                   {defect.severity && (
-                    <span className="severity-tag" style={{ fontSize: '12px', background: '#e2e8f0', color: '#334155' }}>
+                    <span className="severity-tag text-xs" style={{ background: 'var(--slate-200)', color: 'var(--slate-700)' }}>
                       {defect.severity}
                     </span>
                   )}
                 </div>,
                 defect.hasInlineFeatureJson ? (
                   <span
+                    className="text-overkill text-xs font-bold"
                     key="state"
                     style={{
-                      background: '#fef3c7',
-                      color: '#92400e',
-                      border: '1px solid #fde68a',
+                      background: 'var(--status-overkill-bg)',
+                      border: '1px solid var(--status-overkill-border)',
                       borderRadius: '4px',
                       padding: '2px 6px',
-                      fontSize: '12px',
-                      fontWeight: 700,
                     }}
                   >
                     <Icon name="save" className="icon inline-icon" />Local DB JSON
                   </span>
                 ) : (
                   <span
+                    className="text-ok text-xs font-bold"
                     key="state"
                     style={{
-                      background: '#dcfce7',
-                      color: '#166534',
-                      border: '1px solid #bbf7d0',
+                      background: 'var(--status-ok-bg)',
+                      border: '1px solid var(--status-ok-border)',
                       borderRadius: '4px',
                       padding: '2px 6px',
-                      fontSize: '12px',
-                      fontWeight: 700,
                     }}
                   >
                     <Icon name="leakage" className="icon inline-icon" />SeaweedFS Stored
                   </span>
                 ),
-                <span key="size" style={{ fontFamily: 'monospace', fontSize: '12px', color: '#475569' }}>
+                <span className="font-mono text-xs text-soft" key="size" >
                   {defect.hasInlineFeatureJson ? formatBytes(defect.featureJsonBytes) : 'Offloaded'}
                 </span>,
                 defect.featureUrl || defect.customFeatureUrl ? (
-                  <div key="uri" style={{ display: 'flex', flexDirection: 'column', gap: '3px', maxWidth: '240px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
+                  <div className="vstack" key="uri" style={{ gap: '3px', maxWidth: '240px' }}>
+                    <div className="hstack gap-xs flex-wrap">
                       {((defect.featureUrl || '').includes('_defects.json.gz#') || (defect.customFeatureUrl || '').includes('_defects.json.gz#')) && (
-                        <span style={{ background: '#f5f3ff', color: '#6d28d9', border: '1px solid #ddd6fe', borderRadius: '3px', padding: '1px 4px', fontSize: '12px', fontWeight: 700 }}>
+                        <span className="text-xs font-bold" style={{ background: '#f5f3ff', color: '#6d28d9', border: '1px solid #ddd6fe', borderRadius: '3px', padding: '1px 4px' }}>
                           <Icon name="package" className="icon inline-icon" />DEFECT PACK
                         </span>
                       )}
                       {((defect.featureUrl || '').includes('.zip#') || (defect.customFeatureUrl || '').includes('.zip#')) && (
-                        <span style={{ background: '#ccfbf1', color: '#0f766e', border: '1px solid #99f6e4', borderRadius: '3px', padding: '1px 4px', fontSize: '12px', fontWeight: 700 }}>
+                        <span className="text-xs font-bold" style={{ background: '#ccfbf1', color: '#0f766e', border: '1px solid #99f6e4', borderRadius: '3px', padding: '1px 4px' }}>
                           <Icon name="package" className="icon inline-icon" />ZIP BUNDLE
                         </span>
                       )}
                       {((defect.featureUrl || '').endsWith('.gz') || (defect.customFeatureUrl || '').endsWith('.gz')) && !((defect.featureUrl || '').includes('_defects.json.gz#')) && (
-                        <span style={{ background: '#e0e7ff', color: '#4338ca', border: '1px solid #c7d2fe', borderRadius: '3px', padding: '1px 4px', fontSize: '12px', fontWeight: 700 }}>
+                        <span className="text-xs font-bold" style={{ background: '#e0e7ff', color: 'var(--blue-800)', border: '1px solid #c7d2fe', borderRadius: '3px', padding: '1px 4px' }}>
                           <Icon name="package" className="icon inline-icon" />GZIP
                         </span>
                       )}
                       <a
+                        className="text-xs font-semibold"
                         href={storageApi.defectFileUrl(defect.id, 'feature')}
                         target="_blank"
                         rel="noreferrer"
-                        style={{ fontSize: '12px', color: '#0369a1', textDecoration: 'underline', fontWeight: 600 }}
+                        style={{ color: '#0369a1', textDecoration: 'underline' }}
                         title="Stream & decompress payload directly from SeaweedFS on-demand"
                       >
                         <Icon name="operations" className="icon inline-icon" />Stream File
                       </a>
                       {defect.keyId && (
                         <a
+                          className="text-xs font-semibold"
                           href={storageApi.productDefectPackUrl(defect.keyId)}
                           target="_blank"
                           rel="noreferrer"
-                          style={{ fontSize: '12px', color: '#7c3aed', textDecoration: 'underline', fontWeight: 600 }}
+                          style={{ color: '#7c3aed', textDecoration: 'underline' }}
                           title="Stream & decompress full defect pack for this Product ID"
                         >
                           <Icon name="package" className="icon inline-icon" />Pack JSON
@@ -719,12 +707,12 @@ export function StorageTab({ onNotice }: { onNotice: (notice: Notice) => void })
                       )}
                     </div>
                     <a
+                      className="text-xs"
                       href={defect.featureUrl || defect.customFeatureUrl || '#'}
                       target="_blank"
                       rel="noreferrer"
                       style={{
-                        fontSize: '12px',
-                        color: '#2563eb',
+                        color: 'var(--blue-600)',
                         textDecoration: 'underline',
                         wordBreak: 'break-all',
                         lineHeight: 1.2,
@@ -734,36 +722,31 @@ export function StorageTab({ onNotice }: { onNotice: (notice: Notice) => void })
                     </a>
                   </div>
                 ) : (
-                  <span key="uri" style={{ fontSize: '12px', color: '#94a3b8' }}>None</span>
+                  <span className="text-xs text-muted" key="uri" >None</span>
                 ),
                 defect.hasInlineFeatureJson ? (
                   <button
                     key="act"
                     type="button"
-                    className="compact-button secondary"
+                    className="compact-button secondary hstack text-xs font-bold gap-xs"
                     disabled={isMigrating || batchMigrating}
                     onClick={() => void handleMigrateSingle(defect.id)}
                     style={{
-                      fontSize: '12px',
-                      fontWeight: 700,
                       color: '#0369a1',
                       borderColor: '#bae6fd',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px',
                     }}
                   >
                     {isMigrating ? 'Offloading...' : 'Offload'}
                   </button>
                 ) : (
-                  <span key="act" style={{ fontSize: '12px', color: '#16a34a', fontWeight: 600 }}>✓ Migrated</span>
+                  <span className="text-xs text-ok font-semibold" key="act" ><Icon name="check" className="icon inline-icon" />Migrated</span>
                 ),
               ],
             }
           })}
         />
         {defects.length === 0 && !searchingDefects && (
-          <div style={{ textAlign: 'center', padding: '24px', color: '#64748b', fontSize: '13px' }}>
+          <div className="text-muted text-sm" style={{ textAlign: 'center', padding: '24px' }}>
             No defects found matching the query criteria.
           </div>
         )}
@@ -774,7 +757,7 @@ export function StorageTab({ onNotice }: { onNotice: (notice: Notice) => void })
         <div className="section-heading">
           <div>
             <p className="eyebrow">RAW OBJECT BUCKET REPOSITORY</p>
-            <h2 style={{ fontSize: '18px', margin: 0 }}>Stored Objects in SeaweedFS</h2>
+            <h2 className="m-0" style={{ fontSize: '18px' }}>Stored Objects in SeaweedFS</h2>
           </div>
           <div className="actions">
             <button
@@ -822,9 +805,9 @@ export function StorageTab({ onNotice }: { onNotice: (notice: Notice) => void })
         onClose={() => setBatchModalOpen(false)}
       >
         <div style={{ display: 'grid', gap: '14px' }}>
-          <p style={{ fontSize: '13px', color: '#475569', lineHeight: 1.5 }}>
+          <p className="text-sm text-soft" style={{ lineHeight: 1.5 }}>
             This process reads defects having inline JSON in MariaDB, uploads each payload to SeaweedFS under{' '}
-            <code style={{ background: '#f1f5f9', padding: '2px 6px', borderRadius: '4px' }}>
+            <code style={{ background: 'var(--slate-100)', padding: '2px 6px', borderRadius: '4px' }}>
               {config.defaultBucket}/defects/{'{keyId}'}/{'{defectId}'}_feature.json
             </code>
             , updates defect URLs, and frees space in the database.
@@ -841,13 +824,12 @@ export function StorageTab({ onNotice }: { onNotice: (notice: Notice) => void })
           </Field>
 
           <div
+            className="text-xs text-ok"
             style={{
-              background: '#f0fdf4',
-              border: '1px solid #bbf7d0',
+              background: 'var(--status-ok-bg)',
+              border: '1px solid var(--status-ok-border)',
               borderRadius: '8px',
               padding: '10px 14px',
-              fontSize: '12px',
-              color: '#166534',
             }}
           >
             Currently, there are approximately <strong>{inlineDefectsCount}</strong> defects with inline JSON in MariaDB.
@@ -883,12 +865,12 @@ export function StorageTab({ onNotice }: { onNotice: (notice: Notice) => void })
       >
         <div style={{ display: 'grid', gap: '14px' }}>
           <div
+            className="text-xs"
             style={{
               background: '#f0fdfa',
               border: '1px solid #99f6e4',
               borderRadius: '8px',
               padding: '12px 14px',
-              fontSize: '12px',
               color: '#115e59',
               lineHeight: 1.5,
             }}
@@ -914,7 +896,7 @@ export function StorageTab({ onNotice }: { onNotice: (notice: Notice) => void })
             </select>
           </Field>
 
-          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px' }}>
+          <label className="hstack gap-md text-sm" style={{ cursor: 'pointer' }}>
             <input
               type="checkbox"
               checked={bundlePurgeInline}
@@ -951,8 +933,8 @@ export function StorageTab({ onNotice }: { onNotice: (notice: Notice) => void })
         open={packModalOpen}
         onClose={() => setPackModalOpen(false)}
       >
-        <div style={{ display: 'grid', gap: '16px', padding: '4px 0' }}>
-          <div style={{ background: '#faf5ff', border: '1px solid #e9d5ff', borderRadius: '8px', padding: '12px 14px', fontSize: '13px', color: '#581c87', lineHeight: 1.5 }}>
+        <div className="gap-xl" style={{ display: 'grid', padding: '4px 0' }}>
+          <div className="text-sm" style={{ background: '#faf5ff', border: '1px solid #e9d5ff', borderRadius: '8px', padding: '12px 14px', color: '#581c87', lineHeight: 1.5 }}>
             <strong style={{ display: 'block', marginBottom: '4px' }}><Icon name="package" className="icon inline-icon" />Unified Defect Pack Strategy</strong>
             Rather than creating separate JSON files for each individual defect, this groups all defects of each Product ID into a single compressed JSON pack:
             <br />
@@ -973,7 +955,7 @@ export function StorageTab({ onNotice }: { onNotice: (notice: Notice) => void })
             </select>
           </Field>
 
-          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px' }}>
+          <label className="hstack gap-md text-sm" style={{ cursor: 'pointer' }}>
             <input
               type="checkbox"
               checked={packPurgeInline}
@@ -984,7 +966,7 @@ export function StorageTab({ onNotice }: { onNotice: (notice: Notice) => void })
             </span>
           </label>
 
-          <div className="actions" style={{ justifyContent: 'flex-end', gap: '8px', marginTop: '8px' }}>
+          <div className="actions gap-md mt-2" style={{ justifyContent: 'flex-end' }}>
             <button
               type="button"
               className="ghost-button"

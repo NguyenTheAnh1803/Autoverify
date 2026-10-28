@@ -192,7 +192,7 @@ export const BatchConnectionsModal: React.FC<BatchConnectionsModalProps> = ({
       setResultSummary(res)
       onNotice({
         tone: 'success',
-        message: `✓ Successfully added/updated ${res.createdConnectionsCount + res.updatedConnectionsCount} Database Connections!`,
+        message: `Successfully added/updated ${res.createdConnectionsCount + res.updatedConnectionsCount} Database Connections!`,
       })
       onCompleted()
     } catch (err) {
@@ -210,21 +210,21 @@ export const BatchConnectionsModal: React.FC<BatchConnectionsModalProps> = ({
       onClose={onClose}
       wide
     >
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <div className="vstack gap-xl">
         {/* Detailed Instructions Callout */}
         <div
+          className="text-xs"
           style={{
-            background: 'rgba(59, 130, 246, 0.08)',
-            border: '1px solid rgba(59, 130, 246, 0.25)',
+            background: 'var(--status-info-bg)',
+            border: '1px solid var(--status-info-border)',
             borderRadius: '6px',
             padding: '12px 14px',
-            fontSize: '12px',
-            color: '#1d4ed8',
+            color: 'var(--blue-700)',
             lineHeight: 1.5,
           }}
         >
           <strong><Icon name="info" className="icon inline-icon" />How Multi-Path Connection Detection Works:</strong>
-          <p style={{ margin: '4px 0 6px 0', color: '#475569' }}>
+          <p className="text-soft" style={{ margin: '4px 0 6px 0' }}>
             Paste paths from network shares, local directories, IP addresses, or comma-separated lists (1 line per row). The system automatically parses the Host, Line Code, and Machine Code.
           </p>
           <ul style={{ margin: '0 0 0 16px', padding: 0 }}>
@@ -237,29 +237,26 @@ export const BatchConnectionsModal: React.FC<BatchConnectionsModalProps> = ({
 
         {/* Multi-Path Input Textarea */}
         <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-            <label className="text-xs font-bold" style={{ color: '#475569' }}>
+          <div className="hstack justify-between" style={{ marginBottom: '6px' }}>
+            <label className="text-xs font-bold text-soft">
               Paste Connection Paths (1 line or path per row):
             </label>
-            <span className="tag-badge" style={{ background: '#2563eb', color: '#fff', fontWeight: 700, fontSize: '12px' }}>
+            <span className="tag-badge font-bold text-xs" style={{ background: 'var(--blue-600)', color: '#fff' }}>
               {parsedMultiPaths.length} Connections Detected
             </span>
           </div>
 
           <textarea
+            className="font-mono text-xs w-full text-strong"
             value={multiPathText}
             onChange={(e) => setMultiPathText(e.target.value)}
             rows={7}
             placeholder={`\\\\10.20.1.1\\AOI_Export\\LINE-01\n\\\\10.20.1.2\\AOI_Export\\LINE-02\n...`}
             style={{
-              fontFamily: 'monospace',
-              fontSize: '12px',
-              width: '100%',
-              background: '#090d16',
-              color: '#e2e8f0',
+              background: 'var(--slate-50)',
               padding: '10px',
               borderRadius: '6px',
-              border: '1px solid rgba(255,255,255,0.12)',
+              border: '1px solid var(--slate-200)',
               whiteSpace: 'pre',
             }}
           />
@@ -267,15 +264,15 @@ export const BatchConnectionsModal: React.FC<BatchConnectionsModalProps> = ({
 
         {/* Real-time Live Preview Table */}
         {parsedMultiPaths.length > 0 && (
-          <div style={{ border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', overflow: 'hidden' }}>
-            <div style={{ background: 'rgba(255,255,255,0.04)', padding: '6px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span className="text-xs font-bold" style={{ color: '#0369a1' }}>
+          <div style={{ border: '1px solid var(--slate-200)', borderRadius: '6px', overflow: 'hidden' }}>
+            <div className="hstack justify-between" style={{ background: 'var(--slate-50)', padding: '6px 12px' }}>
+              <span className="text-xs font-bold text-info">
                 Live Preview: {parsedMultiPaths.length} Database Connections to be Created / Updated
               </span>
               <span className="text-xs text-muted">Ready to register</span>
             </div>
             <div style={{ maxHeight: '160px', overflowY: 'auto' }}>
-              <table className="analytics-data-table" role="table" style={{ margin: 0 }}>
+              <table className="analytics-data-table m-0" role="table" >
                 <thead>
                   <tr>
                     <th style={{ width: '40px' }}>#</th>
@@ -292,9 +289,9 @@ export const BatchConnectionsModal: React.FC<BatchConnectionsModalProps> = ({
                   {parsedMultiPaths.slice(0, 20).map((p, idx) => (
                     <tr key={idx}>
                       <td className="font-mono text-muted text-xs">{idx + 1}</td>
-                      <td><strong style={{ color: '#0369a1' }}>{p.lineCode}</strong></td>
+                      <td><strong className="text-info">{p.lineCode}</strong></td>
                       <td className="font-mono text-xs">{p.machineCode}</td>
-                      <td><strong style={{ color: '#b45309' }}>{p.modelCode}</strong></td>
+                      <td><strong className="text-overkill">{p.modelCode}</strong></td>
                       <td className="font-mono text-xs text-muted">{p.host}</td>
                       <td className="font-mono text-xs text-muted">{p.databaseName}</td>
                       <td className="font-mono text-xs text-muted">{port}</td>
@@ -316,10 +313,10 @@ export const BatchConnectionsModal: React.FC<BatchConnectionsModalProps> = ({
 
         {/* Default Database Settings Strip */}
         <div>
-          <span className="text-xs font-bold" style={{ color: '#475569', display: 'block', marginBottom: '6px' }}>
+          <span className="text-xs font-bold text-soft" style={{ display: 'block', marginBottom: '6px' }}>
             DEFAULT CREDENTIALS & CONNECTION TEMPLATE:
           </span>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(130px, 100%), 1fr))', gap: '10px' }}>
             <Field label="Engine">
               <input value={engine} onChange={(e) => setEngine(e.target.value)} placeholder="MariaDB" />
             </Field>
@@ -348,13 +345,12 @@ export const BatchConnectionsModal: React.FC<BatchConnectionsModalProps> = ({
         {/* Results Banner */}
         {resultSummary && (
           <div
+            className="text-ok text-sm"
             style={{
               padding: '12px',
               borderRadius: '6px',
-              background: 'rgba(16, 185, 129, 0.15)',
-              border: '1px solid #10b981',
-              color: '#10b981',
-              fontSize: '13px',
+              background: 'var(--status-ok-bg)',
+              border: '1px solid var(--status-ok-border)',
             }}
           >
             <strong>{resultSummary.message}</strong>
@@ -362,7 +358,7 @@ export const BatchConnectionsModal: React.FC<BatchConnectionsModalProps> = ({
         )}
 
         {/* Bottom Actions */}
-        <div className="actions" style={{ justifyContent: 'flex-end', gap: '8px', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '12px' }}>
+        <div className="actions gap-md" style={{ justifyContent: 'flex-end', borderTop: '1px solid var(--slate-200)', paddingTop: '12px' }}>
           <button type="button" className="ghost-button" onClick={onClose}>
             {resultSummary ? 'Close' : 'Cancel'}
           </button>

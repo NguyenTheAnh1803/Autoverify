@@ -47,7 +47,7 @@ export const JobLifecycleBar: React.FC<JobLifecycleBarProps> = ({
               <div className="job-progress-wrapper" title={`${currentJob.progressPercent}%`}>
                 <div
                   className="job-progress-fill"
-                  style={{ width: `${Math.max(5, currentJob.progressPercent)}%` }}
+                  style={{ transform: `scaleX(${Math.min(100, Math.max(5, currentJob.progressPercent)) / 100})` }}
                 />
                 <span className="job-progress-text">{currentJob.progressPercent}%</span>
               </div>
@@ -110,7 +110,7 @@ export const JobLifecycleBar: React.FC<JobLifecycleBarProps> = ({
 
       {currentJob?.warnings && currentJob.warnings.length > 0 && (
         <div className="job-warnings-ticker">
-          <span className="warning-badge" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+          <span className="warning-badge gap-xs" style={{ display: 'inline-flex', alignItems: 'center' }}>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
               <line x1="12" y1="9" x2="12" y2="13" />

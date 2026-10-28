@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import ReactECharts from '../ReactECharts'
 import { productionFeatureApi } from '../../api'
-import { formatDate } from '../../format'
+import { formatDate, parseServerTime } from '../../format'
+import { CHART, measureLine, refLines, timeAxis, toolbox, tooltipHtml, valueAxis, zoom } from '../../lib/chartTheme'
 import type { Notice, ProductionFeatureAnalysis, ProductionFeatureJob } from '../../types'
 import { SpcCharts } from './SpcCharts'
 import { EwmaChart, CusumChart } from './TimeSeriesCharts'
@@ -124,38 +125,58 @@ export function ProductionFeatureCharts({ onNotice }: { onNotice: (notice: Notic
   const activeSeries = (job?.series ?? []).find((s) => s.featureName === selectedFeature) ?? job?.series?.[0]
   const chartOption = useMemo(() => {
     if (!activeSeries) return null
+    const points = activeSeries.points
+      .map((point) => ({ point, time: parseServerTime(point.inspectedAtUtc) }))
+      .filter((item): item is { point: typeof item.point; time: number } => item.time !== null)
+      .sort((a, b) => a.time - b.time)
+    if (points.length === 0) return null
+
+    const values = points.map((item) => item.point.value)
+    const mean = values.reduce((sum, v) => sum + v, 0) / values.length
+    const sigma = Math.sqrt(values.reduce((sum, v) => sum + (v - mean) ** 2, 0) / Math.max(values.length - 1, 1))
+    const ucl = sigma > 0 ? mean + 3 * sigma : null
+    const lcl = sigma > 0 ? mean - 3 * sigma : null
+    const outside = points.filter((item) => ucl !== null && lcl !== null && (item.point.value > ucl || item.point.value < lcl))
+
     return {
-      color: ['#2563eb'],
+      color: [CHART.primary],
       tooltip: {
         trigger: 'axis',
         formatter: (params: Array<{ dataIndex: number }>) => {
-          const point = activeSeries.points[params[0]?.dataIndex]
-          if (!point) return ''
-          return [
-            `<strong>${activeSeries.featureName}</strong>`,
-            `Value: ${point.value}`,
-            `Key: ${point.keyId}`,
-            `Defect: ${point.defectName || '—'}`,
-            `Judge: ${point.judge || '—'}`,
-            formatDate(point.inspectedAtUtc),
-          ].join('<br/>')
+          const item = points[params[0]?.dataIndex]
+          if (!item) return ''
+          return tooltipHtml(activeSeries.featureName, [
+            ['Value', item.point.value],
+            ['Key', item.point.keyId],
+            ['Defect', item.point.defectName || '—'],
+            ['Judge', item.point.judge || '—'],
+            ['Time', formatDate(item.point.inspectedAtUtc)],
+          ])
         },
       },
-      grid: { left: 48, right: 24, top: 28, bottom: 48 },
-      xAxis: {
-        type: 'category',
-        data: activeSeries.points.map((p) => formatDate(p.inspectedAtUtc)),
-        axisLabel: { color: '#64748b', fontSize: 10, rotate: 35 },
-      },
-      yAxis: { type: 'value', name: activeSeries.featureName, axisLabel: { color: '#64748b' } },
-      series: [{
-        name: activeSeries.featureName,
-        type: 'line',
-        smooth: true,
-        showSymbol: activeSeries.points.length <= 80,
-        data: activeSeries.points.map((p) => p.value),
-        areaStyle: { color: 'rgba(37,99,235,.08)' },
-      }],
+      toolbox: toolbox(),
+      grid: { left: 12, right: 16, top: 28, bottom: 36 },
+      xAxis: timeAxis(),
+      yAxis: valueAxis(),
+      dataZoom: zoom(),
+      series: [
+        measureLine(activeSeries.featureName, points.map((item) => [item.time, item.point.value]), {
+          markLine: refLines([
+            { name: 'UCL', value: ucl, kind: 'control' },
+            { name: 'Mean', value: mean, kind: 'mean' },
+            { name: 'LCL', value: lcl, kind: 'control' },
+          ]),
+        }),
+        {
+          name: 'Beyond ±3σ',
+          type: 'scatter',
+          data: outside.map((item) => [item.time, item.point.value]),
+          symbolSize: 7,
+          itemStyle: { color: CHART.bad, opacity: 1 },
+          tooltip: { show: false },
+          z: 5,
+        },
+      ],
     }
   }, [activeSeries])
 
@@ -230,7 +251,7 @@ export function ProductionFeatureCharts({ onNotice }: { onNotice: (notice: Notic
 
       <div className="production-feature-progress">
         <div className="production-feature-progress-bar">
-          <span style={{ width: `${Math.round((job?.progress ?? 0) * 100)}%` }} />
+          <span style={{ transform: `scaleX(${Math.min(1, Math.max(0, job?.progress ?? 0))})` }} />
         </div>
         <p className="muted">{job?.message || 'Choose a scope, then start a paced SeaweedFS load.'}</p>
         <div className="production-feature-summary">

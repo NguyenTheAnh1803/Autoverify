@@ -1,5 +1,7 @@
 import React, { useMemo, useState } from 'react'
+import { activatable } from '../../lib/activatable'
 import ReactECharts from '../ReactECharts'
+import { CHART } from '../../lib/chartTheme'
 import type { KMeansResult } from '../../types'
 
 export type KMeansChartProps = {
@@ -7,16 +9,7 @@ export type KMeansChartProps = {
   onSelectRowIndex: (rowIndex: number) => void
 }
 
-const CLUSTER_COLORS = [
-  '#38bdf8', // sky
-  '#f59e0b', // amber
-  '#10b981', // emerald
-  '#ec4899', // pink
-  '#8b5cf6', // purple
-  '#06b6d4', // cyan
-  '#f97316', // orange
-  '#64748b', // slate
-]
+const CLUSTER_COLORS = CHART.series
 
 export const KMeansChart: React.FC<KMeansChartProps> = ({
   result,
@@ -105,8 +98,8 @@ export const KMeansChart: React.FC<KMeansChartProps> = ({
         size: c.size,
       })),
       itemStyle: {
-        color: '#f8fafc',
-        borderColor: '#0f172a',
+        color: '#1e293b',
+        borderColor: '#ffffff',
         borderWidth: 2,
       },
     }
@@ -115,15 +108,10 @@ export const KMeansChart: React.FC<KMeansChartProps> = ({
       title: {
         text: `K-Means Cluster Projection (K=${k})`,
         left: 'left',
-        textStyle: { color: '#cbd5e1', fontSize: 13, fontWeight: 'normal' },
         subtext: `Projection: First Two Standardized Features (${featX} vs ${featY})`,
-        subtextStyle: { color: '#94a3b8', fontSize: 11 },
       },
       tooltip: {
         trigger: 'item',
-        backgroundColor: '#1e293b',
-        borderColor: '#475569',
-        textStyle: { color: '#f1f5f9', fontSize: 12 },
         formatter: (params: {
           data: {
             value: [number, number]
@@ -143,21 +131,21 @@ export const KMeansChart: React.FC<KMeansChartProps> = ({
           const d = params.data
           if (!d.obs) {
             return `
-              <div style="font-family:monospace;font-size:12px;">
+              <div style="font-family:var(--font-mono);font-size:12px;">
                 <div><strong>Centroid of Cluster ${d.clusterIndex}</strong></div>
                 <div>Cluster Size: ${(d.size ?? 0).toLocaleString()} obs</div>
               </div>
             `
           }
           return `
-            <div style="font-family:monospace;font-size:12px;">
+            <div style="font-family:var(--font-mono);font-size:12px;">
               <div><strong>Cluster Assignment:</strong> Cluster ${d.clusterIndex}</div>
               <div><strong>Row:</strong> #${d.obs.rowIndex}</div>
               ${d.obs.keyId ? `<div><strong>Key:</strong> ${d.obs.keyId}</div>` : ''}
               ${d.obs.lineCode || d.obs.machineCode ? `<div><strong>Scope:</strong> ${d.obs.lineCode || '?'}/${d.obs.machineCode || '?'}</div>` : ''}
               ${d.obs.defectFamily ? `<div><strong>Family:</strong> ${d.obs.defectFamily}</div>` : ''}
               <div><strong>Dist to Centroid:</strong> ${(d.dist ?? 0).toFixed(4)}</div>
-              <div style="font-size:12px;color:#38bdf8;margin-top:4px;">(Click point to drill down in preview grid)</div>
+              <div style="font-size:12px;color:#2f6f9f;margin-top:4px;">(Click point to drill down in preview grid)</div>
             </div>
           `
         },
@@ -165,7 +153,6 @@ export const KMeansChart: React.FC<KMeansChartProps> = ({
       legend: {
         top: '25px',
         right: '10px',
-        textStyle: { color: '#94a3b8', fontSize: 11 },
       },
       grid: { left: '50px', right: '30px', top: '70px', bottom: '40px' },
       xAxis: {
@@ -173,18 +160,12 @@ export const KMeansChart: React.FC<KMeansChartProps> = ({
         name: `${featX} (Std)`,
         nameLocation: 'middle',
         nameGap: 25,
-        axisLine: { lineStyle: { color: '#475569' } },
-        splitLine: { lineStyle: { color: '#1e293b' } },
-        axisLabel: { color: '#94a3b8', fontSize: 10 },
       },
       yAxis: {
         type: 'value',
         name: `${featY} (Std)`,
         nameLocation: 'middle',
         nameGap: 35,
-        axisLine: { lineStyle: { color: '#475569' } },
-        splitLine: { lineStyle: { color: '#1e293b' } },
-        axisLabel: { color: '#94a3b8', fontSize: 10 },
       },
       series: [...seriesList, centroidSeries],
     }
@@ -286,7 +267,7 @@ export const KMeansChart: React.FC<KMeansChartProps> = ({
       )}
 
       {selectedPointPreview && (
-        <div className="analytics-feature-preview-card" style={{ marginTop: '8px' }}>
+        <div className="analytics-feature-preview-card mt-2">
           <div className="preview-header">
             <span className="badge info">K-Means Cluster Feature Point Preview</span>
             <span className="badge primary font-mono">Cluster #{selectedPointPreview.clusterIndex}</span>
@@ -297,7 +278,7 @@ export const KMeansChart: React.FC<KMeansChartProps> = ({
               <span className="text-xs text-slate-400 font-mono">Key: {selectedPointPreview.keyId}</span>
             )}
           </div>
-          <div className="preview-body" style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <div className="preview-body hstack gap-xl flex-wrap">
             <div>
               <span className="text-xs text-slate-400">{featX} (Std): </span>
               <strong className="font-mono text-cyan-400">{selectedPointPreview.xVal.toFixed(4)}</strong>
@@ -370,7 +351,7 @@ export const KMeansChart: React.FC<KMeansChartProps> = ({
                   <tr
                     key={c.clusterIndex}
                     className={isSelected ? 'selected-row' : ''}
-                    onClick={() => setSelectedCluster(isSelected ? null : c.clusterIndex)}
+                    {...activatable(() => setSelectedCluster(isSelected ? null : c.clusterIndex), { row: true, selected: isSelected })}
                     style={{ cursor: 'pointer' }}
                   >
                     <td>

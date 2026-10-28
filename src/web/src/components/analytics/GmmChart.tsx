@@ -1,5 +1,7 @@
 import React, { useMemo, useState } from 'react'
+import { activatable } from '../../lib/activatable'
 import ReactECharts from '../ReactECharts'
+import { CHART } from '../../lib/chartTheme'
 import type { GaussianMixtureResult } from '../../types'
 
 export type GmmChartProps = {
@@ -7,16 +9,7 @@ export type GmmChartProps = {
   onSelectRowIndex: (rowIndex: number) => void
 }
 
-const GMM_COLORS = [
-  '#38bdf8', // sky
-  '#f59e0b', // amber
-  '#10b981', // emerald
-  '#ec4899', // pink
-  '#8b5cf6', // purple
-  '#06b6d4', // cyan
-  '#f97316', // orange
-  '#64748b', // slate
-]
+const GMM_COLORS = CHART.series
 
 export const GmmChart: React.FC<GmmChartProps> = ({
   result,
@@ -97,7 +90,8 @@ export const GmmChart: React.FC<GmmChartProps> = ({
         weight: componentSummaries[idx]?.weight ?? 0,
       })),
       itemStyle: {
-        color: '#f8fafc',
+        color: '#1e293b',
+        borderColor: '#ffffff',
         borderWidth: 2,
       },
     }
@@ -106,15 +100,10 @@ export const GmmChart: React.FC<GmmChartProps> = ({
       title: {
         text: `Gaussian Mixture Components (${componentsCount} Components, ${covarianceType.toUpperCase()} Covariance)`,
         left: 'left',
-        textStyle: { color: '#cbd5e1', fontSize: 13, fontWeight: 'normal' },
         subtext: `Dimension Mapping: ${featX} vs ${featY} (Point size \u221d Posterior Probability)`,
-        subtextStyle: { color: '#94a3b8', fontSize: 11 },
       },
       tooltip: {
         trigger: 'item',
-        backgroundColor: '#1e293b',
-        borderColor: '#475569',
-        textStyle: { color: '#f1f5f9', fontSize: 12 },
         formatter: (params: {
           data: {
             value: [number, number]
@@ -136,14 +125,14 @@ export const GmmChart: React.FC<GmmChartProps> = ({
           const d = params.data
           if (!d.obs) {
             return `
-              <div style="font-family:monospace;font-size:12px;">
+              <div style="font-family:var(--font-mono);font-size:12px;">
                 <div><strong>Component Mean ${d.compIndex}</strong></div>
                 <div>Mixture Weight: ${((d.weight ?? 0) * 100).toFixed(1)}%</div>
               </div>
             `
           }
           return `
-            <div style="font-family:monospace;font-size:12px;">
+            <div style="font-family:var(--font-mono);font-size:12px;">
               <div><strong>Assigned Component:</strong> Comp ${d.compIndex}</div>
               <div><strong>Posterior Probability:</strong> ${((d.maxProb ?? 0) * 100).toFixed(1)}%</div>
               <div><strong>Entropy:</strong> ${(d.entropy ?? 0).toFixed(4)}</div>
@@ -152,7 +141,7 @@ export const GmmChart: React.FC<GmmChartProps> = ({
               ${d.obs.keyId ? `<div><strong>Key:</strong> ${d.obs.keyId}</div>` : ''}
               ${d.obs.lineCode || d.obs.machineCode ? `<div><strong>Scope:</strong> ${d.obs.lineCode || '?'}/${d.obs.machineCode || '?'}</div>` : ''}
               ${d.obs.defectFamily ? `<div><strong>Family:</strong> ${d.obs.defectFamily}</div>` : ''}
-              <div style="font-size:12px;color:#38bdf8;margin-top:4px;">(Click point to drill down in preview grid)</div>
+              <div style="font-size:12px;color:#2f6f9f;margin-top:4px;">(Click point to drill down in preview grid)</div>
             </div>
           `
         },
@@ -160,7 +149,6 @@ export const GmmChart: React.FC<GmmChartProps> = ({
       legend: {
         top: '25px',
         right: '10px',
-        textStyle: { color: '#94a3b8', fontSize: 11 },
       },
       grid: { left: '50px', right: '30px', top: '70px', bottom: '40px' },
       xAxis: {
@@ -168,18 +156,12 @@ export const GmmChart: React.FC<GmmChartProps> = ({
         name: featX,
         nameLocation: 'middle',
         nameGap: 25,
-        axisLine: { lineStyle: { color: '#475569' } },
-        splitLine: { lineStyle: { color: '#1e293b' } },
-        axisLabel: { color: '#94a3b8', fontSize: 10 },
       },
       yAxis: {
         type: 'value',
         name: featY,
         nameLocation: 'middle',
         nameGap: 35,
-        axisLine: { lineStyle: { color: '#475569' } },
-        splitLine: { lineStyle: { color: '#1e293b' } },
-        axisLabel: { color: '#94a3b8', fontSize: 10 },
       },
       series: [...seriesList, centersSeries],
     }
@@ -281,7 +263,7 @@ export const GmmChart: React.FC<GmmChartProps> = ({
       )}
 
       {selectedPointPreview && (
-        <div className="analytics-feature-preview-card" style={{ marginTop: '8px' }}>
+        <div className="analytics-feature-preview-card mt-2">
           <div className="preview-header">
             <span className="badge info">GMM Component Point Preview</span>
             <span className="badge primary font-mono">Component #{selectedPointPreview.compIndex}</span>
@@ -292,7 +274,7 @@ export const GmmChart: React.FC<GmmChartProps> = ({
               <span className="text-xs text-slate-400 font-mono">Key: {selectedPointPreview.keyId}</span>
             )}
           </div>
-          <div className="preview-body" style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <div className="preview-body hstack gap-xl flex-wrap">
             <div>
               <span className="text-xs text-slate-400">{featX} (Mean): </span>
               <strong className="font-mono text-cyan-400">{selectedPointPreview.xVal.toFixed(4)}</strong>
@@ -364,7 +346,7 @@ export const GmmChart: React.FC<GmmChartProps> = ({
                   <tr
                     key={c.componentIndex}
                     className={isSelected ? 'selected-row' : ''}
-                    onClick={() => setSelectedComp(isSelected ? null : c.componentIndex)}
+                    {...activatable(() => setSelectedComp(isSelected ? null : c.componentIndex), { row: true, selected: isSelected })}
                     style={{ cursor: 'pointer' }}
                   >
                     <td>

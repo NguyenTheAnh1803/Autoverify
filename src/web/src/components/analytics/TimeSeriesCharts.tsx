@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react'
 import ReactECharts from '../ReactECharts'
+import { refLines, toolbox, valueAxis, zoom } from '../../lib/chartTheme'
 import type { EwmaResult, CusumResult } from '../../types'
 
 export type EwmaChartProps = {
@@ -41,68 +42,54 @@ export const EwmaChart: React.FC<EwmaChartProps> = ({ result, onSelectRowIndex }
       rowIndex: p.rowIndex,
       isViolation: p.isViolation,
       itemStyle: p.isViolation
-        ? { color: '#ef4444', borderColor: '#f87171', borderWidth: 2 }
-        : { color: '#06b6d4' },
+        ? { color: '#c0392b', borderColor: '#c0392b', borderWidth: 2 }
+        : { color: '#2f6f9f' },
     }))
 
     return {
       title: {
         text: `EWMA Drift Control Chart - ${featureName} (λ=${lambda.toFixed(2)}, L=${l.toFixed(1)})`,
         left: 'left',
-        textStyle: { color: '#cbd5e1', fontSize: 13, fontWeight: 'normal' },
       },
       tooltip: {
         trigger: 'axis',
-        backgroundColor: '#1e293b',
-        borderColor: '#475569',
-        textStyle: { color: '#f1f5f9', fontSize: 12 },
         formatter: (params: Array<{ data: { value: number; rowIndex: number; isViolation?: boolean }; seriesName: string; axisValue: string }>) => {
           if (!params || params.length === 0) return ''
           const pt = params[0].data
           const isV = params.some((p) => p.data.isViolation)
           const violationTag = isV
-            ? '<div style="color:#f87171;font-weight:bold;margin-top:4px;">[Violation] EWMA Control Violation!</div>'
+            ? '<div style="color:#c0392b;font-weight:bold;margin-top:4px;">[Violation] EWMA Control Violation!</div>'
             : ''
           const lines = params.map(
             (p) => `<div><strong>${p.seriesName}:</strong> ${typeof p.data.value === 'number' ? p.data.value.toFixed(4) : p.data.value}</div>`
           ).join('')
           return `
-            <div style="font-family:monospace;">
+            <div style="font-family:var(--font-mono);">
               <div><strong>Sample:</strong> ${params[0].axisValue} (Grid Row: #${pt.rowIndex})</div>
               ${lines}
               ${violationTag}
-              <div style="font-size:12px;color:#94a3b8;margin-top:4px;">(Click point to locate in preview grid)</div>
+              <div style="font-size:12px;color:#64748b;margin-top:4px;">(Click point to locate in preview grid)</div>
             </div>
           `
         },
       },
       legend: {
         data: ['Raw Value', 'EWMA Smoothed (Z_i)'],
-        textStyle: { color: '#94a3b8' },
-        right: '100px',
-        top: '5px',
+        right: 40,
+        top: 0,
       },
-      grid: { left: '50px', right: '90px', top: '40px', bottom: '30px' },
-      xAxis: {
-        type: 'category',
-        data: xData,
-        axisLine: { lineStyle: { color: '#475569' } },
-        axisLabel: { color: '#94a3b8', fontSize: 10 },
-      },
-      yAxis: {
-        type: 'value',
-        scale: true,
-        axisLine: { lineStyle: { color: '#475569' } },
-        splitLine: { lineStyle: { color: '#1e293b' } },
-        axisLabel: { color: '#94a3b8', fontSize: 10 },
-      },
+      toolbox: toolbox(),
+      grid: { left: 12, right: 16, top: 44, bottom: xData.length > 60 ? 40 : 14 },
+      xAxis: { type: 'category', data: xData },
+      yAxis: valueAxis(),
+      dataZoom: xData.length > 60 ? zoom() : undefined,
       series: [
         {
           name: 'Raw Value',
           type: 'line',
           data: rawData,
           showSymbol: false,
-          lineStyle: { color: '#64748b', width: 1, type: 'dotted' },
+          lineStyle: { color: '#9aa7b8', width: 1 },
         },
         {
           name: 'EWMA Smoothed (Z_i)',
@@ -111,31 +98,12 @@ export const EwmaChart: React.FC<EwmaChartProps> = ({ result, onSelectRowIndex }
           showSymbol: true,
           symbolSize: (_val: unknown, params: { data: { isViolation?: boolean } }) =>
             params.data.isViolation ? 7 : 3,
-          lineStyle: { color: '#06b6d4', width: 2 },
-          markLine: {
-            silent: false,
-            symbol: 'none',
-            data: [
-              {
-                yAxis: asymptoticUcl,
-                name: 'UCL',
-                lineStyle: { color: '#f43f5e', type: 'dashed' },
-                label: { formatter: `UCL: ${asymptoticUcl.toFixed(3)}`, position: 'end', color: '#f43f5e', fontSize: 10 },
-              },
-              {
-                yAxis: target,
-                name: 'Target (μ₀)',
-                lineStyle: { color: '#10b981', type: 'solid' },
-                label: { formatter: `μ₀: ${target.toFixed(3)}`, position: 'end', color: '#10b981', fontSize: 10 },
-              },
-              {
-                yAxis: asymptoticLcl,
-                name: 'LCL',
-                lineStyle: { color: '#f43f5e', type: 'dashed' },
-                label: { formatter: `LCL: ${asymptoticLcl.toFixed(3)}`, position: 'end', color: '#f43f5e', fontSize: 10 },
-              },
-            ],
-          },
+          lineStyle: { color: '#2f6f9f', width: 1.25 },
+          markLine: refLines([
+            { name: 'UCL', value: asymptoticUcl, kind: 'control' },
+            { name: 'μ₀', value: target, kind: 'mean' },
+            { name: 'LCL', value: asymptoticLcl, kind: 'control' },
+          ]),
         },
       ],
     }
@@ -204,7 +172,7 @@ export const EwmaChart: React.FC<EwmaChartProps> = ({ result, onSelectRowIndex }
       )}
 
       {selectedPointPreview && (
-        <div className="analytics-feature-preview-card" style={{ marginTop: '8px' }}>
+        <div className="analytics-feature-preview-card mt-2">
           <div className="preview-header">
             <span className="badge info">EWMA Feature Point Preview</span>
             <span className="sample-name font-mono">Sample #{selectedPointPreview.sampleIdx}</span>
@@ -213,7 +181,7 @@ export const EwmaChart: React.FC<EwmaChartProps> = ({ result, onSelectRowIndex }
               <span className="badge danger">Control Violation</span>
             )}
           </div>
-          <div className="preview-body" style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <div className="preview-body hstack gap-xl flex-wrap">
             <div>
               <span className="text-xs text-slate-400">Raw {featureName}: </span>
               <strong className="font-mono text-cyan-400">{selectedPointPreview.rawValue.toFixed(4)}</strong>
@@ -272,69 +240,55 @@ export const CusumChart: React.FC<CusumChartProps> = ({ result, onSelectRowIndex
       rowIndex: p.rowIndex,
       isViolation: p.isViolationHigh,
       itemStyle: p.isViolationHigh
-        ? { color: '#ef4444', borderColor: '#f87171', borderWidth: 2 }
-        : { color: '#38bdf8' },
+        ? { color: '#c0392b', borderColor: '#c0392b', borderWidth: 2 }
+        : { color: '#2f6f9f' },
     }))
     const cLowData = points.map((p) => ({
       value: -p.cusumLow,
       rowIndex: p.rowIndex,
       isViolation: p.isViolationLow,
       itemStyle: p.isViolationLow
-        ? { color: '#ef4444', borderColor: '#f87171', borderWidth: 2 }
-        : { color: '#f59e0b' },
+        ? { color: '#c0392b', borderColor: '#c0392b', borderWidth: 2 }
+        : { color: '#c8862b' },
     }))
 
     return {
       title: {
         text: `Tabular CUSUM Shift Chart - ${featureName} (k=${k.toFixed(2)}σ, h=${h.toFixed(1)}σ)`,
         left: 'left',
-        textStyle: { color: '#cbd5e1', fontSize: 13, fontWeight: 'normal' },
       },
       tooltip: {
         trigger: 'axis',
-        backgroundColor: '#1e293b',
-        borderColor: '#475569',
-        textStyle: { color: '#f1f5f9', fontSize: 12 },
         formatter: (params: Array<{ data: { value: number; rowIndex: number; isViolation?: boolean }; seriesName: string; axisValue: string }>) => {
           if (!params || params.length === 0) return ''
           const pt = params[0].data
           const hasV = params.some((p) => p.data.isViolation)
           const violationTag = hasV
-            ? '<div style="color:#f87171;font-weight:bold;margin-top:4px;">[Violation] Decision Interval Exceeded!</div>'
+            ? '<div style="color:#c0392b;font-weight:bold;margin-top:4px;">[Violation] Decision Interval Exceeded!</div>'
             : ''
           const lines = params.map(
             (p) => `<div><strong>${p.seriesName}:</strong> ${typeof p.data.value === 'number' ? p.data.value.toFixed(4) : p.data.value}</div>`
           ).join('')
           return `
-            <div style="font-family:monospace;">
+            <div style="font-family:var(--font-mono);">
               <div><strong>Sample:</strong> ${params[0].axisValue} (Grid Row: #${pt.rowIndex})</div>
               ${lines}
               ${violationTag}
-              <div style="font-size:12px;color:#94a3b8;margin-top:4px;">(Click point to locate in preview grid)</div>
+              <div style="font-size:12px;color:#64748b;margin-top:4px;">(Click point to locate in preview grid)</div>
             </div>
           `
         },
       },
       legend: {
         data: ['C+ (Upper Drift)', 'C- (Lower Drift)'],
-        textStyle: { color: '#94a3b8' },
-        right: '100px',
-        top: '5px',
+        right: 40,
+        top: 0,
       },
-      grid: { left: '50px', right: '90px', top: '40px', bottom: '30px' },
-      xAxis: {
-        type: 'category',
-        data: xData,
-        axisLine: { lineStyle: { color: '#475569' } },
-        axisLabel: { color: '#94a3b8', fontSize: 10 },
-      },
-      yAxis: {
-        type: 'value',
-        scale: true,
-        axisLine: { lineStyle: { color: '#475569' } },
-        splitLine: { lineStyle: { color: '#1e293b' } },
-        axisLabel: { color: '#94a3b8', fontSize: 10 },
-      },
+      toolbox: toolbox(),
+      grid: { left: 12, right: 16, top: 44, bottom: xData.length > 60 ? 40 : 14 },
+      xAxis: { type: 'category', data: xData },
+      yAxis: valueAxis(),
+      dataZoom: xData.length > 60 ? zoom() : undefined,
       series: [
         {
           name: 'C+ (Upper Drift)',
@@ -343,24 +297,11 @@ export const CusumChart: React.FC<CusumChartProps> = ({ result, onSelectRowIndex
           showSymbol: true,
           symbolSize: (_val: unknown, params: { data: { isViolation?: boolean } }) =>
             params.data.isViolation ? 7 : 3,
-          lineStyle: { color: '#38bdf8', width: 2 },
-          markLine: {
-            silent: false,
-            symbol: 'none',
-            data: [
-              {
-                yAxis: h,
-                name: 'Upper Decision (+h)',
-                lineStyle: { color: '#f43f5e', type: 'dashed' },
-                label: { formatter: `+h: ${h.toFixed(2)}`, position: 'end', color: '#f43f5e', fontSize: 10 },
-              },
-              {
-                yAxis: 0,
-                name: 'Center Zero',
-                lineStyle: { color: '#475569', type: 'solid' },
-              },
-            ],
-          },
+          lineStyle: { color: '#2f6f9f', width: 1.25 },
+          markLine: refLines([
+            { name: '+h', value: h, kind: 'control' },
+            { name: '0', value: 0, kind: 'mean' },
+          ]),
         },
         {
           name: 'C- (Lower Drift)',
@@ -369,19 +310,8 @@ export const CusumChart: React.FC<CusumChartProps> = ({ result, onSelectRowIndex
           showSymbol: true,
           symbolSize: (_val: unknown, params: { data: { isViolation?: boolean } }) =>
             params.data.isViolation ? 7 : 3,
-          lineStyle: { color: '#f59e0b', width: 2 },
-          markLine: {
-            silent: false,
-            symbol: 'none',
-            data: [
-              {
-                yAxis: -h,
-                name: 'Lower Decision (-h)',
-                lineStyle: { color: '#f43f5e', type: 'dashed' },
-                label: { formatter: `-h: -${h.toFixed(2)}`, position: 'end', color: '#f43f5e', fontSize: 10 },
-              },
-            ],
-          },
+          lineStyle: { color: '#c8862b', width: 1.25 },
+          markLine: refLines([{ name: '-h', value: -h, kind: 'control' }]),
         },
       ],
     }
@@ -460,7 +390,7 @@ export const CusumChart: React.FC<CusumChartProps> = ({ result, onSelectRowIndex
       )}
 
       {selectedPointPreview && (
-        <div className="analytics-feature-preview-card" style={{ marginTop: '8px' }}>
+        <div className="analytics-feature-preview-card mt-2">
           <div className="preview-header">
             <span className="badge info">CUSUM Feature Point Preview</span>
             <span className="sample-name font-mono">Sample #{selectedPointPreview.sampleIdx}</span>
@@ -471,7 +401,7 @@ export const CusumChart: React.FC<CusumChartProps> = ({ result, onSelectRowIndex
               </span>
             )}
           </div>
-          <div className="preview-body" style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <div className="preview-body hstack gap-xl flex-wrap">
             <div>
               <span className="text-xs text-slate-400">Raw {featureName}: </span>
               <strong className="font-mono text-cyan-400">{selectedPointPreview.rawValue.toFixed(4)}</strong>

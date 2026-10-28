@@ -332,12 +332,12 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
         setTestImagePreviewUrl(result.base64Preview)
         onNotice({
           tone: 'success',
-          message: `✓ Test successful! Received ${result.sizeBytes.toLocaleString()} bytes from PC API (${result.latencyMs}ms).`,
+          message: `Test successful! Received ${result.sizeBytes.toLocaleString()} bytes from PC API (${result.latencyMs}ms).`,
         })
       } else if (!result.success) {
         onNotice({
           tone: 'error',
-          message: `✗ Crawl error: ${result.errorMessage || 'Image file not found on PC'}`,
+          message: `Crawl error: ${result.errorMessage || 'Image file not found on PC'}`,
         })
       }
     } catch (err) {
@@ -380,12 +380,12 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
         setTestImagePreviewUrl(result.base64Preview)
         onNotice({
           tone: 'success',
-          message: `✓ Test successful! Received ${result.sizeBytes.toLocaleString()} bytes from PC API (${result.latencyMs}ms).`,
+          message: `Test successful! Received ${result.sizeBytes.toLocaleString()} bytes from PC API (${result.latencyMs}ms).`,
         })
       } else if (!result.success) {
         onNotice({
           tone: 'error',
-          message: `✗ Crawl error: ${result.errorMessage || 'Image file not found on PC'}`,
+          message: `Crawl error: ${result.errorMessage || 'Image file not found on PC'}`,
         })
       }
     } catch (err) {
@@ -442,7 +442,7 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
       setResultSummary(res)
       onNotice({
         tone: 'success',
-        message: `✓ Successfully configured pipelines for ${res.totalItemsProcessed} connections (${res.createdPipelinesCount} created, ${res.updatedPipelinesCount} updated)!`,
+        message: `Successfully configured pipelines for ${res.totalItemsProcessed} connections (${res.createdPipelinesCount} created, ${res.updatedPipelinesCount} updated)!`,
       })
       onCompleted()
     } catch (err) {
@@ -460,26 +460,23 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
       onClose={onClose}
       wide
     >
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <div className="vstack gap-xl">
         {/* 1. Connection Target Banner */}
         <div
+          className="hstack text-sm justify-between"
           style={{
-            background: 'rgba(59, 130, 246, 0.08)',
-            border: '1px solid rgba(59, 130, 246, 0.25)',
+            background: 'var(--status-info-bg)',
+            border: '1px solid var(--status-info-border)',
             borderRadius: '6px',
             padding: '10px 14px',
-            fontSize: '13px',
-            color: '#1d4ed8',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
+            color: 'var(--blue-700)',
           }}
         >
           <div>
             <strong>Target Lines & Connections:</strong> Generating Overkill background pipelines for{' '}
-            <strong style={{ color: '#60a5fa' }}>{targetConnections.length}</strong> / <strong>{connections.length}</strong> registered connections.
+            <strong className="text-info">{targetConnections.length}</strong> / <strong>{connections.length}</strong> registered connections.
           </div>
-          <label style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '12px' }}>
+          <label className="gap-sm text-xs" style={{ display: 'inline-flex', alignItems: 'center', cursor: 'pointer' }}>
             <input
               type="checkbox"
               checked={selectAll}
@@ -494,50 +491,51 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
         {/* ========================================================================= */}
         <div
           style={{
-            background: 'rgba(255, 255, 255, 0.02)',
-            border: '1px solid rgba(99, 102, 241, 0.25)',
+            background: 'var(--slate-50)',
+            border: '1px solid var(--status-info-border)',
             borderRadius: '8px',
             padding: '14px',
           }}
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '8px', marginBottom: '10px' }}>
+          <div className="gap-md" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', marginBottom: '10px' }}>
             <div>
-              <span className="eyebrow" style={{ color: '#4f46e5', fontWeight: 700 }}>
+              <span className="eyebrow font-bold" style={{ color: 'var(--blue-700)' }}>
                 <Icon name="package" className="icon inline-icon" />PRIMARY PRODUCT TABLE CONFIGURATION
               </span>
-              <h3 style={{ margin: '2px 0 0', fontSize: '14px', color: '#475569' }}>
+              <h3 className="text-base text-soft" style={{ margin: '2px 0 0' }}>
                 Master Product Schema & Inspection Parameters
               </h3>
             </div>
-            <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <div className="hstack gap-sm flex-wrap">
               <button
                 type="button"
-                className="secondary compact"
-                style={{ fontSize: '12px', padding: '3px 10px', background: 'rgba(99, 102, 241, 0.15)', borderColor: 'rgba(99, 102, 241, 0.3)' }}
+                className="secondary compact text-xs"
+                style={{ padding: '3px 10px', background: 'var(--status-info-bg)', borderColor: 'var(--status-info-border)' }}
                 onClick={() => setQuickFillOpen(!quickFillOpen)}
+                aria-expanded={quickFillOpen}
               >
-                {quickFillOpen ? '▲ Hide Quick-Fill' : 'Quick-Fill / Paste Row'}
+                <Icon name={quickFillOpen ? 'sort-asc' : 'sort-desc'} className="icon inline-icon" />
+                {quickFillOpen ? 'Hide Quick-Fill' : 'Quick-Fill / Paste Row'}
               </button>
             </div>
           </div>
 
           {/* Quick Preset Selector Buttons */}
-          <div style={{ marginBottom: '12px', display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-            <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 600 }}>Schema Presets:</span>
+          <div className="hstack gap-md flex-wrap" style={{ marginBottom: '12px' }}>
+            <span className="text-xs text-muted font-semibold">Schema Presets:</span>
             {PRODUCT_PRESETS.map((preset) => (
               <button
                 key={preset.name}
                 type="button"
-                className="secondary compact"
+                className="secondary compact text-xs"
                 style={{
-                  fontSize: '12px',
                   padding: '3px 8px',
-                  borderColor: productTableName === preset.values.productTableName ? '#4f46e5' : undefined,
+                  borderColor: productTableName === preset.values.productTableName ? 'var(--blue-700)' : undefined,
                 }}
                 onClick={() => applyProductPreset(preset)}
                 title={preset.desc}
               >
-                <span style={{ color: '#4f46e5', marginRight: '4px' }}>●</span>
+                <span style={{ color: 'var(--blue-700)', marginRight: '4px' }}>●</span>
                 {preset.name}
               </button>
             ))}
@@ -547,27 +545,28 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
           {quickFillOpen && (
             <div
               style={{
-                background: 'rgba(15, 23, 42, 0.6)',
-                border: '1px dashed rgba(99, 102, 241, 0.4)',
+                background: 'var(--slate-50)',
+                border: '1px dashed var(--status-info-border)',
                 borderRadius: '6px',
                 padding: '10px 12px',
                 marginBottom: '12px',
               }}
             >
-              <div style={{ fontSize: '12px', color: '#c7d2fe', marginBottom: '6px' }}>
+              <div className="text-xs text-info" style={{ marginBottom: '6px' }}>
                 <strong><Icon name="operations" className="icon inline-icon" />Quick-Fill Text Shorthand or Excel Paste:</strong> Paste a tab/comma-separated row or key-value pairs (e.g. <code>table=Product; id=ID; fk=fk_prod_id; judge=Judge; values=N,NG; time=datetime_inspection</code>).
               </div>
-              <div style={{ display: 'flex', gap: '8px' }}>
+              <div className="gap-md" style={{ display: 'flex' }}>
                 <input
+                  className="font-mono text-xs text-strong"
                   value={quickFillText}
                   onChange={(e) => setQuickFillText(e.target.value)}
                   placeholder="Product, ID, fk_prod_id, Judge, N, NG, datetime_inspection, zone, defect_name"
-                  style={{ flex: 1, fontFamily: 'monospace', fontSize: '12px', background: '#090d16', color: '#e2e8f0', padding: '6px 10px' }}
+                  style={{ flex: 1, background: 'var(--slate-50)', padding: '6px 10px' }}
                 />
                 <button
                   type="button"
-                  className="primary compact"
-                  style={{ padding: '6px 14px', fontSize: '12px', background: '#4f46e5' }}
+                  className="primary compact text-xs"
+                  style={{ padding: '6px 14px', background: 'var(--blue-700)' }}
                   onClick={handleQuickFillProduct}
                 >
                   Apply
@@ -577,147 +576,147 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
           )}
 
           {/* Full Grid of Product Table Parameters */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '10px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(180px, 100%), 1fr))', gap: '10px' }}>
             <Field label="Product Table Name *" hint="Master table in MariaDB">
               <input
+                className="font-mono font-semibold"
                 value={productTableName}
                 onChange={(e) => setProductTableName(e.target.value)}
                 placeholder="Product"
-                style={{ fontFamily: 'monospace', fontWeight: 600, color: '#4f46e5' }}
+                style={{ color: 'var(--blue-700)' }}
                 required
               />
             </Field>
 
             <Field label="Primary Key ID Column *" hint="Unique product serial ID">
               <input
+                className="font-mono"
                 value={idColumnName}
                 onChange={(e) => setIdColumnName(e.target.value)}
                 placeholder="ID"
-                style={{ fontFamily: 'monospace' }}
                 required
               />
             </Field>
 
             <Field label="Defect Table FK Column *" hint="FK in defect tables matching Product ID">
               <input
+                className="font-mono text-ok"
                 value={fkColumnName}
                 onChange={(e) => setFkColumnName(e.target.value)}
                 placeholder="fk_prod_id or Fk_ID"
-                style={{ fontFamily: 'monospace', color: '#047857' }}
                 required
               />
             </Field>
 
             <Field label="Judge Column Name *" hint="Inspection judgment column">
               <input
+                className="font-mono"
                 value={judgeColumnName}
                 onChange={(e) => setJudgeColumnName(e.target.value)}
                 placeholder="Judge"
-                style={{ fontFamily: 'monospace' }}
                 required
               />
             </Field>
 
             <Field label="Inspection Time Column" hint="Datetime of board inspection">
               <input
+                className="font-mono"
                 value={dateTimeInspectionColumnName}
                 onChange={(e) => setDateTimeInspectionColumnName(e.target.value)}
                 placeholder="datetime_inspection"
-                style={{ fontFamily: 'monospace' }}
               />
             </Field>
 
             <Field label="Zone / Area Column" hint="Spatial layout or board zone">
               <input
+                className="font-mono"
                 value={zoneColumnName}
                 onChange={(e) => setZoneColumnName(e.target.value)}
                 placeholder="zone"
-                style={{ fontFamily: 'monospace' }}
               />
             </Field>
 
             <Field label="Product Defect Name Col" hint="Defect label if present in Product">
               <input
+                className="font-mono"
                 value={defectNameColumnName}
                 onChange={(e) => setDefectNameColumnName(e.target.value)}
                 placeholder="defect_name"
-                style={{ fontFamily: 'monospace' }}
               />
             </Field>
 
             <Field label="Batch Query Limit" hint="Max products per scan cycle">
               <input
+                className="font-mono"
                 type="number"
                 min={10}
                 max={10000}
                 value={batchSize}
                 onChange={(e) => setBatchSize(parseInt(e.target.value, 10) || 1000)}
-                style={{ fontFamily: 'monospace' }}
               />
             </Field>
           </div>
 
           {/* Judge Filter Values with Quick-Add Chips */}
-          <div style={{ marginTop: '10px', background: 'rgba(0, 0, 0, 0.2)', padding: '10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.05)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px', flexWrap: 'wrap', gap: '6px' }}>
-              <label style={{ fontSize: '12px', fontWeight: 600, color: '#475569' }}>
+          <div style={{ marginTop: '10px', background: 'var(--slate-50)', padding: '10px', borderRadius: '6px', border: '1px solid var(--slate-200)' }}>
+            <div className="hstack justify-between flex-wrap gap-sm" style={{ marginBottom: '6px' }}>
+              <label className="text-xs font-semibold text-soft">
                 Judge Filter Values (Target products to scan):
               </label>
-              <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                <span style={{ fontSize: '12px', color: '#475569' }}>Quick values:</span>
+              <div className="hstack gap-sm">
+                <span className="text-xs text-soft">Quick values:</span>
                 <button
                   type="button"
-                  className="secondary compact"
-                  style={{ fontSize: '12px', padding: '1px 6px' }}
+                  className="secondary compact text-xs"
+                  style={{ padding: '1px 6px' }}
                   onClick={() => setJudgeFilterStr('N, NG')}
                 >
                   N, NG (Suspects)
                 </button>
                 <button
                   type="button"
-                  className="secondary compact"
-                  style={{ fontSize: '12px', padding: '1px 6px' }}
+                  className="secondary compact text-xs"
+                  style={{ padding: '1px 6px' }}
                   onClick={() => setJudgeFilterStr('N, NG, G, OK')}
                 >
                   N, NG, G, OK (All)
                 </button>
                 <button
                   type="button"
-                  className="secondary compact"
-                  style={{ fontSize: '12px', padding: '1px 6px' }}
+                  className="secondary compact text-xs"
+                  style={{ padding: '1px 6px' }}
                   onClick={() => setJudgeFilterStr('NG, REJECT')}
                 >
                   NG, REJECT
                 </button>
                 <button
                   type="button"
-                  className="secondary compact"
-                  style={{ fontSize: '12px', padding: '1px 6px' }}
+                  className="secondary compact text-xs"
+                  style={{ padding: '1px 6px' }}
                   onClick={() => setJudgeFilterStr('FAIL')}
                 >
                   FAIL
                 </button>
               </div>
             </div>
-            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <div className="hstack gap-md">
               <input
+                className="font-mono text-xs"
                 value={judgeFilterStr}
                 onChange={(e) => setJudgeFilterStr(e.target.value)}
                 placeholder="N, NG"
-                style={{ fontFamily: 'monospace', fontSize: '12px', flex: 1, background: '#090d16' }}
+                style={{ flex: 1, background: 'var(--slate-50)' }}
               />
-              <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+              <div className="gap-xs" style={{ display: 'flex', flexWrap: 'wrap' }}>
                 {parsedJudgeFilters.map((val) => (
                   <span
+                    className="text-xs font-bold font-mono"
                     key={val}
                     style={{
-                      background: val.toUpperCase().includes('OK') || val.toUpperCase() === 'G' ? '#047857' : '#dc2626',
+                      background: val.toUpperCase().includes('OK') || val.toUpperCase() === 'G' ? 'var(--status-ok)' : 'var(--status-ng)',
                       color: '#fff',
-                      fontSize: '12px',
-                      fontWeight: 700,
                       padding: '2px 6px',
                       borderRadius: '4px',
-                      fontFamily: 'monospace',
                     }}
                   >
                     {val}
@@ -729,24 +728,21 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
 
           {/* Live MariaDB Query Preview */}
           <div style={{ marginTop: '10px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-              <span style={{ fontSize: '12px', fontWeight: 600, color: '#64748b' }}>
+            <div className="hstack justify-between" style={{ marginBottom: '4px' }}>
+              <span className="text-xs font-semibold text-muted">
                 <Icon name="search" className="icon inline-icon" />MariaDB Product Query Preview:
               </span>
-              <span style={{ fontSize: '12px', color: '#64748b' }}>
+              <span className="text-xs text-muted">
                 Executed automatically on each connection during scheduled scan
               </span>
             </div>
             <pre
+              className="m-0 text-xs font-mono text-info"
               style={{
-                margin: 0,
-                background: '#090d16',
-                border: '1px solid rgba(255,255,255,0.08)',
+                background: 'var(--slate-50)',
+                border: '1px solid var(--slate-200)',
                 borderRadius: '6px',
                 padding: '8px 12px',
-                fontSize: '12px',
-                fontFamily: 'monospace',
-                color: '#a5b4fc',
                 whiteSpace: 'pre-wrap',
                 lineHeight: 1.4,
               }}
@@ -759,66 +755,63 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
         {/* ========================================================================= */}
         {/* 3. DEFECT TABLES MULTI-PASTE & PREVIEW */}
         {/* ========================================================================= */}
-        <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(16, 185, 129, 0.25)', borderRadius: '8px', padding: '14px' }}>
+        <div style={{ background: 'var(--slate-50)', border: '1px solid var(--status-ok-border)', borderRadius: '8px', padding: '14px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
             <div>
-              <span className="eyebrow" style={{ color: '#047857', fontWeight: 700 }}><Icon name="link" className="icon inline-icon" />DEFECT DETAIL TABLES MAPPING</span>
-              <h3 style={{ margin: '2px 0 0', fontSize: '14px', color: '#475569' }}>
+              <span className="eyebrow text-ok font-bold"><Icon name="link" className="icon inline-icon" />DEFECT DETAIL TABLES MAPPING</span>
+              <h3 className="text-base text-soft" style={{ margin: '2px 0 0' }}>
                 Paste Defect Tables List (Joined via {fkColumnName || 'fk_prod_id'} = {productTableName || 'Product'}.{idColumnName || 'ID'})
               </h3>
             </div>
-            <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+            <div className="hstack gap-sm">
               <button
                 type="button"
-                className="secondary compact"
-                style={{ fontSize: '12px', padding: '2px 8px' }}
+                className="secondary compact text-xs"
+                style={{ padding: '2px 8px' }}
                 onClick={() => setDefectTablesText('mcl_defect\naoi_defect\nspi_defect')}
               >
                 Preset: SMT Multi-Station
               </button>
               <button
                 type="button"
-                className="secondary compact"
-                style={{ fontSize: '12px', padding: '2px 8px' }}
+                className="secondary compact text-xs"
+                style={{ padding: '2px 8px' }}
                 onClick={() => setDefectTablesText('AOI_DEFECTS\nSPI_DEFECTS')}
               >
                 Preset: Uppercase Tables
               </button>
-              <span className="tag-badge" style={{ background: '#047857', color: '#fff', fontWeight: 700, fontSize: '12px' }}>
+              <span className="tag-badge font-bold text-xs" style={{ background: 'var(--status-ok)', color: '#fff' }}>
                 {parsedDefectTables.length} Tables Detected
               </span>
             </div>
           </div>
 
           <textarea
+            className="font-mono text-xs w-full text-strong"
             value={defectTablesText}
             onChange={(e) => setDefectTablesText(e.target.value)}
             rows={3}
             placeholder="mcl_defect&#10;aoi_defect&#10;spi_defect"
             style={{
-              fontFamily: 'monospace',
-              fontSize: '12px',
-              width: '100%',
-              background: '#090d16',
-              color: '#e2e8f0',
+              background: 'var(--slate-50)',
               padding: '10px',
               borderRadius: '6px',
-              border: '1px solid rgba(255,255,255,0.12)',
+              border: '1px solid var(--slate-200)',
               whiteSpace: 'pre',
             }}
           />
 
           {/* Live Preview Grid */}
           {parsedDefectTables.length > 0 && (
-            <div style={{ marginTop: '10px', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', overflow: 'hidden' }}>
-              <div style={{ background: 'rgba(255,255,255,0.04)', padding: '6px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span className="text-xs font-bold" style={{ color: '#047857' }}>
+            <div style={{ marginTop: '10px', border: '1px solid var(--slate-200)', borderRadius: '6px', overflow: 'hidden' }}>
+              <div className="hstack justify-between" style={{ background: 'var(--slate-50)', padding: '6px 12px' }}>
+                <span className="text-xs font-bold text-ok">
                   Live Preview: {parsedDefectTables.length} Defect Tables Schema Mapping
                 </span>
                 <span className="text-xs text-muted">Joined with {productTableName}.{idColumnName} via FK {fkColumnName}</span>
               </div>
               <div tabIndex={0} aria-label="Selected lines" role="group" style={{ maxHeight: '130px', overflowY: 'auto' }}>
-                <table className="analytics-data-table" role="table" style={{ margin: 0 }}>
+                <table className="analytics-data-table m-0" role="table" >
                   <thead>
                     <tr>
                       <th style={{ width: '40px' }}>#</th>
@@ -835,9 +828,9 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
                     {parsedDefectTables.map((t, idx) => (
                       <tr key={idx}>
                         <td className="font-mono text-muted text-xs">{idx + 1}</td>
-                        <td><strong className="mono-code" style={{ color: '#047857' }}>{t.tableName}</strong></td>
+                        <td><strong className="mono-code text-ok">{t.tableName}</strong></td>
                         <td className="text-xs">{t.displayName}</td>
-                        <td className="font-mono text-xs" style={{ color: '#60a5fa' }}>{t.fkColumnName}</td>
+                        <td className="font-mono text-xs text-info">{t.fkColumnName}</td>
                         <td className="font-mono text-xs text-muted">{t.judgeColumn}</td>
                         <td className="font-mono text-xs text-muted">{t.defectNameColumn}</td>
                         <td className="font-mono text-xs text-muted">{t.featureColumn}</td>
@@ -854,35 +847,35 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
         {/* ========================================================================= */}
         {/* 4. PC IMAGE CRAWLER API CONFIGURATION (Per-PC Image Fetching) */}
         {/* ========================================================================= */}
-        <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(168, 85, 247, 0.25)', borderRadius: '8px', padding: '14px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '8px', marginBottom: '8px' }}>
+        <div style={{ background: 'var(--slate-50)', border: '1px solid var(--status-real-border)', borderRadius: '8px', padding: '14px' }}>
+          <div className="gap-md" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', marginBottom: '8px' }}>
             <div>
-              <span className="eyebrow" style={{ color: '#c084fc', fontWeight: 700 }}><Icon name="image" className="icon inline-icon" />PC IMAGE CRAWLER API CONFIGURATION</span>
-              <h3 style={{ margin: '2px 0 0', fontSize: '14px', color: '#475569' }}>
+              <span className="eyebrow text-real font-bold"><Icon name="image" className="icon inline-icon" />PC IMAGE CRAWLER API CONFIGURATION</span>
+              <h3 className="text-base text-soft" style={{ margin: '2px 0 0' }}>
                 Per-PC Defect Thumbnail Image Crawler API
               </h3>
             </div>
-            <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <div className="hstack gap-sm flex-wrap">
               <button
                 type="button"
-                className="secondary compact"
-                style={{ fontSize: '12px', padding: '2px 8px' }}
+                className="secondary compact text-xs"
+                style={{ padding: '2px 8px' }}
                 onClick={() => setImageCrawlerApiUrl('http://10.121.45.43:336/api/image/get')}
               >
                 AnywherePix API
               </button>
               <button
                 type="button"
-                className="secondary compact"
-                style={{ fontSize: '12px', padding: '2px 8px' }}
+                className="secondary compact text-xs"
+                style={{ padding: '2px 8px' }}
                 onClick={() => setImageCrawlerApiUrl('http://{host}:8080/crawl')}
               >
                 Template: http://{'{host}'}:8080/crawl
               </button>
               <button
                 type="button"
-                className="secondary compact"
-                style={{ fontSize: '12px', padding: '2px 8px' }}
+                className="secondary compact text-xs"
+                style={{ padding: '2px 8px' }}
                 onClick={() => setImageCrawlerApiUrl('')}
               >
                 Disable Crawler
@@ -891,13 +884,12 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
           </div>
 
           <div
+            className="text-xs text-real"
             style={{
-              background: 'rgba(168, 85, 247, 0.08)',
-              border: '1px solid rgba(168, 85, 247, 0.25)',
+              background: 'var(--status-real-bg)',
+              border: '1px solid var(--status-real-border)',
               borderRadius: '6px',
               padding: '10px 12px',
-              fontSize: '12px',
-              color: '#e9d5ff',
               marginBottom: '10px',
               lineHeight: 1.5,
             }}
@@ -910,16 +902,16 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
             </ul>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 200px auto', gap: '12px', alignItems: 'flex-end' }}>
+          <div className="stack-sm gap-lg" style={{ display: 'grid', gridTemplateColumns: '1fr 200px auto', alignItems: 'flex-end' }}>
             <Field
               label="PC Image Crawler Endpoint / Template"
               hint="Use {host} for automatic PC IP substitution, or enter dedicated PC URL"
             >
               <input
+                className="font-mono text-xs"
                 value={imageCrawlerApiUrl}
                 onChange={(e) => setImageCrawlerApiUrl(e.target.value)}
                 placeholder="http://10.121.45.43:336/api/image/get"
-                style={{ fontFamily: 'monospace', fontSize: '12px' }}
               />
             </Field>
 
@@ -928,13 +920,13 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
               hint="Configure crawler VP mode sent to server"
             >
               <select
+                className="text-xs font-semibold"
                 value={imageCrawlerVpMode}
                 onChange={(e) => {
                   const val = e.target.value
                   setImageCrawlerVpMode(val)
                   if (val !== 'auto' && val !== 'all') setTestRawVp(val)
                 }}
-                style={{ fontSize: '12px', fontWeight: 600 }}
               >
                 <option value="all">All VPs (VP 0 & other VPs - Default)</option>
                 <option value="0">VP = 0 (Thumbnail defectimage)</option>
@@ -947,32 +939,32 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
             </Field>
 
             <Field label="Model Group" hint="Read-only: each pipeline inherits Model directly from its Database Connection">
-              <input value="Mapped from Database Connections" readOnly disabled style={{ fontFamily: 'monospace', fontSize: '12px' }} />
+              <input className="font-mono text-xs" value="Mapped from Database Connections" readOnly disabled />
             </Field>
 
             <div style={{ marginBottom: '10px' }}>
-              <label style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
+              <label className="gap-sm" style={{ display: 'inline-flex', alignItems: 'center', cursor: 'pointer' }}>
                 <input
                   type="checkbox"
                   checked={autoCrawlImages}
                   onChange={(e) => setAutoCrawlImages(e.target.checked)}
                 />
-                <span style={{ fontSize: '13px', fontWeight: 600 }}>
+                <span className="text-sm font-semibold">
                   <Icon name="operations" className="icon inline-icon" />Proactively crawl defect images during scan
                 </span>
               </label>
             </div>
           </div>
 
-          <div style={{ marginTop: '12px', padding: '12px', border: '1px solid rgba(56, 189, 248, 0.3)', borderRadius: '8px', background: 'rgba(14, 165, 233, 0.06)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '8px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '8px' }}>
+          <div className="mt-3" style={{ padding: '12px', border: '1px solid var(--status-info-border)', borderRadius: '8px', background: 'var(--status-info-bg)' }}>
+            <div className="hstack justify-between gap-md flex-wrap" style={{ marginBottom: '8px' }}>
               <div>
-                <strong style={{ color: '#7dd3fc', fontSize: '13px' }}><Icon name="flask" className="icon inline-icon" />Image Crawl Test Tool (Verify Image Retrieval)</strong>
-                <div style={{ color: '#64748b', fontSize: '12px', marginTop: '2px' }}>
+                <strong className="text-info text-sm"><Icon name="flask" className="icon inline-icon" />Image Crawl Test Tool (Verify Image Retrieval)</strong>
+                <div className="text-muted text-xs" style={{ marginTop: '2px' }}>
                   Send AnywherePix payload to API <code>{imageCrawlerApiUrl || 'http://10.121.45.43:336/api/image/get'}</code> and preview image directly.
                 </div>
               </div>
-              <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+              <div className="hstack gap-sm">
                 <button
                   type="button"
                   className={`ghost-button compact ${testMode === 'defectId' ? 'active' : ''}`}
@@ -991,15 +983,14 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
                 </button>
                 {testImageResult && (
                   <span
-                    className="tag-badge"
+                    className="tag-badge font-bold"
                     style={{
-                      background: testImageResult.success ? '#047857' : '#dc2626',
+                      background: testImageResult.success ? 'var(--status-ok)' : 'var(--status-ng)',
                       borderColor: 'transparent',
                       color: '#fff',
-                      fontWeight: 700,
                     }}
                   >
-                    {testImageResult.success ? '✓ Valid Image / Success' : '✗ Crawl Error'}
+                    {testImageResult.success ? <><Icon name="check" className="icon inline-icon" />Valid Image / Success</> : <><Icon name="warning" className="icon inline-icon" />Crawl Error</>}
                   </span>
                 )}
               </div>
@@ -1008,17 +999,17 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
             {/* Mode 1: Test by Defect ID */}
             {testMode === 'defectId' && (
               <div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'minmax(240px, 1fr) auto auto', gap: '8px', alignItems: 'center' }}>
+                <div className="stack-sm gap-md" style={{ display: 'grid', gridTemplateColumns: 'minmax(240px, 1fr) auto auto', alignItems: 'center' }}>
                   <input
+                    className="font-mono text-xs"
                     value={testDefectId}
                     onChange={(e) => setTestDefectId(e.target.value)}
                     placeholder="Paste Defect ID (GUID) from DB"
-                    style={{ fontFamily: 'monospace', fontSize: '12px' }}
                   />
                   <button
                     type="button"
-                    className="secondary compact"
-                    style={{ fontSize: '12px', padding: '6px 10px' }}
+                    className="secondary compact text-xs"
+                    style={{ padding: '6px 10px' }}
                     onClick={() => void handleLoadSamples()}
                     disabled={loadingSamples}
                     title="Fetch 5 latest defects with image_path from DB"
@@ -1027,10 +1018,10 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
                   </button>
                   <button
                     type="button"
-                    className="primary compact"
+                    className="primary compact font-bold"
                     disabled={testingImage || !testDefectId.trim()}
                     onClick={() => void handleTestDefectImage()}
-                    style={{ background: '#0369a1', padding: '6px 14px', fontWeight: 700 }}
+                    style={{ background: 'var(--status-info)', padding: '6px 14px' }}
                   >
                     {testingImage ? 'Crawling...' : 'Test Crawl & View'}
                   </button>
@@ -1038,14 +1029,14 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
 
                 {/* Sample Defect Chips */}
                 {sampleDefects.length > 0 && (
-                  <div style={{ marginTop: '8px', display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: '12px', color: '#64748b' }}>DB Samples:</span>
+                  <div className="hstack mt-2 gap-sm flex-wrap">
+                    <span className="text-xs text-muted">DB Samples:</span>
                     {sampleDefects.map((s) => (
                       <button
                         key={s.id}
                         type="button"
-                        className="secondary compact"
-                        style={{ fontSize: '12px', padding: '2px 8px', borderColor: testDefectId === s.id ? '#38bdf8' : undefined }}
+                        className="secondary compact text-xs"
+                        style={{ padding: '2px 8px', borderColor: testDefectId === s.id ? 'var(--status-info-border)' : undefined }}
                         onClick={() => {
                           setTestDefectId(s.id)
                           if (s.imagePath) setTestRawPath(s.imagePath)
@@ -1062,37 +1053,38 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
 
             {/* Mode 2: Test by raw image_path string */}
             {testMode === 'rawPath' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 90px auto', gap: '8px', alignItems: 'center' }}>
+              <div className="vstack gap-md">
+                <div className="gap-md" style={{ display: 'grid', gridTemplateColumns: '1fr 90px auto', alignItems: 'center' }}>
                   <input
+                    className="font-mono text-xs"
                     value={testRawPath}
                     onChange={(e) => setTestRawPath(e.target.value)}
                     placeholder="Paste image_path (e.g. 2026/07/25/CP-AOI #301-A/.../VP02_...jpg)"
-                    style={{ fontFamily: 'monospace', fontSize: '12px' }}
                   />
                   <input
+                    className="font-mono text-xs"
                     value={testRawVp}
                     onChange={(e) => setTestRawVp(e.target.value)}
                     placeholder="VP (e.g. 2)"
                     title="G010_VpID / Camera VP"
-                    style={{ fontFamily: 'monospace', fontSize: '12px', textAlign: 'center' }}
+                    style={{ textAlign: 'center' }}
                   />
                   <button
                     type="button"
-                    className="primary compact"
+                    className="primary compact font-bold"
                     disabled={testingImage || !testRawPath.trim()}
                     onClick={() => void handleTestRawPath()}
-                    style={{ background: '#0369a1', padding: '6px 14px', fontWeight: 700 }}
+                    style={{ background: 'var(--status-info)', padding: '6px 14px' }}
                   >
                     {testingImage ? 'Crawling...' : 'Test Crawl & View'}
                   </button>
                 </div>
-                <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                  <span style={{ fontSize: '12px', color: '#64748b' }}>Quick sample:</span>
+                <div className="hstack gap-sm">
+                  <span className="text-xs text-muted">Quick sample:</span>
                   <button
                     type="button"
-                    className="secondary compact"
-                    style={{ fontSize: '12px', padding: '1px 6px' }}
+                    className="secondary compact text-xs"
+                    style={{ padding: '1px 6px' }}
                     onClick={() => {
                       setTestRawPath('2026/07/25/CP-AOI #301-A/P1EF650120BA27311SDA/VP02/P1EF650120BA27311SDA_164426_A_2/VP02_P1EF650120BA27311SDA_164426_A_2_2183_.jpg')
                       setTestRawVp('2')
@@ -1106,24 +1098,24 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
 
             {/* Test Results & Real-time Image Render */}
             {testImageResult && (
-              <div style={{ display: 'grid', gridTemplateColumns: testImagePreviewUrl ? '200px 1fr' : '1fr', gap: '14px', marginTop: '12px', padding: '10px', background: 'rgba(0, 0, 0, 0.3)', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.08)', alignItems: 'start' }}>
+              <div className="mt-3" style={{ display: 'grid', gridTemplateColumns: testImagePreviewUrl ? '200px 1fr' : '1fr', gap: '14px', padding: '10px', background: 'var(--slate-50)', borderRadius: '6px', border: '1px solid var(--slate-200)', alignItems: 'start' }}>
                 {testImagePreviewUrl && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'center' }}>
+                  <div className="hstack gap-sm" style={{ flexDirection: 'column' }}>
                     <a href={testImagePreviewUrl} target="_blank" rel="noreferrer" title="Click to open full-size image">
                       <img
                         src={testImagePreviewUrl}
                         alt="Crawled defect preview"
-                        style={{ width: '200px', height: '150px', objectFit: 'contain', background: '#020617', border: '1px solid #38bdf8', borderRadius: '6px', display: 'block' }}
+                        style={{ width: '200px', height: '150px', objectFit: 'contain', background: 'var(--slate-50)', border: '1px solid var(--status-info-border)', borderRadius: '6px', display: 'block' }}
                       />
                     </a>
-                    <a href={testImagePreviewUrl} target="_blank" rel="noreferrer" style={{ color: '#0369a1', fontSize: '12px', fontWeight: 700 }}>
+                    <a className="text-info text-xs font-bold" href={testImagePreviewUrl} target="_blank" rel="noreferrer" >
                       <Icon name="search" className="icon inline-icon" />Open full-size image
                     </a>
                   </div>
                 )}
-                <div style={{ fontSize: '12px', color: '#475569', lineHeight: 1.6, overflow: 'hidden' }}>
-                  <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '4px' }}>
-                    <div><strong>Result:</strong> <span style={{ color: testImageResult.success ? '#34d399' : '#f87171', fontWeight: 700 }}>{testImageResult.success ? 'Success (200 OK)' : 'Failed'}</span></div>
+                <div className="text-xs text-soft" style={{ lineHeight: 1.6, overflow: 'hidden' }}>
+                  <div className="gap-lg" style={{ display: 'flex', flexWrap: 'wrap', marginBottom: '4px' }}>
+                    <div><strong>Result:</strong> <span className="font-bold" style={{ color: testImageResult.success ? 'var(--status-ok-text)' : 'var(--status-ng-text)' }}>{testImageResult.success ? 'Success (200 OK)' : 'Failed'}</span></div>
                     <div><strong>Response Time:</strong> {testImageResult.latencyMs} ms</div>
                     <div><strong>Image Size:</strong> {testImageResult.sizeBytes.toLocaleString()} bytes</div>
                     <div><strong>Content-Type:</strong> <code>{testImageResult.contentType || 'image/jpeg'}</code></div>
@@ -1131,8 +1123,8 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
 
                   {testImageResult.imagePath && (
                     <div style={{ marginBottom: '4px' }}>
-                      <strong style={{ color: '#64748b' }}>Original Path (image_path):</strong>
-                      <code style={{ display: 'block', fontSize: '12px', color: '#7dd3fc', background: '#090d16', padding: '3px 6px', borderRadius: '4px', wordBreak: 'break-all', marginTop: '2px' }}>
+                      <strong className="text-muted">Original Path (image_path):</strong>
+                      <code className="text-xs text-info" style={{ display: 'block', background: 'var(--slate-50)', padding: '3px 6px', borderRadius: '4px', wordBreak: 'break-all', marginTop: '2px' }}>
                         {testImageResult.imagePath}
                       </code>
                     </div>
@@ -1140,15 +1132,15 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
 
                   {testPayloadPreview && (
                     <div style={{ marginBottom: '4px' }}>
-                      <strong style={{ color: '#64748b' }}>JSON Payload sent to AnywherePix API:</strong>
-                      <pre style={{ margin: '2px 0 0', background: '#090d16', padding: '6px 8px', borderRadius: '4px', fontSize: '12px', color: '#a5b4fc', fontFamily: 'monospace', whiteSpace: 'pre-wrap', maxHeight: '100px', overflowY: 'auto' }}>
+                      <strong className="text-muted">JSON Payload sent to AnywherePix API:</strong>
+                      <pre className="text-xs text-info font-mono" style={{ margin: '2px 0 0', background: 'var(--slate-50)', padding: '6px 8px', borderRadius: '4px', whiteSpace: 'pre-wrap', maxHeight: '100px', overflowY: 'auto' }}>
                         {JSON.stringify(testPayloadPreview, null, 2)}
                       </pre>
                     </div>
                   )}
 
                   {testImageResult.errorMessage && (
-                    <div style={{ color: '#fca5a5', background: 'rgba(239, 68, 68, 0.1)', padding: '6px 8px', borderRadius: '4px', border: '1px solid rgba(239, 68, 68, 0.25)', marginTop: '4px' }}>
+                    <div className="text-ng mt-1" style={{ background: 'var(--status-ng-bg)', padding: '6px 8px', borderRadius: '4px', border: '1px solid var(--status-ng-border)' }}>
                       <strong>Server Message:</strong> {testImageResult.errorMessage}
                     </div>
                   )}
@@ -1161,33 +1153,33 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
         {/* ========================================================================= */}
         {/* 5. PIPELINE AUTOMATION & STORAGE OPTIONS */}
         {/* ========================================================================= */}
-        <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(245, 158, 11, 0.25)', borderRadius: '8px', padding: '14px' }}>
-          <span className="eyebrow" style={{ color: '#b45309', fontWeight: 700 }}>⏱️ SCAN SCHEDULE & STORAGE OPTIONS</span>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', alignItems: 'center', marginTop: '6px' }}>
-            <label style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
+        <div style={{ background: 'var(--slate-50)', border: '1px solid var(--status-overkill-border)', borderRadius: '8px', padding: '14px' }}>
+          <span className="eyebrow text-overkill font-bold">⏱️ SCAN SCHEDULE & STORAGE OPTIONS</span>
+          <div className="hstack flex-wrap gap-xl" style={{ marginTop: '6px' }}>
+            <label className="gap-sm" style={{ display: 'inline-flex', alignItems: 'center', cursor: 'pointer' }}>
               <input
                 type="checkbox"
                 checked={includeOkProducts}
                 onChange={(e) => setIncludeOkProducts(e.target.checked)}
               />
-              <span style={{ fontSize: '13px' }}>
+              <span className="text-sm">
                 Include OK Product IDs (Calculate total line throughput & yield)
               </span>
             </label>
 
-            <label style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
+            <label className="gap-sm" style={{ display: 'inline-flex', alignItems: 'center', cursor: 'pointer' }}>
               <input
                 type="checkbox"
                 checked={offloadDefectsToSeaweedFs}
                 onChange={(e) => setOffloadDefectsToSeaweedFs(e.target.checked)}
               />
-              <span style={{ fontSize: '13px' }}>
+              <span className="text-sm">
                 Offload defect feature JSON & images to SeaweedFS
               </span>
             </label>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '10px' }}>
+          <div className="gap-lg" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', marginTop: '10px' }}>
             <Field label="Schedule Interval (Minutes)" hint="Background polling frequency">
               <input
                 type="number"
@@ -1211,13 +1203,12 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
         {/* Results Banner */}
         {resultSummary && (
           <div
+            className="text-ok text-sm"
             style={{
               padding: '12px',
               borderRadius: '6px',
-              background: 'rgba(16, 185, 129, 0.15)',
-              border: '1px solid #10b981',
-              color: '#10b981',
-              fontSize: '13px',
+              background: 'var(--status-ok-bg)',
+              border: '1px solid var(--status-ok-border)',
             }}
           >
             <strong>{resultSummary.message}</strong>
@@ -1225,14 +1216,14 @@ export const BatchPipelinesModal: React.FC<BatchPipelinesModalProps> = ({
         )}
 
         {/* Bottom Actions */}
-        <div className="actions" style={{ justifyContent: 'flex-end', gap: '8px', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '12px' }}>
+        <div className="actions gap-md" style={{ justifyContent: 'flex-end', borderTop: '1px solid var(--slate-200)', paddingTop: '12px' }}>
           <button type="button" className="ghost-button" onClick={onClose}>
             {resultSummary ? 'Close' : 'Cancel'}
           </button>
           <button
             type="button"
-            className="primary"
-            style={{ background: '#2563eb', padding: '8px 24px', fontWeight: 600 }}
+            className="primary font-semibold"
+            style={{ background: 'var(--blue-600)', padding: '8px 24px' }}
             onClick={() => void handleExecute()}
             disabled={submitting}
           >

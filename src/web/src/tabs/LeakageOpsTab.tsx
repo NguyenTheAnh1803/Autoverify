@@ -544,7 +544,7 @@ export function LeakageOpsTab({ onNotice }: { onNotice: (notice: Notice) => void
                   />
                 </Field>
 
-                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                <div className="vstack" style={{ justifyContent: 'center' }}>
                   <small className="muted">
                     Detected: <strong>{parsedPasteStats.total}</strong> IDs (
                     <strong>{parsedPasteStats.withLine}</strong> with line,{' '}
@@ -619,7 +619,16 @@ export function LeakageOpsTab({ onNotice }: { onNotice: (notice: Notice) => void
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
+                role="button"
+                tabIndex={0}
+                aria-label={csvFile ? `Replace ${csvFile.name}` : 'Choose a CSV, TSV or TXT file'}
                 onClick={() => fileInputRef.current?.click()}
+                onKeyDown={(event) => {
+                  if (event.target === event.currentTarget && (event.key === 'Enter' || event.key === ' ')) {
+                    event.preventDefault()
+                    fileInputRef.current?.click()
+                  }
+                }}
               >
                 <input
                   ref={fileInputRef}
@@ -656,7 +665,7 @@ export function LeakageOpsTab({ onNotice }: { onNotice: (notice: Notice) => void
                   <small className="muted" style={{ display: 'block', marginBottom: 6 }}>
                     Auto-parsed preview (first {csvPreviewRows.length} rows):
                   </small>
-                  <table className="mini-preview-table" style={{ width: '100%' }}>
+                  <table className="mini-preview-table w-full">
                     <thead>
                       <tr>
                         <th>#</th>
@@ -713,16 +722,16 @@ export function LeakageOpsTab({ onNotice }: { onNotice: (notice: Notice) => void
         <article className="panel info-panel">
           <p className="eyebrow">AUTOMATED VERIFICATION LOGIC</p>
           <h2>How Leakage Detection Operates</h2>
-          <div className="csv-concept-hint" style={{ marginTop: 12 }}>
+          <div className="csv-concept-hint mt-3">
             <strong>1. Immediate Pending Enqueue:</strong> IDs are saved locally into <code>LeakageQueueItems</code> right after ingestion, guaranteeing no loss of query state.
           </div>
-          <div className="csv-concept-hint" style={{ marginTop: 8 }}>
+          <div className="csv-concept-hint mt-2">
             <strong>2. MariaDB Full-Scan Lookup:</strong> The worker searches remote product tables for the product ID, resolving foreign key <code>Fk_ID</code> and station judgment.
           </div>
-          <div className="csv-concept-hint" style={{ marginTop: 8 }}>
+          <div className="csv-concept-hint mt-2">
             <strong>3. Deep Defect Table Query:</strong> Using <code>Fk_ID</code>, queries configured multi-defect tables. If defects exist on a <code>G</code> / <code>OK</code> product, flags <strong>Leakage (Escape Risk)</strong>!
           </div>
-          <div className="csv-concept-hint" style={{ marginTop: 8 }}>
+          <div className="csv-concept-hint mt-2">
             <strong>4. Local Ingestion:</strong> Product and defect rows are persisted into AutoVerify's local database for historical reporting and audit inspection.
           </div>
         </article>
@@ -778,15 +787,15 @@ export function LeakageOpsTab({ onNotice }: { onNotice: (notice: Notice) => void
 
         {/* Animated progress bar */}
         {progress && (isProcessing || progress.totalCount > 0) ? (
-          <div style={{ marginTop: 16 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, fontWeight: 600 }}>
+          <div className="mt-4">
+            <div className="text-xs font-semibold" style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span>Progress: {progress.processedCount} of {progress.totalCount} items verified</span>
               <span>{progressPercent}%</span>
             </div>
             <div className="queue-progress-bar-wrap">
               <div
                 className={`queue-progress-bar-fill ${isProcessing ? 'animated' : ''}`}
-                style={{ width: `${progressPercent}%` }}
+                style={{ clipPath: `inset(0 ${100 - progressPercent}% 0 0)` }}
               />
             </div>
           </div>
@@ -800,7 +809,7 @@ export function LeakageOpsTab({ onNotice }: { onNotice: (notice: Notice) => void
             <p className="eyebrow">WORKFLOW CONTROLS</p>
             <h2>Queue Management</h2>
           </div>
-          <div className="actions" style={{ margin: 0 }}>
+          <div className="actions m-0">
             <button
               type="button"
               disabled={busy || isProcessing || aggregateMetrics.pending === 0}
@@ -878,7 +887,7 @@ export function LeakageOpsTab({ onNotice }: { onNotice: (notice: Notice) => void
           <div>
             <label className="field">
               <span>Filter Status</span>
-              <div className="filter-chips" style={{ marginTop: 4 }}>
+              <div className="filter-chips mt-1">
                 {[
                   { id: 'all', label: 'All' },
                   { id: 'Pending', label: 'Pending' },
@@ -1006,6 +1015,7 @@ export function LeakageOpsTab({ onNotice }: { onNotice: (notice: Notice) => void
                       type="button"
                       className="ghost-button compact-button"
                       onClick={() => void handleRetry([item.id])}
+                      disabled={busy}
                     >
                       Retry
                   </button>
@@ -1043,36 +1053,36 @@ export function LeakageOpsTab({ onNotice }: { onNotice: (notice: Notice) => void
             {/* Anomaly Assessment Banner */}
             {activeItemDetail.queueItem.isLeakageSuspect ? (
               <div
+                className="text-ng"
                 style={{
-                  background: '#ffe4e6',
-                  border: '2px solid #f43f5e',
+                  background: 'var(--status-ng-bg)',
+                  border: '2px solid var(--status-ng-border)',
                   borderRadius: 10,
                   padding: 14,
-                  color: '#881337',
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                <div className="hstack gap-md" style={{ marginBottom: 4 }}>
                   <span style={{ fontSize: 20 }}><Icon name="warning" className="icon inline-icon" /></span>
                   <strong style={{ fontSize: 15 }}>CRITICAL ESCAPE RISK (LEAKAGE DETECTED)</strong>
                 </div>
-                <p style={{ margin: 0, fontSize: 13 }}>
+                <p className="m-0 text-sm">
                   This product was recorded as <strong>{activeItemDetail.queueItem.stationJudge || 'PASS/OK'}</strong> at the vision inspection station, but remote defect tables contain <strong>{activeItemDetail.defects.length} defect row(s)</strong>.
                   Anomaly Score: <strong>{activeItemDetail.queueItem.anomalyScore.toFixed(2)}</strong>.
                 </p>
                 {activeItemDetail.queueItem.errorMessage ? (
-                  <p style={{ margin: '6px 0 0', fontSize: 12, color: '#9f1239' }}>
+                  <p className="text-xs text-ng" style={{ margin: '6px 0 0' }}>
                     Note: {activeItemDetail.queueItem.errorMessage}
                   </p>
                 ) : null}
               </div>
             ) : activeItemDetail.queueItem.status === 'Completed' ? (
               <div
+                className="text-ok"
                 style={{
-                  background: '#f0fdf4',
-                  border: '1px solid #86efac',
+                  background: 'var(--status-ok-bg)',
+                  border: '1px solid var(--status-ok-border)',
                   borderRadius: 10,
                   padding: 12,
-                  color: '#166534',
                 }}
               >
                 <strong>Consistent Clean Unit:</strong> Zero defect records found matching foreign key <code>{activeItemDetail.queueItem.resolvedFkId}</code>. Unit is confirmed OK.
@@ -1115,26 +1125,23 @@ export function LeakageOpsTab({ onNotice }: { onNotice: (notice: Notice) => void
 
             {/* Retrieved Defect Records Table */}
             <div>
-              <div className="section-heading" style={{ marginBottom: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div className="section-heading hstack justify-between" style={{ marginBottom: 8 }}>
                 <div>
-                  <h3 style={{ margin: 0, fontSize: 15 }}>
+                  <h3 className="m-0" style={{ fontSize: 15 }}>
                     Retrieved Defect Records ({activeItemDetail.defects.length})
                   </h3>
                   <small className="muted">Extracted from target MariaDB defect tables using relational key</small>
                 </div>
                 {activeItemDetail.queueItem.productId && (
                   <a
+                    className="text-xs text-real font-semibold gap-xs"
                     href={storageApi.productDefectPackUrl(activeItemDetail.queueItem.productId)}
                     target="_blank"
                     rel="noreferrer"
                     style={{
-                      fontSize: '12px',
-                      color: '#7c3aed',
-                      fontWeight: 600,
                       textDecoration: 'underline',
                       display: 'inline-flex',
                       alignItems: 'center',
-                      gap: '4px',
                     }}
                   >
                     <Icon name="package" className="icon inline-icon" />Open Full Product Defect Pack (.json.gz)
@@ -1202,16 +1209,16 @@ export function LeakageOpsTab({ onNotice }: { onNotice: (notice: Notice) => void
             {/* Image zoom popup */}
             {zoomedImageUri ? (
               <div
+                className="mt-3"
                 style={{
-                  background: '#0f172a',
+                  background: 'var(--slate-50)',
                   padding: 16,
                   borderRadius: 12,
                   textAlign: 'center',
-                  marginTop: 12,
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                  <span style={{ color: '#cbd5e1', fontSize: 12 }}>Defect Image Zoom</span>
+                  <span className="text-soft text-xs">Defect Image Zoom</span>
                   <button
                     type="button"
                     className="ghost-button"
@@ -1229,7 +1236,7 @@ export function LeakageOpsTab({ onNotice }: { onNotice: (notice: Notice) => void
               </div>
             ) : null}
 
-            <div className="actions" style={{ justifyContent: 'flex-end', marginTop: 16 }}>
+            <div className="actions mt-4" style={{ justifyContent: 'flex-end' }}>
               <button
                 type="button"
                 className="secondary"

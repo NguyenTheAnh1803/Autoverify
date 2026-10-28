@@ -330,12 +330,24 @@ public sealed class OpReconciliationController(AutoVerifyDbContext db, ILogger<O
 
         var linkedProductIds = opRecords.Where(o => o.ProductRecordId.HasValue).Select(o => o.ProductRecordId!.Value).Distinct().ToList();
         var legacyKeyIds = opRecords.Where(o => !o.ProductRecordId.HasValue).Select(o => o.KeyId).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
-        var productRows = linkedProductIds.Count == 0 && legacyKeyIds.Count == 0
-            ? []
-            : await db.ProductRecords.AsNoTracking()
-                .Where(p => linkedProductIds.Contains(p.Id) || legacyKeyIds.Contains(p.KeyId))
-                .OrderByDescending(p => p.InspectedAtUtc)
-                .ToListAsync(cancellationToken);
+        var productRowsList = new List<ProductRecordEntity>();
+        if (linkedProductIds.Count > 0)
+        {
+            productRowsList.AddRange(await db.ProductRecords.AsNoTracking()
+                .Where(p => linkedProductIds.Contains(p.Id))
+                .ToListAsync(cancellationToken));
+        }
+        if (legacyKeyIds.Count > 0)
+        {
+            productRowsList.AddRange(await db.ProductRecords.AsNoTracking()
+                .Where(p => legacyKeyIds.Contains(p.KeyId))
+                .ToListAsync(cancellationToken));
+        }
+        var productRows = productRowsList
+            .GroupBy(p => p.Id)
+            .Select(g => g.First())
+            .OrderByDescending(p => p.InspectedAtUtc)
+            .ToList();
 
         var productById = productRows.ToDictionary(p => p.Id);
         var latestProductByKey = productRows
@@ -482,17 +494,26 @@ public sealed class OpReconciliationController(AutoVerifyDbContext db, ILogger<O
 
         var linkedIds = opByProductId.Keys.ToList();
         var legacyKeys = legacyOpByKey.Keys.ToList();
-        var prodQuery = db.ProductRecords.AsNoTracking().Where(p => linkedIds.Contains(p.Id) || legacyKeys.Contains(p.KeyId));
+        var baseProdQuery = db.ProductRecords.AsNoTracking().AsQueryable();
         if (!string.IsNullOrWhiteSpace(machineCode) && !machineCode.Equals("All", StringComparison.OrdinalIgnoreCase))
-            prodQuery = prodQuery.Where(p => p.MachineCode == machineCode.Trim());
+            baseProdQuery = baseProdQuery.Where(p => p.MachineCode == machineCode.Trim());
         if (!string.IsNullOrWhiteSpace(lineCode) && !lineCode.Equals("All", StringComparison.OrdinalIgnoreCase))
-            prodQuery = prodQuery.Where(p => p.LineCode == lineCode.Trim());
+            baseProdQuery = baseProdQuery.Where(p => p.LineCode == lineCode.Trim());
         if (fromUtc.HasValue)
-            prodQuery = prodQuery.Where(p => p.InspectedAtUtc >= fromUtc.Value);
+            baseProdQuery = baseProdQuery.Where(p => p.InspectedAtUtc >= fromUtc.Value);
         if (toUtc.HasValue)
-            prodQuery = prodQuery.Where(p => p.InspectedAtUtc <= toUtc.Value);
+            baseProdQuery = baseProdQuery.Where(p => p.InspectedAtUtc <= toUtc.Value);
 
-        var productRows = await prodQuery.OrderByDescending(p => p.InspectedAtUtc).ToListAsync(cancellationToken);
+        var productRowsList = new List<ProductRecordEntity>();
+        if (linkedIds.Count > 0)
+        {
+            productRowsList.AddRange(await baseProdQuery.Where(p => linkedIds.Contains(p.Id)).ToListAsync(cancellationToken));
+        }
+        if (legacyKeys.Count > 0)
+        {
+            productRowsList.AddRange(await baseProdQuery.Where(p => legacyKeys.Contains(p.KeyId)).ToListAsync(cancellationToken));
+        }
+        var productRows = productRowsList.OrderByDescending(p => p.InspectedAtUtc).ToList();
         var products = productRows
             .GroupBy(p => p.KeyId, StringComparer.OrdinalIgnoreCase)
             .Select(g => g.First())

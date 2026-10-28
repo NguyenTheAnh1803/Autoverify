@@ -119,12 +119,25 @@ import type {
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api/v1'
 
+/** What the user can do about a failed request when the server sent no message of its own. `0` means the server was not reached. */
+function describeStatus(status: number) {
+  if (status === 0) return 'Cannot reach the AutoVerify server. Check the network connection or that the API service is running, then try again.'
+  if (status === 401) return 'Your session has expired. Sign in again to continue.'
+  if (status === 403) return 'Your account does not have permission for this action.'
+  if (status === 404) return 'The requested item no longer exists. Refresh the list and try again.'
+  if (status === 408 || status === 504) return 'The server took too long to answer. Try again, or narrow the filter so less data is loaded.'
+  if (status === 413) return 'The file is too large for the server to accept.'
+  if (status === 429) return 'Too many requests in a short time. Wait a few seconds, then try again.'
+  if (status >= 500) return `The server hit an error (${status}). Try again; if it keeps failing, check the API service log.`
+  return `Request failed (${status}).`
+}
+
 export class ApiError extends Error {
   status: number
   body: string
 
   constructor(status: number, body: string) {
-    super(body || `Request failed (${status})`)
+    super(body || describeStatus(status))
     this.status = status
     this.body = body
   }
@@ -134,14 +147,45 @@ function getToken() {
   return localStorage.getItem('autoverify.token') ?? ''
 }
 
+/** Called once when any request comes back 401, so the app can return to the sign-in screen instead of every panel failing. */
+let unauthorizedHandler: (() => void) | null = null
+export function setUnauthorizedHandler(handler: (() => void) | null) {
+  unauthorizedHandler = handler
+}
+
+/** fetch() that reports "server not reached" as an ApiError with status 0 instead of the browser's bare "Failed to fetch". */
+async function send(url: string, init: RequestInit) {
+  try {
+    return await fetch(url, init)
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') throw error
+    throw new ApiError(0, '')
+  }
+}
+
+async function failure(path: string, response: Response) {
+  if (response.status === 401 && !path.startsWith('/auth/')) unauthorizedHandler?.()
+  return new ApiError(response.status, await parseError(response))
+}
+
+/** Longest server message shown as-is; anything longer (a stack trace, a dump) is cut so the notice stays readable. */
+const MAX_ERROR_LENGTH = 300
+
 async function parseError(response: Response) {
-  const text = await response.text()
+  const text = (await response.text().catch(() => '')).trim()
+  let message: string
   try {
     const json = JSON.parse(text) as { error?: string; title?: string; message?: string }
-    return json.error ?? json.title ?? json.message ?? text
+    message = json.error ?? json.title ?? json.message ?? ''
   } catch {
-    return text || response.statusText
+    // A proxy or IIS error page is HTML; showing its markup helps nobody, so fall back to the status explanation.
+    message = /^<(!doctype|html)/i.test(text) ? '' : text
   }
+  if (message.length > MAX_ERROR_LENGTH) {
+    console.error(`API ${response.status} ${response.url}:`, message)
+    message = `${message.slice(0, MAX_ERROR_LENGTH).trimEnd()}… (full message in the browser console)`
+  }
+  return message
 }
 
 export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
@@ -152,9 +196,9 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
     headers.set('Content-Type', 'application/json')
   }
 
-  const response = await fetch(`${API_BASE_URL}${path}`, { ...init, headers })
+  const response = await send(`${API_BASE_URL}${path}`, { ...init, headers })
   if (response.status === 204) return undefined as T
-  if (!response.ok) throw new ApiError(response.status, await parseError(response))
+  if (!response.ok) throw await failure(path, response)
   if (response.status === 201 || response.headers.get('content-type')?.includes('json')) {
     return (await response.json()) as T
   }
@@ -817,30 +861,14 @@ export const opReconciliationApi = {
     if (modelCode) formData.append('modelCode', modelCode)
     if (packageName) formData.append('packageName', packageName)
     formData.append('saveRules', 'true')
-    const base = API_BASE_URL.replace(/\/$/, '')
-    const res = await fetch(`${base}/op-defect-mappings/analyze-clsf`, { method: 'POST', body: formData })
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ error: res.statusText }))
-      throw new Error(err.error || 'CLSF analysis failed')
-    }
-    return res.json() as Promise<import('./types').ClsfPackageAnalysisResponse>
+    return api<import('./types').ClsfPackageAnalysisResponse>('/op-defect-mappings/analyze-clsf', { method: 'POST', body: formData })
   },
   uploadExcel: async (file: File, lineCode?: string, machineCode?: string): Promise<UploadOpExcelResponse> => {
     const formData = new FormData()
     formData.append('file', file)
     if (lineCode) formData.append('lineCode', lineCode)
     if (machineCode) formData.append('machineCode', machineCode)
-
-    const base = API_BASE_URL.replace(/\/$/, '')
-    const res = await fetch(`${base}/op-reconciliation/upload-excel`, {
-      method: 'POST',
-      body: formData,
-    })
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ error: res.statusText }))
-      throw new Error(err.error || err.message || 'Upload OP Excel failed')
-    }
-    return res.json()
+    return api<UploadOpExcelResponse>('/op-reconciliation/upload-excel', { method: 'POST', body: formData })
   },
   uploadExcelWithProgress: (
     file: File,
@@ -862,34 +890,27 @@ export const opReconciliationApi = {
       if (event.lengthComputable) onProgress(Math.round((event.loaded / event.total) * 90))
     }
     xhr.onload = () => {
+      if (xhr.status === 401) unauthorizedHandler?.()
+      let payload: UploadOpExcelResponse & { error?: string; message?: string }
       try {
-        const payload = JSON.parse(xhr.responseText || '{}') as UploadOpExcelResponse & { error?: string; message?: string }
-        if (xhr.status < 200 || xhr.status >= 300) {
-          reject(new Error(payload.error || payload.message || `Upload failed (${xhr.status})`))
-          return
-        }
-        onProgress(100)
-        resolve(payload)
+        payload = JSON.parse(xhr.responseText || '{}')
       } catch {
-        reject(new Error(xhr.responseText || `Upload failed (${xhr.status})`))
+        reject(new ApiError(xhr.status, xhr.status >= 200 && xhr.status < 300 ? 'The server answered with something that is not a valid upload result.' : ''))
+        return
       }
+      if (xhr.status < 200 || xhr.status >= 300) {
+        reject(new ApiError(xhr.status, payload.error || payload.message || ''))
+        return
+      }
+      onProgress(100)
+      resolve(payload)
     }
-    xhr.onerror = () => reject(new Error('Network error while uploading OP review file.'))
+    xhr.onerror = () => reject(new ApiError(0, 'The connection dropped while uploading the OP review file. Check the network and upload it again.'))
+    xhr.onabort = () => reject(new ApiError(0, 'Upload cancelled.'))
     xhr.send(formData)
   }),
-  pasteRecords: async (request: PasteOpRecordsRequest): Promise<UploadOpExcelResponse> => {
-    const base = API_BASE_URL.replace(/\/$/, '')
-    const res = await fetch(`${base}/op-reconciliation/paste`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(request),
-    })
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ error: res.statusText }))
-      throw new Error(err.error || err.message || 'Paste OP records failed')
-    }
-    return res.json()
-  },
+  pasteRecords: (request: PasteOpRecordsRequest) =>
+    api<UploadOpExcelResponse>('/op-reconciliation/paste', { method: 'POST', body: JSON.stringify(request) }),
   getAnalysis: (params: { machineCode?: string; lineCode?: string; targetDefect?: string; batchId?: string } = {}) =>
     api<OpReconciliationAnalysisResponse>(`/op-reconciliation/analysis${qs(params)}`),
   getRecords: (params: {

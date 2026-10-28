@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react'
+import { activatable } from '../../lib/activatable'
 import ReactECharts from '../ReactECharts'
 import type { IsolationForestResult, TopAnomalyItem } from '../../types'
 
@@ -63,15 +64,10 @@ export const IsolationForestChart: React.FC<IsolationForestChartProps> = ({
       title: {
         text: `Isolation Forest Anomaly Scores (Contamination: ${(contamination * 100).toFixed(1)}%)`,
         left: 'left',
-        textStyle: { color: '#cbd5e1', fontSize: 13, fontWeight: 'normal' },
         subtext: `Score Semantics: Higher = More Anomalous | Threshold: ${scoreThreshold.toFixed(4)}`,
-        subtextStyle: { color: '#94a3b8', fontSize: 11 },
       },
       tooltip: {
         trigger: 'item',
-        backgroundColor: '#1e293b',
-        borderColor: '#475569',
-        textStyle: { color: '#f1f5f9', fontSize: 12 },
         formatter: (params: {
           data: {
             value: [number, number]
@@ -88,14 +84,14 @@ export const IsolationForestChart: React.FC<IsolationForestChartProps> = ({
           const { value, obs } = params.data
           const isAbove = value[1] >= scoreThreshold
           return `
-            <div style="font-family:monospace;font-size:12px;">
+            <div style="font-family:var(--font-mono);font-size:12px;">
               <div><strong>Observation:</strong> #${obs.rowIndex}</div>
               ${obs.keyId ? `<div><strong>Key:</strong> ${obs.keyId}</div>` : ''}
               ${obs.lineCode || obs.machineCode ? `<div><strong>Scope:</strong> ${obs.lineCode || '?'}/${obs.machineCode || '?'}</div>` : ''}
               ${obs.defectFamily ? `<div><strong>Family:</strong> ${obs.defectFamily}</div>` : ''}
               <div style="margin-top:4px;"><strong>Anomaly Score:</strong> ${value[1].toFixed(4)}</div>
-              <div><strong style="color:${isAbove ? '#ef4444' : '#10b981'};">${isAbove ? 'Flagged Anomaly' : 'Nominal Distribution'}</strong></div>
-              <div style="font-size:12px;color:#38bdf8;margin-top:4px;">(Click point to drill down in preview grid)</div>
+              <div><strong style="color:${isAbove ? '#c0392b' : '#3a9d8a'};">${isAbove ? 'Flagged Anomaly' : 'Nominal Distribution'}</strong></div>
+              <div style="font-size:12px;color:#2f6f9f;margin-top:4px;">(Click point to drill down in preview grid)</div>
             </div>
           `
         },
@@ -106,9 +102,6 @@ export const IsolationForestChart: React.FC<IsolationForestChartProps> = ({
         name: 'Sample Index (Sequence)',
         nameLocation: 'middle',
         nameGap: 25,
-        axisLine: { lineStyle: { color: '#475569' } },
-        splitLine: { lineStyle: { color: '#1e293b' } },
-        axisLabel: { color: '#94a3b8', fontSize: 10 },
       },
       yAxis: {
         type: 'value',
@@ -117,9 +110,6 @@ export const IsolationForestChart: React.FC<IsolationForestChartProps> = ({
         nameGap: 35,
         min: 0,
         max: 1,
-        axisLine: { lineStyle: { color: '#475569' } },
-        splitLine: { lineStyle: { color: '#1e293b' } },
-        axisLabel: { color: '#94a3b8', fontSize: 10 },
       },
       series: [
         {
@@ -127,26 +117,26 @@ export const IsolationForestChart: React.FC<IsolationForestChartProps> = ({
           type: 'scatter',
           symbolSize: 5,
           data: normalData,
-          itemStyle: { color: '#38bdf8', opacity: 0.5 },
+          itemStyle: { color: '#2f6f9f', opacity: 0.5 },
         },
         {
           name: 'Anomalies',
           type: 'scatter',
           symbolSize: 8,
           data: anomalyData,
-          itemStyle: { color: '#ef4444', opacity: 0.9 },
+          itemStyle: { color: '#c0392b', opacity: 0.9 },
           markLine: {
             silent: true,
             symbol: 'none',
             data: [
               {
                 yAxis: scoreThreshold,
-                lineStyle: { color: '#f87171', type: 'dashed', width: 2 },
+                lineStyle: { color: '#c0392b', type: 'dashed', width: 2 },
                 label: {
                   formatter: `Threshold: ${scoreThreshold.toFixed(4)}`,
                   position: 'insideEndTop',
-                  color: '#f87171',
-                  fontSize: 10,
+                  color: '#c0392b',
+                  fontSize: 11,
                 },
               },
             ],
@@ -202,18 +192,14 @@ export const IsolationForestChart: React.FC<IsolationForestChartProps> = ({
       title: {
         text: 'Feature Anomaly Contribution (Isolation Importance)',
         left: 'left',
-        textStyle: { color: '#cbd5e1', fontSize: 13, fontWeight: 'normal' },
       },
       tooltip: {
         trigger: 'axis',
         axisPointer: { type: 'shadow' },
-        backgroundColor: '#1e293b',
-        borderColor: '#475569',
-        textStyle: { color: '#f1f5f9', fontSize: 12 },
         formatter: (params: Array<{ name: string; value: number }>) => {
           const item = params[0]
           return `
-            <div style="font-family:monospace;font-size:12px;">
+            <div style="font-family:var(--font-mono);font-size:12px;">
               <div><strong>Feature:</strong> ${item.name}</div>
               <div><strong>Relative Importance:</strong> ${(item.value * 100).toFixed(1)}%</div>
             </div>
@@ -223,23 +209,18 @@ export const IsolationForestChart: React.FC<IsolationForestChartProps> = ({
       grid: { left: '120px', right: '30px', top: '40px', bottom: '25px' },
       xAxis: {
         type: 'value',
-        axisLine: { lineStyle: { color: '#475569' } },
-        splitLine: { lineStyle: { color: '#1e293b' } },
-        axisLabel: { color: '#94a3b8', fontSize: 10 },
       },
       yAxis: {
         type: 'category',
         data: categories,
         inverse: true,
-        axisLine: { lineStyle: { color: '#475569' } },
-        axisLabel: { color: '#94a3b8', fontSize: 10 },
       },
       series: [
         {
           name: 'Contribution',
           type: 'bar',
           data: values,
-          itemStyle: { color: '#f59e0b' },
+          itemStyle: { color: '#c8862b' },
         },
       ],
     }
@@ -271,7 +252,7 @@ export const IsolationForestChart: React.FC<IsolationForestChartProps> = ({
         </div>
         <div className="analytics-stat-card">
           <span className="stat-label">Isolated Anomalies</span>
-          <span className="stat-value font-mono" style={{ color: '#ef4444' }}>
+          <span className="stat-value font-mono" style={{ color: '#c0392b' }}>
             {anomalyCount.toLocaleString()} ({((anomalyCount / (totalObservations || 1)) * 100).toFixed(1)}%)
           </span>
         </div>
@@ -305,7 +286,7 @@ export const IsolationForestChart: React.FC<IsolationForestChartProps> = ({
                 />
               </div>
               {selectedPointPreview && (
-                <div className="analytics-feature-preview-card" style={{ marginTop: '8px' }}>
+                <div className="analytics-feature-preview-card mt-2">
                   <div className="preview-header">
                     <span className="badge info">Isolation Forest Point Preview</span>
                     <span className="sample-name font-mono">Sample #{selectedPointPreview.sampleIdx}</span>
@@ -319,7 +300,7 @@ export const IsolationForestChart: React.FC<IsolationForestChartProps> = ({
                       <span className="text-xs text-slate-400 font-mono">Key: {selectedPointPreview.keyId}</span>
                     )}
                   </div>
-                  <div className="preview-body" style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <div className="preview-body hstack gap-xl flex-wrap">
                     <div>
                       <span className="text-xs text-slate-400">Score: </span>
                       <strong className="font-mono text-rose-400">{selectedPointPreview.anomalyScore.toFixed(4)}</strong>
@@ -401,7 +382,7 @@ export const IsolationForestChart: React.FC<IsolationForestChartProps> = ({
                   <tr
                     key={item.rank}
                     className={isSelected ? 'selected-row' : ''}
-                    onClick={() => setSelectedAnomaly(item)}
+                    {...activatable(() => setSelectedAnomaly(item), { row: true, selected: isSelected })}
                     style={{ cursor: 'pointer' }}
                   >
                     <td>

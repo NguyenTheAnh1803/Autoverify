@@ -437,6 +437,9 @@ public static class DatabaseSeeder
         await EnsureColumnExistsAsync(db, "ProductRecords", "OpReviewNote", "varchar(1024) NULL", logger);
         await EnsureColumnExistsAsync(db, "ProductRecords", "OpReviewedAtUtc", "datetime(6) NULL", logger);
         await db.Database.ExecuteSqlRawAsync("CREATE INDEX IF NOT EXISTS `IX_ProductRecords_ModelCode` ON `ProductRecords` (`ModelCode`);");
+        await ExecuteSqlRawIdempotentAsync(db, "CREATE INDEX IF NOT EXISTS `IX_ProductRecords_InspectedAtUtc` ON `ProductRecords` (`InspectedAtUtc`);", logger);
+        await ExecuteSqlRawIdempotentAsync(db, "CREATE INDEX IF NOT EXISTS `IX_ProductRecords_Machine_Line_InspectedAt` ON `ProductRecords` (`MachineCode`, `LineCode`, `InspectedAtUtc`);", logger);
+        await ExecuteSqlRawIdempotentAsync(db, "CREATE INDEX IF NOT EXISTS `IX_ProductRecords_Judge_InspectedAt` ON `ProductRecords` (`Judge`, `InspectedAtUtc`);", logger);
         try
         {
             await db.Database.ExecuteSqlRawAsync("ALTER TABLE `ProductRecords` ADD COLUMN IF NOT EXISTS `Zone` varchar(128) NULL;");
@@ -553,6 +556,8 @@ public static class DatabaseSeeder
         try { await db.Database.ExecuteSqlRawAsync("CREATE INDEX IF NOT EXISTS `IX_DefectRecords_ConnectionId` ON `DefectRecords` (`ConnectionId`);"); } catch { }
         try { await db.Database.ExecuteSqlRawAsync("CREATE INDEX IF NOT EXISTS `IX_DefectRecords_MachineCode` ON `DefectRecords` (`MachineCode`);"); } catch { }
         try { await db.Database.ExecuteSqlRawAsync("CREATE INDEX IF NOT EXISTS `IX_DefectRecords_LineCode` ON `DefectRecords` (`LineCode`);"); } catch { }
+        try { await db.Database.ExecuteSqlRawAsync("CREATE INDEX IF NOT EXISTS `IX_DefectRecords_CreatedAtUtc` ON `DefectRecords` (`CreatedAtUtc`);"); } catch { }
+        try { await db.Database.ExecuteSqlRawAsync("CREATE INDEX IF NOT EXISTS `IX_DefectRecords_Machine_Line_CreatedAt` ON `DefectRecords` (`MachineCode`, `LineCode`, `CreatedAtUtc`);"); } catch { }
 
         // Self-healing database deduplication: remove any historical duplicate ProductRecords
         try

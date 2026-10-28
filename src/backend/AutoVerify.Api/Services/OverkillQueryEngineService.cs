@@ -172,24 +172,32 @@ public sealed partial class OverkillQueryEngineService(
             }
 
             // Check Deduplication Lock for sample products: Which products are already saved in db.ProductRecords?
-            var sampleKeysToCheck = sampleFkIds.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
-            var sampleIdsToCheck = sampleProducts
-                .Select(r => r.GetValueOrDefault(request.IdColumnName)?.ToString())
+            var sampleTokensToCheck = sampleFkIds
+                .Concat(sampleProducts.Select(r => r.GetValueOrDefault(request.IdColumnName)?.ToString()))
                 .Where(s => !string.IsNullOrWhiteSpace(s))
+                .Select(s => s!.Trim())
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
-            var alreadySavedEntitiesInDb = await db.ProductRecords
-                .AsNoTracking()
-                .Where(p => sampleKeysToCheck.Contains(p.KeyId) || sampleIdsToCheck.Contains(p.PanelId) || sampleKeysToCheck.Contains(p.PanelId) || (p.KeyId != null && sampleIdsToCheck.Contains(p.KeyId)))
-                .Select(p => new { p.KeyId, p.PanelId })
-                .ToListAsync(cancellationToken);
-
             var savedKeySet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var p in alreadySavedEntitiesInDb)
+            if (sampleTokensToCheck.Count > 0)
             {
-                if (!string.IsNullOrWhiteSpace(p.KeyId)) savedKeySet.Add(p.KeyId);
-                if (!string.IsNullOrWhiteSpace(p.PanelId)) savedKeySet.Add(p.PanelId);
+                var matchedByKeyId = await db.ProductRecords
+                    .AsNoTracking()
+                    .Where(p => sampleTokensToCheck.Contains(p.KeyId))
+                    .Select(p => new { p.KeyId, p.PanelId })
+                    .ToListAsync(cancellationToken);
+                var matchedByPanelId = await db.ProductRecords
+                    .AsNoTracking()
+                    .Where(p => sampleTokensToCheck.Contains(p.PanelId))
+                    .Select(p => new { p.KeyId, p.PanelId })
+                    .ToListAsync(cancellationToken);
+
+                foreach (var p in matchedByKeyId.Concat(matchedByPanelId))
+                {
+                    if (!string.IsNullOrWhiteSpace(p.KeyId)) savedKeySet.Add(p.KeyId);
+                    if (!string.IsNullOrWhiteSpace(p.PanelId)) savedKeySet.Add(p.PanelId);
+                }
             }
 
             var alreadySavedCount = 0;
@@ -693,20 +701,46 @@ public sealed partial class OverkillQueryEngineService(
             var candidateIds = scannedProducts.Select(p => p.Id).Where(id => !string.IsNullOrWhiteSpace(id)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
             var candidateFks = scannedProducts.Select(p => p.FkId).Where(IsUsableForeignKey).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
 
-            var alreadySavedEntities = await db.ProductRecords
-                .AsNoTracking()
-                .Where(p => candidateKeyIds.Contains(p.KeyId) || 
-                            candidateIds.Contains(p.PanelId) || 
-                            candidateFks.Contains(p.KeyId) ||
-                            (p.PanelId != null && candidateFks.Contains(p.PanelId)))
-                .Select(p => new { p.KeyId, p.PanelId })
-                .ToListAsync(cancellationToken);
+            var keyLookupTokens = candidateKeyIds
+                .Concat(candidateFks)
+                .Where(s => !string.IsNullOrWhiteSpace(s))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+            var panelLookupTokens = candidateIds
+                .Concat(candidateFks)
+                .Where(s => !string.IsNullOrWhiteSpace(s))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
 
             var alreadySavedKeySet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var p in alreadySavedEntities)
+            foreach (var chunk in keyLookupTokens.Chunk(2000))
             {
-                if (!string.IsNullOrWhiteSpace(p.KeyId)) alreadySavedKeySet.Add(p.KeyId.Trim());
-                if (!string.IsNullOrWhiteSpace(p.PanelId)) alreadySavedKeySet.Add(p.PanelId.Trim());
+                var chunkKeys = chunk.ToArray();
+                var matchedByKey = await db.ProductRecords
+                    .AsNoTracking()
+                    .Where(p => chunkKeys.Contains(p.KeyId))
+                    .Select(p => new { p.KeyId, p.PanelId })
+                    .ToListAsync(cancellationToken);
+                foreach (var p in matchedByKey)
+                {
+                    if (!string.IsNullOrWhiteSpace(p.KeyId)) alreadySavedKeySet.Add(p.KeyId.Trim());
+                    if (!string.IsNullOrWhiteSpace(p.PanelId)) alreadySavedKeySet.Add(p.PanelId.Trim());
+                }
+            }
+
+            foreach (var chunk in panelLookupTokens.Chunk(2000))
+            {
+                var chunkPanels = chunk.ToArray();
+                var matchedByPanel = await db.ProductRecords
+                    .AsNoTracking()
+                    .Where(p => chunkPanels.Contains(p.PanelId))
+                    .Select(p => new { p.KeyId, p.PanelId })
+                    .ToListAsync(cancellationToken);
+                foreach (var p in matchedByPanel)
+                {
+                    if (!string.IsNullOrWhiteSpace(p.KeyId)) alreadySavedKeySet.Add(p.KeyId.Trim());
+                    if (!string.IsNullOrWhiteSpace(p.PanelId)) alreadySavedKeySet.Add(p.PanelId.Trim());
+                }
             }
 
             var newProducts = scannedProducts
@@ -1291,6 +1325,7 @@ public sealed partial class OverkillQueryEngineService(
             config.UpdatedAtUtc = DateTimeOffset.UtcNow;
 
             await db.SaveChangesAsync(cancellationToken);
+            AutoVerifyStore.InvalidateProductCaches();
 
             logger.LogInformation("Overkill pipeline '{PipelineName}' ({ConfigId}) executed successfully in {Latency}ms: {Products} products, {Defects} defects, {Overkill} overkill suspects",
                 config.Name, config.Id, latency, scannedProducts.Count, allExtractedDefects.Count, overkillCandidatesCount);

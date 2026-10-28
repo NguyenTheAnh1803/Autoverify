@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { classifierRulesApi } from '../api'
 import { useConfirm } from '../confirm'
 import { formatPercent } from '../format'
-import { Modal } from '../ui'
+import { Icon, Modal } from '../ui'
 import type {
   ClassifierRuleDto,
   Notice,
@@ -99,7 +99,7 @@ export const RuleOptimizerModal: React.FC<RuleOptimizerModalProps> = ({
       await classifierRulesApi.updateRule(rule.id, {
         scriptContent: candidateScript,
       })
-      onNotice({ tone: 'success', message: `✓ Applied tuned script to Rule [${rule.ruleCode}] successfully!` })
+      onNotice({ tone: 'success', message: `Applied tuned script to Rule [${rule.ruleCode}] successfully!` })
       onRuleUpdated()
       onClose()
     } catch (err) {
@@ -117,7 +117,7 @@ export const RuleOptimizerModal: React.FC<RuleOptimizerModalProps> = ({
       onClose={onClose}
       wide
     >
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <div className="vstack gap-xl">
         {/* Executive Summary Card */}
         {loadingTuning ? (
           <div className="dashboard-report-empty">
@@ -127,27 +127,27 @@ export const RuleOptimizerModal: React.FC<RuleOptimizerModalProps> = ({
         ) : tuningData ? (
           <div
             style={{
-              background: 'rgba(59, 130, 246, 0.1)',
-              border: '1px solid rgba(59, 130, 246, 0.3)',
+              background: 'var(--status-info-bg)',
+              border: '1px solid var(--status-info-border)',
               borderRadius: '8px',
               padding: '14px',
             }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div className="hstack justify-between">
               <div>
-                <span className="text-xs font-bold" style={{ color: '#93c5fd' }}>
+                <span className="text-xs font-bold text-info">
                   OVERKILL DATA MINING SUMMARY:
                 </span>
-                <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#e2e8f0', lineHeight: 1.4 }}>
+                <p className="text-sm text-strong" style={{ margin: '4px 0 0 0', lineHeight: 1.4 }}>
                   {tuningData.executiveSummary}
                 </p>
               </div>
-              <div style={{ textAlign: 'right', minWidth: '160px' }}>
+              <div className="text-right" style={{ minWidth: '160px' }}>
                 <div className="text-xs text-muted">Overkill / Real Defect Samples:</div>
-                <strong style={{ fontSize: '14px', color: '#f59e0b' }}>
+                <strong className="text-base text-overkill">
                   {tuningData.totalOverkillSamples} Overkill
                 </strong>{' '}
-                / <strong style={{ color: '#a855f7' }}>{tuningData.totalRealDefectSamples} Real NG</strong>
+                / <strong className="text-real">{tuningData.totalRealDefectSamples} Real NG</strong>
               </div>
             </div>
           </div>
@@ -166,8 +166,8 @@ export const RuleOptimizerModal: React.FC<RuleOptimizerModalProps> = ({
                     <th>Feature Parameter</th>
                     <th>Current Threshold</th>
                     <th>Proposed Gold Threshold</th>
-                    <th style={{ color: '#f59e0b' }}>Overkill [Min - Max]</th>
-                    <th style={{ color: '#a855f7' }}>Real Defect [Min - Max]</th>
+                    <th className="text-overkill">Overkill [Min - Max]</th>
+                    <th className="text-real">Real Defect [Min - Max]</th>
                     <th>Projected Overkill Cut</th>
                     <th>Algorithmic Explanation</th>
                   </tr>
@@ -176,8 +176,8 @@ export const RuleOptimizerModal: React.FC<RuleOptimizerModalProps> = ({
                   {tuningData.recommendations.map((rec) => {
                     const isGold = rec.separationKind === 'CompletelySeparated'
                     return (
-                      <tr key={rec.featureName} style={{ background: isGold ? 'rgba(16, 185, 129, 0.08)' : undefined }}>
-                        <td className="font-mono font-bold" style={{ color: isGold ? '#34d399' : '#e2e8f0' }}>
+                      <tr key={rec.featureName} style={{ background: isGold ? 'var(--status-ok-bg)' : undefined }}>
+                        <td className="font-mono font-bold" style={{ color: isGold ? 'var(--status-ok-text)' : 'var(--slate-900)' }}>
                           {isGold && ''}
                           {rec.featureName}
                         </td>
@@ -186,24 +186,23 @@ export const RuleOptimizerModal: React.FC<RuleOptimizerModalProps> = ({
                         </td>
                         <td>
                           <span
-                            className="tag-badge font-mono"
+                            className="tag-badge font-mono font-bold"
                             style={{
-                              background: isGold ? 'rgba(16, 185, 129, 0.2)' : 'rgba(59, 130, 246, 0.2)',
-                              color: isGold ? '#10b981' : '#60a5fa',
-                              fontWeight: 700,
+                              background: isGold ? 'var(--status-ok-bg)' : 'var(--status-info-bg)',
+                              color: isGold ? 'var(--status-ok-text)' : 'var(--status-info-text)',
                             }}
                           >
                             {rec.comparisonOperator} {rec.proposedThreshold}
                           </span>
                         </td>
-                        <td className="font-mono text-xs" style={{ color: '#f59e0b' }}>
+                        <td className="font-mono text-xs text-overkill">
                           [{rec.overkillMin} - {rec.overkillMax}]
                         </td>
-                        <td className="font-mono text-xs" style={{ color: '#a855f7' }}>
+                        <td className="font-mono text-xs text-real">
                           [{rec.realMin} - {rec.realMax}]
                         </td>
                         <td>
-                          <strong style={{ color: isGold ? '#10b981' : '#f59e0b' }}>
+                          <strong style={{ color: isGold ? 'var(--status-ok-text)' : 'var(--status-overkill-text)' }}>
                             {rec.projectedOverkillCutPercent}%
                           </strong>
                         </td>
@@ -220,27 +219,24 @@ export const RuleOptimizerModal: React.FC<RuleOptimizerModalProps> = ({
         )}
 
         {/* Side-by-side comparison editors */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+        <div className="gap-xl" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-              <label className="text-xs font-bold" style={{ color: '#94a3b8' }}>
+              <label className="text-xs font-bold text-muted">
                 Current Script (Baseline v1.0):
               </label>
               <span className="text-xs font-mono text-muted">Read-only</span>
             </div>
             <textarea
+              className="font-mono text-xs w-full text-muted"
               value={baselineScript}
               readOnly
               rows={14}
               style={{
-                fontFamily: 'monospace',
-                fontSize: '12px',
-                width: '100%',
-                background: '#090d16',
-                color: '#94a3b8',
+                background: 'var(--slate-50)',
                 padding: '10px',
                 borderRadius: '6px',
-                border: '1px solid rgba(255,255,255,0.08)',
+                border: '1px solid var(--slate-200)',
                 whiteSpace: 'pre',
               }}
             />
@@ -248,34 +244,31 @@ export const RuleOptimizerModal: React.FC<RuleOptimizerModalProps> = ({
 
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-              <label className="text-xs font-bold" style={{ color: '#34d399' }}>
+              <label className="text-xs font-bold text-ok">
                 Proposed Tuned Script (Candidate Script):
               </label>
               {tuningData?.autoTunedScript && (
                 <button
                   type="button"
-                  className="ghost-button compact"
-                  style={{ fontSize: '12px', padding: '1px 6px' }}
+                  className="ghost-button compact text-xs"
+                  style={{ padding: '1px 6px' }}
                   onClick={() => setCandidateScript(tuningData.autoTunedScript)}
                   title="Reload auto-tuned script"
                 >
-                  ↺ Reload auto-tuned script
+                  <Icon name="refresh" className="icon inline-icon" />Reload auto-tuned script
                 </button>
               )}
             </div>
             <textarea
+              className="font-mono text-xs w-full text-strong"
               value={candidateScript}
               onChange={(e) => setCandidateScript(e.target.value)}
               rows={14}
               style={{
-                fontFamily: 'monospace',
-                fontSize: '12px',
-                width: '100%',
-                background: '#090d16',
-                color: '#e2e8f0',
+                background: 'var(--slate-50)',
                 padding: '10px',
                 borderRadius: '6px',
-                border: '1px solid rgba(16, 185, 129, 0.4)',
+                border: '1px solid var(--status-ok-border)',
                 whiteSpace: 'pre',
               }}
             />
@@ -283,14 +276,14 @@ export const RuleOptimizerModal: React.FC<RuleOptimizerModalProps> = ({
         </div>
 
         {/* Action Button: Run What-If Simulation */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className="hstack justify-between">
           <span className="text-xs text-muted">
             The system executes both scripts in parallel across historical defect observations to evaluate safety and overkill reduction.
           </span>
           <button
             type="button"
-            className="primary"
-            style={{ background: '#2563eb', padding: '8px 24px', fontWeight: 600 }}
+            className="primary font-semibold"
+            style={{ background: 'var(--blue-600)', padding: '8px 24px' }}
             onClick={() => void handleRunSimulation()}
             disabled={simulating || !candidateScript.trim()}
           >
@@ -302,72 +295,70 @@ export const RuleOptimizerModal: React.FC<RuleOptimizerModalProps> = ({
         {simResult && (
           <div
             style={{
-              background: simResult.isSafeToDeploy ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.15)',
-              border: `1px solid ${simResult.isSafeToDeploy ? '#10b981' : '#ef4444'}`,
+              background: simResult.isSafeToDeploy ? 'var(--status-ok-bg)' : 'var(--status-ng-bg)',
+              border: `1px solid ${simResult.isSafeToDeploy ? 'var(--status-ok-border)' : 'var(--status-ng-border)'}`,
               borderRadius: '8px',
               padding: '16px',
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
               <div>
-                <span className="text-xs font-bold" style={{ color: simResult.isSafeToDeploy ? '#10b981' : '#ef4444' }}>
+                <span className="text-xs font-bold" style={{ color: simResult.isSafeToDeploy ? 'var(--status-ok-text)' : 'var(--status-ng-text)' }}>
                   REGRESSION SIMULATION ON {simResult.totalEvaluated} PRODUCTS:
                 </span>
-                <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#e2e8f0', fontWeight: 500, lineHeight: 1.4 }}>
+                <p className="text-sm text-strong" style={{ margin: '4px 0 0 0', fontWeight: 500, lineHeight: 1.4 }}>
                   {simResult.detailedExplanation}
                 </p>
               </div>
               <span
-                className="tag-badge"
+                className="tag-badge font-bold text-xs"
                 style={{
-                  background: simResult.isSafeToDeploy ? '#10b981' : '#ef4444',
+                  background: simResult.isSafeToDeploy ? 'var(--status-ok)' : 'var(--status-ng)',
                   color: '#fff',
-                  fontWeight: 700,
-                  fontSize: '12px',
                   padding: '4px 10px',
                 }}
               >
-                {simResult.isSafeToDeploy ? '✓ QUALIFIED FOR PRODUCTION' : 'LEAKAGE RISK DETECTED'}
+                {simResult.isSafeToDeploy ? <><Icon name="check" className="icon inline-icon" />QUALIFIED FOR PRODUCTION</> : <><Icon name="warning" className="icon inline-icon" />LEAKAGE RISK DETECTED</>}
               </span>
             </div>
 
             {/* Metrics Comparison Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', marginTop: '12px' }}>
-              <div style={{ background: 'rgba(255,255,255,0.03)', padding: '10px', borderRadius: '6px' }}>
+            <div className="gap-lg mt-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(180px, 100%), 1fr))' }}>
+              <div style={{ background: 'var(--slate-50)', padding: '10px', borderRadius: '6px' }}>
                 <span className="text-xs text-muted">Overkill Alarms:</span>
-                <div style={{ fontSize: '14px', marginTop: '2px' }}>
-                  <span style={{ color: '#94a3b8' }}>{simResult.baselineOverkillCount}</span>
+                <div className="text-base" style={{ marginTop: '2px' }}>
+                  <span className="text-muted">{simResult.baselineOverkillCount}</span>
                   <span style={{ margin: '0 6px' }}>→</span>
-                  <strong style={{ color: '#10b981' }}>{simResult.candidateOverkillCount}</strong>
+                  <strong className="text-ok">{simResult.candidateOverkillCount}</strong>
                 </div>
-                <small style={{ color: '#10b981' }}>Cut by {simResult.overkillReductionPercent}%</small>
+                <small className="text-ok">Cut by {simResult.overkillReductionPercent}%</small>
               </div>
 
-              <div style={{ background: 'rgba(255,255,255,0.03)', padding: '10px', borderRadius: '6px' }}>
+              <div style={{ background: 'var(--slate-50)', padding: '10px', borderRadius: '6px' }}>
                 <span className="text-xs text-muted">Overkill Rate:</span>
-                <div style={{ fontSize: '14px', marginTop: '2px' }}>
-                  <span style={{ color: '#94a3b8' }}>{formatPercent(simResult.baselineOverkillRate)}</span>
+                <div className="text-base" style={{ marginTop: '2px' }}>
+                  <span className="text-muted">{formatPercent(simResult.baselineOverkillRate)}</span>
                   <span style={{ margin: '0 6px' }}>→</span>
-                  <strong style={{ color: '#10b981' }}>{formatPercent(simResult.candidateOverkillRate)}</strong>
+                  <strong className="text-ok">{formatPercent(simResult.candidateOverkillRate)}</strong>
                 </div>
               </div>
 
-              <div style={{ background: 'rgba(255,255,255,0.03)', padding: '10px', borderRadius: '6px' }}>
+              <div style={{ background: 'var(--slate-50)', padding: '10px', borderRadius: '6px' }}>
                 <span className="text-xs text-muted">Defect Escapes (Leakage):</span>
-                <div style={{ fontSize: '14px', marginTop: '2px' }}>
-                  <strong style={{ color: simResult.candidateLeakageCount > 0 ? '#ef4444' : '#10b981' }}>
+                <div className="text-base" style={{ marginTop: '2px' }}>
+                  <strong style={{ color: simResult.candidateLeakageCount > 0 ? 'var(--status-leakage-text)' : 'var(--status-ok-text)' }}>
                     {simResult.candidateLeakageCount} cases
                   </strong>
                 </div>
-                <small style={{ color: simResult.candidateLeakageCount > 0 ? '#ef4444' : '#10b981' }}>
+                <small style={{ color: simResult.candidateLeakageCount > 0 ? 'var(--status-leakage-text)' : 'var(--status-ok-text)' }}>
                   {simResult.candidateLeakageCount === 0 ? 'Absolute Zero Leakage' : 'Escapes introduced!'}
                 </small>
               </div>
 
-              <div style={{ background: 'rgba(255,255,255,0.03)', padding: '10px', borderRadius: '6px' }}>
+              <div style={{ background: 'var(--slate-50)', padding: '10px', borderRadius: '6px' }}>
                 <span className="text-xs text-muted">Operator Time Saved:</span>
-                <div style={{ fontSize: '14px', marginTop: '2px' }}>
-                  <strong style={{ color: '#38bdf8' }}>~{simResult.estimatedSavedOpHoursPerMonth} hrs/mo</strong>
+                <div className="text-base" style={{ marginTop: '2px' }}>
+                  <strong className="text-info">~{simResult.estimatedSavedOpHoursPerMonth} hrs/mo</strong>
                 </div>
                 <small className="text-muted">Estimated throughput savings</small>
               </div>
@@ -379,25 +370,22 @@ export const RuleOptimizerModal: React.FC<RuleOptimizerModalProps> = ({
                 <span className="text-xs text-muted" style={{ display: 'block', marginBottom: '6px' }}>
                   SAMPLE OBSERVATIONS WITH CHANGED VERDICTS:
                 </span>
-                <div style={{ maxHeight: '140px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <div className="vstack gap-xs" style={{ maxHeight: '140px', overflowY: 'auto' }}>
                   {simResult.divergences.slice(0, 10).map((d) => (
                     <div
+                      className="hstack justify-between text-xs"
                       key={d.keyId}
                       style={{
                         padding: '4px 8px',
                         borderRadius: '4px',
-                        background: 'rgba(255,255,255,0.03)',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        fontSize: '12px',
-                        alignItems: 'center',
+                        background: 'var(--slate-50)',
                       }}
                     >
                       <strong className="mono-code">{d.keyId}</strong>
                       <span
+                        className="font-semibold"
                         style={{
-                          color: d.divergenceKind === 'OverkillEliminated' ? '#10b981' : '#ef4444',
-                          fontWeight: 600,
+                          color: d.divergenceKind === 'OverkillEliminated' ? 'var(--status-ok-text)' : 'var(--status-ng-text)',
                         }}
                       >
                         {d.explanation}
@@ -411,18 +399,18 @@ export const RuleOptimizerModal: React.FC<RuleOptimizerModalProps> = ({
         )}
 
         {/* Modal Bottom Actions */}
-        <div className="actions" style={{ justifyContent: 'flex-end', gap: '8px', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '12px' }}>
+        <div className="actions gap-md" style={{ justifyContent: 'flex-end', borderTop: '1px solid var(--slate-200)', paddingTop: '12px' }}>
           <button type="button" className="ghost-button" onClick={onClose}>
             Close
           </button>
           <button
             type="button"
-            className="primary"
-            style={{ background: '#047857', borderColor: '#10b981', fontWeight: 600 }}
+            className="primary font-semibold"
+            style={{ background: 'var(--status-ok)', borderColor: 'var(--status-ok-border)' }}
             onClick={() => void handleApplyTunedRule()}
             disabled={savingRule || !candidateScript.trim()}
           >
-            {savingRule ? 'Saving...' : `✓ Apply Tuned Script to Rule [${rule.ruleCode}]`}
+            {savingRule ? 'Saving...' : `Apply Tuned Script to Rule [${rule.ruleCode}]`}
           </button>
         </div>
       </div>
