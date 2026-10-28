@@ -695,6 +695,57 @@ CREATE INDEX `IX_ProductRecords_KeyId` ON `ProductRecords` (`KeyId`);
 CREATE INDEX `IX_ProductRecords_PanelId` ON `ProductRecords` (`PanelId`);
 
 
+CREATE INDEX `IX_ProductRecords_InspectedAtUtc` ON `ProductRecords` (`InspectedAtUtc`);
+
+
+CREATE INDEX `IX_ProductRecords_Machine_Line_InspectedAtUtc` ON `ProductRecords` (`MachineCode`, `LineCode`, `InspectedAtUtc`);
+
+
+CREATE INDEX `IX_ProductRecords_Judge_InspectedAtUtc` ON `ProductRecords` (`Judge`, `InspectedAtUtc`);
+
+
+CREATE TABLE IF NOT EXISTS `MasterStationMappings` (
+    `Id` char(36) COLLATE ascii_general_ci NOT NULL,
+    `MachineCode` varchar(128) NOT NULL,
+    `LineCode` varchar(128) NOT NULL,
+    `ModelCode` varchar(128) NOT NULL,
+    `StationId` varchar(128) NOT NULL,
+    `ProductId` varchar(128) NOT NULL,
+    `Enabled` tinyint(1) NOT NULL DEFAULT 1,
+    `AutoSubmit` tinyint(1) NOT NULL DEFAULT 0,
+    `UpdatedAtUtc` datetime(6) NOT NULL,
+    CONSTRAINT `PK_MasterStationMappings` PRIMARY KEY (`Id`),
+    UNIQUE KEY `IX_MasterStationMappings_Scope` (`MachineCode`, `LineCode`, `ModelCode`)
+) CHARACTER SET=utf8mb4;
+
+
+CREATE TABLE IF NOT EXISTS `AiVerdicts` (
+    `Id` char(36) COLLATE ascii_general_ci NOT NULL,
+    `DefectId` char(36) COLLATE ascii_general_ci NOT NULL,
+    `KeyId` varchar(128) NOT NULL,
+    `MachineCode` varchar(128) NOT NULL,
+    `LineCode` varchar(128) NOT NULL,
+    `ModelCode` varchar(128) NOT NULL,
+    `StationId` varchar(128) NOT NULL,
+    `ProductId` varchar(128) NOT NULL,
+    `Status` varchar(32) NOT NULL,
+    `MasterJobId` varchar(64) NULL,
+    `Verdict` varchar(16) NULL,
+    `AnomalyScore` double NULL,
+    `DefectClass` varchar(255) NULL,
+    `BoxesJson` longtext NULL,
+    `ModelVersionsJson` text NULL,
+    `ClientMode` varchar(32) NULL,
+    `Error` text NULL,
+    `SubmittedAtUtc` datetime(6) NOT NULL,
+    `CompletedAtUtc` datetime(6) NULL,
+    CONSTRAINT `PK_AiVerdicts` PRIMARY KEY (`Id`),
+    UNIQUE KEY `IX_AiVerdicts_DefectId` (`DefectId`),
+    KEY `IX_AiVerdicts_KeyId` (`KeyId`),
+    KEY `IX_AiVerdicts_Status_MasterJobId` (`Status`, `MasterJobId`)
+) CHARACTER SET=utf8mb4;
+
+
 CREATE INDEX `IX_QueryProfiles_MachineCode_LineCode_Concept_SourceSystem` ON `QueryProfiles` (`MachineCode`, `LineCode`, `Concept`, `SourceSystem`);
 
 
