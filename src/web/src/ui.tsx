@@ -610,7 +610,7 @@ export function NoticeBanner({ notice, onDismiss }: { notice: Notice | null; onD
 export function ImageViewer({
   src,
   alt = 'Visual Inspection',
-  maxHeight = '520px',
+  maxHeight = '540px',
   onSave,
 }: {
   src?: string | null
@@ -622,6 +622,8 @@ export function ImageViewer({
   const [position, setPosition] = useState({ x: 0, y: 0 })
   const [isDragging, setIsDragging] = useState(false)
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
+  const [crispMode, setCrispMode] = useState(true)
+  const [isFullscreen, setIsFullscreen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
 
   // Reset transform when src changes
@@ -630,6 +632,7 @@ export function ImageViewer({
     setPosition({ x: 0, y: 0 })
   }, [src])
 
+  // Wheel zoom with cursor-relative positioning up to 3000% (30x)
   useEffect(() => {
     const el = containerRef.current
     if (!el) return
@@ -637,15 +640,26 @@ export function ImageViewer({
     function onNativeWheel(e: WheelEvent) {
       e.preventDefault()
       e.stopPropagation()
-      if (e.deltaY < 0) {
-        setScale((prev) => Math.min(prev + 0.25, 5))
-      } else {
-        setScale((prev) => {
-          const next = Math.max(prev - 0.25, 0.5)
-          if (next <= 1) setPosition({ x: 0, y: 0 })
-          return next
-        })
-      }
+      const rect = el!.getBoundingClientRect()
+      const mouseX = e.clientX - rect.left - rect.width / 2
+      const mouseY = e.clientY - rect.top - rect.height / 2
+
+      const factor = e.deltaY < 0 ? 1.25 : 0.8
+      setScale((prevScale) => {
+        const nextScale = Math.max(0.2, Math.min(Math.round(prevScale * factor * 100) / 100, 30))
+        if (nextScale === prevScale) return prevScale
+
+        if (nextScale <= 1) {
+          setPosition({ x: 0, y: 0 })
+        } else {
+          const ratio = nextScale / prevScale
+          setPosition((prevPos) => ({
+            x: Math.round(mouseX - (mouseX - prevPos.x) * ratio),
+            y: Math.round(mouseY - (mouseY - prevPos.y) * ratio),
+          }))
+        }
+        return nextScale
+      })
     }
 
     el.addEventListener('wheel', onNativeWheel, { passive: false })
@@ -655,22 +669,46 @@ export function ImageViewer({
   }, [])
 
   function handleZoomIn() {
-    setScale((prev) => Math.min(prev + 0.25, 5))
+    setScale((prev) => Math.min(Math.round(prev * 1.35 * 10) / 10, 30))
   }
 
   function handleZoomOut() {
     setScale((prev) => {
-      const next = Math.max(prev - 0.25, 0.5)
-      if (next <= 1) {
-        setPosition({ x: 0, y: 0 })
-      }
+      const next = Math.max(Math.round((prev / 1.35) * 10) / 10, 0.2)
+      if (next <= 1) setPosition({ x: 0, y: 0 })
       return next
     })
+  }
+
+  function handleSetScale(target: number) {
+    setScale(target)
+    if (target <= 1) setPosition({ x: 0, y: 0 })
   }
 
   function handleReset() {
     setScale(1)
     setPosition({ x: 0, y: 0 })
+  }
+
+  function handleDoubleClick(e: React.MouseEvent) {
+    if (scale > 1.2) {
+      handleReset()
+    } else {
+      const el = containerRef.current
+      if (el) {
+        const rect = el.getBoundingClientRect()
+        const mouseX = e.clientX - rect.left - rect.width / 2
+        const mouseY = e.clientY - rect.top - rect.height / 2
+        const targetScale = 5
+        setPosition({
+          x: Math.round(-mouseX * (targetScale - 1)),
+          y: Math.round(-mouseY * (targetScale - 1)),
+        })
+        setScale(targetScale)
+      } else {
+        handleSetScale(5)
+      }
+    }
   }
 
   function handleMouseDown(e: React.MouseEvent) {
@@ -698,10 +736,8 @@ export function ImageViewer({
       return
     }
     try {
-      // If data URL or direct link, trigger clean download
       const fileName = alt.replace(/[^a-zA-Z0-9_-]/g, '_') + '.jpg'
       const response = await fetch(src)
-      // An error page saved as .jpg is worse than no download: fall back to opening the image instead.
       if (!response.ok) throw new Error(`Image request failed (${response.status})`)
       const blob = await response.blob()
       const blobUrl = window.URL.createObjectURL(blob)
@@ -713,10 +749,20 @@ export function ImageViewer({
       document.body.removeChild(link)
       window.URL.revokeObjectURL(blobUrl)
     } catch {
-      // Fallback
       window.open(src, '_blank')
     }
   }
+
+  // Keyboard escape to exit fullscreen
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape' && isFullscreen) {
+        setIsFullscreen(false)
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [isFullscreen])
 
   if (!src) {
     return (
@@ -736,31 +782,48 @@ export function ImageViewer({
     )
   }
 
-  return (
-    <div
-      className="vstack"
-      style={{
+  const containerStyle: React.CSSProperties = isFullscreen
+    ? {
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 99999,
+        background: '#020617',
+        display: 'flex',
+        flexDirection: 'column',
+      }
+    : {
         borderRadius: '8px',
         overflow: 'hidden',
         border: '1px solid rgba(255,255,255,0.1)',
         background: '#020617',
-      }}
-    >
-      {/* Viewer Toolbar: Zoom / Pan Controls / Save Image */}
+        display: 'flex',
+        flexDirection: 'column',
+      }
+
+  const canvasHeight = isFullscreen ? 'calc(100vh - 52px)' : maxHeight
+
+  return (
+    <div style={containerStyle}>
+      {/* Viewer Toolbar: Zoom / Pan Controls / Preset Levels / Pixel Crisp / Fullscreen / Save Image */}
       <div
         className="hstack justify-between flex-wrap gap-md"
         style={{
           padding: '8px 12px',
           background: 'rgba(255,255,255,0.04)',
           borderBottom: '1px solid rgba(255,255,255,0.08)',
+          gap: '8px',
         }}
       >
-        <div className="hstack gap-sm">
+        {/* Left: Zoom Controls & Quick Presets */}
+        <div className="hstack gap-xs flex-wrap" style={{ alignItems: 'center' }}>
           <button
             type="button"
             className="secondary compact text-xs font-bold"
             onClick={handleZoomIn}
-            title="Zoom In"
+            title="Zoom In (Scroll Up)"
             style={{ padding: '3px 9px' }}
           >
             <Icon name="search" className="icon inline-icon" />+
@@ -769,29 +832,84 @@ export function ImageViewer({
             type="button"
             className="secondary compact text-xs font-bold"
             onClick={handleZoomOut}
-            title="Zoom Out"
+            title="Zoom Out (Scroll Down)"
             style={{ padding: '3px 9px' }}
           >
             <Icon name="search" className="icon inline-icon" />-
           </button>
+
+          {/* Quick Preset Buttons */}
+          {[1, 2, 5, 10, 20, 30].map((level) => {
+            const isCurrent = Math.round(scale) === level
+            return (
+              <button
+                key={level}
+                type="button"
+                className="compact text-xs"
+                onClick={() => handleSetScale(level)}
+                style={{
+                  padding: '3px 7px',
+                  fontWeight: isCurrent ? 700 : 500,
+                  fontSize: '11px',
+                  borderRadius: '4px',
+                  border: isCurrent ? '1px solid #3b82f6' : '1px solid rgba(255,255,255,0.12)',
+                  background: isCurrent ? '#1d4ed8' : 'rgba(255,255,255,0.06)',
+                  color: isCurrent ? '#ffffff' : '#94a3b8',
+                  cursor: 'pointer',
+                }}
+                title={`Set zoom to ${level * 100}%`}
+              >
+                {level === 1 ? '100%' : `${level * 100}%`}
+              </button>
+            )
+          })}
+
           <button
             type="button"
             className="ghost-button compact text-xs"
             onClick={handleReset}
-            title="Reset Zoom & Position"
-            style={{ padding: '3px 8px' }}
+            title="Reset Zoom & Pan (100%)"
+            style={{ padding: '3px 8px', marginLeft: '4px' }}
           >
-            <Icon name="refresh" className="icon inline-icon" />100%
+            <Icon name="refresh" className="icon inline-icon" />Reset
           </button>
-          <span className="text-xs font-mono" style={{ color: '#94a3b8', marginLeft: '4px' }}>
+
+          <span className="text-xs font-mono font-bold" style={{ color: scale > 5 ? '#38bdf8' : '#e2e8f0', marginLeft: '6px' }}>
             {Math.round(scale * 100)}%
           </span>
-          <span className="text-xs" style={{ color: '#64748b', marginLeft: '8px' }}>
-            (Scroll to Zoom · Click & Drag to Pan)
-          </span>
+
+          {/* Pixel Sharpness Toggle */}
+          <button
+            type="button"
+            className="compact text-xs"
+            onClick={() => setCrispMode((prev) => !prev)}
+            style={{
+              padding: '3px 8px',
+              marginLeft: '8px',
+              fontSize: '11px',
+              borderRadius: '4px',
+              border: crispMode ? '1px solid #10b981' : '1px solid rgba(255,255,255,0.12)',
+              background: crispMode ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255,255,255,0.04)',
+              color: crispMode ? '#34d399' : '#64748b',
+              cursor: 'pointer',
+            }}
+            title={crispMode ? 'Pixelated rendering ON (Clear individual pixel boundaries for defect analysis)' : 'Smooth rendering ON (Bilinear filtering)'}
+          >
+            {crispMode ? '🔍 Pixel Sharp: ON' : 'Pixel Sharp: OFF'}
+          </button>
         </div>
 
-        <div className="hstack gap-md">
+        {/* Right: Fullscreen, Save Image, External Tab */}
+        <div className="hstack gap-sm">
+          <button
+            type="button"
+            className="ghost-button compact text-xs font-semibold"
+            onClick={() => setIsFullscreen((prev) => !prev)}
+            title={isFullscreen ? 'Exit Fullscreen (Esc)' : 'Expand to Fullscreen for micro inspection'}
+            style={{ padding: '4px 10px', background: isFullscreen ? '#334155' : undefined }}
+          >
+            <Icon name="external" className="icon inline-icon" />{isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
+          </button>
           <button
             type="button"
             className="primary compact text-xs font-semibold"
@@ -799,17 +917,17 @@ export function ImageViewer({
             title="Save image to computer"
             style={{ background: '#0369a1', padding: '4px 12px' }}
           >
-            <Icon name="save" className="icon inline-icon" />Save Image (.jpg)
+            <Icon name="save" className="icon inline-icon" />Save Image
           </button>
           <a
             href={src}
             target="_blank"
             rel="noreferrer"
             className="ghost-button compact text-xs"
-            title="Open image in new tab"
+            title="Open original image in new tab"
             style={{ padding: '3px 8px' }}
           >
-            <Icon name="external" className="icon inline-icon" />New Tab
+            New Tab
           </a>
         </div>
       </div>
@@ -822,8 +940,9 @@ export function ImageViewer({
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
+        onDoubleClick={handleDoubleClick}
         style={{
-          height: maxHeight,
+          height: canvasHeight,
           overflow: 'hidden',
           justifyContent: 'center',
           position: 'relative',
@@ -832,6 +951,7 @@ export function ImageViewer({
           touchAction: 'none',
           overscrollBehavior: 'contain',
         }}
+        title="Scroll to Zoom to Cursor · Drag to Pan · Double-click to Toggle 500%/100%"
       >
         <img
           src={src}
@@ -842,10 +962,29 @@ export function ImageViewer({
             maxHeight: '100%',
             objectFit: 'contain',
             transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
-            transition: isDragging ? 'none' : 'transform 0.1s ease-out',
+            transition: isDragging ? 'none' : 'transform 0.08s ease-out',
             transformOrigin: 'center center',
+            imageRendering: crispMode && scale >= 1.5 ? 'pixelated' : 'auto',
           }}
         />
+        {/* Floating Zoom / Pan badge overlay */}
+        <div
+          style={{
+            position: 'absolute',
+            bottom: '10px',
+            right: '12px',
+            background: 'rgba(15, 23, 42, 0.75)',
+            backdropFilter: 'blur(4px)',
+            borderRadius: '6px',
+            padding: '3px 9px',
+            fontSize: '11px',
+            color: '#cbd5e1',
+            pointerEvents: 'none',
+            border: '1px solid rgba(255,255,255,0.1)',
+          }}
+        >
+          Zoom: <strong>{Math.round(scale * 100)}%</strong> (Max 3000%) · Scroll to Zoom to Pointer · Drag to Pan
+        </div>
       </div>
     </div>
   )
