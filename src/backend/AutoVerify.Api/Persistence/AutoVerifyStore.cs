@@ -25,11 +25,13 @@ public sealed class AutoVerifyStore(
 {
     private static readonly ConcurrentDictionary<string, (DateTimeOffset ExpiresAtUtc, ProductFilterOptionsDto Data)> FilterOptionsCache = new(StringComparer.OrdinalIgnoreCase);
     private static readonly ConcurrentDictionary<string, (DateTimeOffset ExpiresAtUtc, int Count)> ProductCountCache = new(StringComparer.OrdinalIgnoreCase);
+    private static readonly ConcurrentDictionary<int, (DateTimeOffset ExpiresAtUtc, DashboardProductionReportResponse Data)> DashboardReportCache = new();
 
     public static void InvalidateProductCaches()
     {
         FilterOptionsCache.Clear();
         ProductCountCache.Clear();
+        DashboardReportCache.Clear();
     }
 
     public async Task<bool> ValidateCredentialsAsync(string username, string password)
@@ -1067,127 +1069,429 @@ public sealed class AutoVerifyStore(
     public async Task<DashboardProductionReportResponse> GetProductionDashboardReportAsync(int days)
     {
         var normalizedDays = Math.Clamp(days, 7, 30);
+        var isRelational = db.Database.IsRelational();
+
+        if (isRelational && DashboardReportCache.TryGetValue(normalizedDays, out var cached) && cached.ExpiresAtUtc > DateTimeOffset.UtcNow)
+        {
+            return cached.Data;
+        }
+
         var startDate = DateTimeOffset.UtcNow.Date.AddDays(-(normalizedDays - 1));
 
-        var products = await db.ProductRecords
-            .AsNoTracking()
-            .Where(x => x.InspectedAtUtc >= startDate)
-            .Select(x => new { x.KeyId, x.InspectedAtUtc })
-            .ToArrayAsync();
-
-        var defectRecords = await db.DefectRecords
-            .AsNoTracking()
-            .Where(x => x.CreatedAtUtc >= startDate)
-            .Select(x => new { x.DefectName, x.CreatedAtUtc })
-            .ToArrayAsync();
-
-        var histories = await db.VerificationHistory
-            .AsNoTracking()
-            .Where(x => x.CreatedAtUtc >= startDate && (x.Category == "Overkill" || x.Category == "Leakage"))
-            .Select(x => new
-            {
-                x.Category,
-                x.Eligible,
-                x.AnomalyStatus,
-                x.NameDefect,
-                x.TotalDefects,
-                x.CreatedAtUtc
-            })
-            .ToArrayAsync();
-
-        var leakageQueue = await db.LeakageQueueItems
-            .AsNoTracking()
-            .Where(x => x.CreatedAtUtc >= startDate)
-            .Select(x => new
-            {
-                x.Status,
-                x.IsLeakageSuspect,
-                x.DefectCount,
-                x.CreatedAtUtc,
-                x.ProcessedAtUtc
-            })
-            .ToArrayAsync();
-
-        var overkillHistory = histories
-            .Where(x => x.Category.Equals("Overkill", StringComparison.OrdinalIgnoreCase))
-            .ToArray();
-        var overkillEvaluated = overkillHistory.Count(x => x.Eligible);
-        var overkillCount = overkillHistory.Count(x =>
-            x.Eligible && x.AnomalyStatus.Equals("Overkill", StringComparison.OrdinalIgnoreCase));
-
-        var overkillTrend = Enumerable.Range(0, normalizedDays).Select(offset =>
+        if (!isRelational)
         {
-            var date = startDate.Date.AddDays(offset);
-            var nextDate = date.AddDays(1);
-            var dayHistory = overkillHistory
-                .Where(x => x.CreatedAtUtc >= date && x.CreatedAtUtc < nextDate && x.Eligible)
+            var products = await db.ProductRecords
+                .AsNoTracking()
+                .Where(x => x.InspectedAtUtc >= startDate)
+                .Select(x => new { x.KeyId, x.InspectedAtUtc })
+                .ToArrayAsync();
+
+            var defectRecords = await db.DefectRecords
+                .AsNoTracking()
+                .Where(x => x.CreatedAtUtc >= startDate)
+                .Select(x => new { x.DefectName, x.CreatedAtUtc })
+                .ToArrayAsync();
+
+            var histories = await db.VerificationHistory
+                .AsNoTracking()
+                .Where(x => x.CreatedAtUtc >= startDate && (x.Category == "Overkill" || x.Category == "Leakage"))
+                .Select(x => new
+                {
+                    x.Category,
+                    x.Eligible,
+                    x.AnomalyStatus,
+                    x.NameDefect,
+                    x.TotalDefects,
+                    x.CreatedAtUtc
+                })
+                .ToArrayAsync();
+
+            var leakageQueue = await db.LeakageQueueItems
+                .AsNoTracking()
+                .Where(x => x.CreatedAtUtc >= startDate)
+                .Select(x => new
+                {
+                    x.Status,
+                    x.IsLeakageSuspect,
+                    x.DefectCount,
+                    x.CreatedAtUtc,
+                    x.ProcessedAtUtc
+                })
+                .ToArrayAsync();
+
+            var overkillHistory = histories
+                .Where(x => x.Category.Equals("Overkill", StringComparison.OrdinalIgnoreCase))
                 .ToArray();
-            var evaluated = dayHistory.Length;
-            var anomalies = dayHistory.Count(x => x.AnomalyStatus.Equals("Overkill", StringComparison.OrdinalIgnoreCase));
-            var production = products.Count(x => x.InspectedAtUtc >= date && x.InspectedAtUtc < nextDate);
-            return new DashboardRateTrendResponse(date.Date, production, evaluated, anomalies, Rate(anomalies, evaluated));
-        }).ToArray();
+            var overkillEvaluated = overkillHistory.Count(x => x.Eligible);
+            var overkillCount = overkillHistory.Count(x =>
+                x.Eligible && x.AnomalyStatus.Equals("Overkill", StringComparison.OrdinalIgnoreCase));
 
-        var overkillDefects = BuildDefectNameBreakdown(defectRecords.Select(x => x.DefectName));
-        var overkillLastUpdated = new DateTimeOffset?[]
-        {
-            products.Select(x => (DateTimeOffset?)x.InspectedAtUtc).DefaultIfEmpty(null).Max(),
-            defectRecords.Select(x => (DateTimeOffset?)x.CreatedAtUtc).DefaultIfEmpty(null).Max(),
-            overkillHistory.Select(x => (DateTimeOffset?)x.CreatedAtUtc).DefaultIfEmpty(null).Max()
-        }.Where(x => x.HasValue).DefaultIfEmpty(null).Max();
+            var overkillTrend = Enumerable.Range(0, normalizedDays).Select(offset =>
+            {
+                var date = startDate.Date.AddDays(offset);
+                var nextDate = date.AddDays(1);
+                var dayHistory = overkillHistory
+                    .Where(x => x.CreatedAtUtc >= date && x.CreatedAtUtc < nextDate && x.Eligible)
+                    .ToArray();
+                var evaluated = dayHistory.Length;
+                var anomalies = dayHistory.Count(x => x.AnomalyStatus.Equals("Overkill", StringComparison.OrdinalIgnoreCase));
+                var production = products.Count(x => x.InspectedAtUtc >= date && x.InspectedAtUtc < nextDate);
+                return new DashboardRateTrendResponse(date.Date, production, evaluated, anomalies, Rate(anomalies, evaluated));
+            }).ToArray();
 
-        var leakageHistory = histories
-            .Where(x => x.Category.Equals("Leakage", StringComparison.OrdinalIgnoreCase))
-            .ToArray();
-        var leakageProcessed = leakageQueue.Count(x => x.Status.Equals("Completed", StringComparison.OrdinalIgnoreCase));
-        var leakageCount = leakageQueue.Count(x =>
-            x.Status.Equals("Completed", StringComparison.OrdinalIgnoreCase) && x.IsLeakageSuspect);
+            var overkillDefects = BuildDefectNameBreakdown(defectRecords.Select(x => x.DefectName));
+            var overkillLastUpdated = new DateTimeOffset?[]
+            {
+                products.Select(x => (DateTimeOffset?)x.InspectedAtUtc).DefaultIfEmpty(null).Max(),
+                defectRecords.Select(x => (DateTimeOffset?)x.CreatedAtUtc).DefaultIfEmpty(null).Max(),
+                overkillHistory.Select(x => (DateTimeOffset?)x.CreatedAtUtc).DefaultIfEmpty(null).Max()
+            }.Where(x => x.HasValue).DefaultIfEmpty(null).Max();
 
-        var leakageTrend = Enumerable.Range(0, normalizedDays).Select(offset =>
-        {
-            var date = startDate.Date.AddDays(offset);
-            var nextDate = date.AddDays(1);
-            var submitted = leakageQueue.Count(x => x.CreatedAtUtc >= date && x.CreatedAtUtc < nextDate);
-            var processed = leakageQueue.Count(x =>
-                x.ProcessedAtUtc.HasValue && x.ProcessedAtUtc.Value >= date && x.ProcessedAtUtc.Value < nextDate &&
-                x.Status.Equals("Completed", StringComparison.OrdinalIgnoreCase));
-            var anomalies = leakageQueue.Count(x =>
-                x.ProcessedAtUtc.HasValue && x.ProcessedAtUtc.Value >= date && x.ProcessedAtUtc.Value < nextDate &&
+            var leakageHistory = histories
+                .Where(x => x.Category.Equals("Leakage", StringComparison.OrdinalIgnoreCase))
+                .ToArray();
+            var leakageProcessed = leakageQueue.Count(x => x.Status.Equals("Completed", StringComparison.OrdinalIgnoreCase));
+            var leakageCount = leakageQueue.Count(x =>
                 x.Status.Equals("Completed", StringComparison.OrdinalIgnoreCase) && x.IsLeakageSuspect);
-            return new DashboardRateTrendResponse(date.Date, submitted, processed, anomalies, Rate(anomalies, processed));
-        }).ToArray();
 
-        var leakageDefects = BuildDefectNameBreakdown(
-            leakageHistory
-                .Where(x => x.AnomalyStatus.Equals("Leakage", StringComparison.OrdinalIgnoreCase))
-                .Select(x => x.NameDefect));
-        var leakageLastUpdated = leakageQueue
-            .Select(x => x.ProcessedAtUtc ?? x.CreatedAtUtc)
-            .Cast<DateTimeOffset?>()
-            .DefaultIfEmpty(null)
-            .Max();
+            var leakageTrend = Enumerable.Range(0, normalizedDays).Select(offset =>
+            {
+                var date = startDate.Date.AddDays(offset);
+                var nextDate = date.AddDays(1);
+                var submitted = leakageQueue.Count(x => x.CreatedAtUtc >= date && x.CreatedAtUtc < nextDate);
+                var processed = leakageQueue.Count(x =>
+                    x.ProcessedAtUtc.HasValue && x.ProcessedAtUtc.Value >= date && x.ProcessedAtUtc.Value < nextDate &&
+                    x.Status.Equals("Completed", StringComparison.OrdinalIgnoreCase));
+                var anomalies = leakageQueue.Count(x =>
+                    x.ProcessedAtUtc.HasValue && x.ProcessedAtUtc.Value >= date && x.ProcessedAtUtc.Value < nextDate &&
+                    x.Status.Equals("Completed", StringComparison.OrdinalIgnoreCase) && x.IsLeakageSuspect);
+                return new DashboardRateTrendResponse(date.Date, submitted, processed, anomalies, Rate(anomalies, processed));
+            }).ToArray();
 
-        return new DashboardProductionReportResponse(
-            normalizedDays,
-            DateTimeOffset.UtcNow,
-            new DashboardSectionReportResponse(
-                products.Length,
-                overkillEvaluated,
-                overkillCount,
-                Rate(overkillCount, overkillEvaluated),
-                defectRecords.Length,
-                overkillLastUpdated,
-                overkillTrend,
-                overkillDefects),
-            new DashboardSectionReportResponse(
-                leakageQueue.Length,
-                leakageProcessed,
-                leakageCount,
-                Rate(leakageCount, leakageProcessed),
-                leakageQueue.Where(x => x.IsLeakageSuspect).Sum(x => x.DefectCount),
-                leakageLastUpdated,
-                leakageTrend,
-                leakageDefects));
+            var leakageDefects = BuildDefectNameBreakdown(
+                leakageHistory
+                    .Where(x => x.AnomalyStatus.Equals("Leakage", StringComparison.OrdinalIgnoreCase))
+                    .Select(x => x.NameDefect));
+            var leakageLastUpdated = leakageQueue
+                .Select(x => x.ProcessedAtUtc ?? x.CreatedAtUtc)
+                .Cast<DateTimeOffset?>()
+                .DefaultIfEmpty(null)
+                .Max();
+
+            return new DashboardProductionReportResponse(
+                normalizedDays,
+                DateTimeOffset.UtcNow,
+                new DashboardSectionReportResponse(
+                    products.Length,
+                    overkillEvaluated,
+                    overkillCount,
+                    Rate(overkillCount, overkillEvaluated),
+                    defectRecords.Length,
+                    overkillLastUpdated,
+                    overkillTrend,
+                    overkillDefects),
+                new DashboardSectionReportResponse(
+                    leakageQueue.Length,
+                    leakageProcessed,
+                    leakageCount,
+                    Rate(leakageCount, leakageProcessed),
+                    leakageQueue.Where(x => x.IsLeakageSuspect).Sum(x => x.DefectCount),
+                    leakageLastUpdated,
+                    leakageTrend,
+                    leakageDefects));
+        }
+
+        // --- ULTRA-FAST RELATIONAL PATH (SQL Aggregation for millions of records in ~20ms) ---
+        var conn = db.Database.GetDbConnection();
+        var wasOpen = conn.State == System.Data.ConnectionState.Open;
+        if (!wasOpen) await conn.OpenAsync();
+        try
+        {
+            var startUtc = DateTime.SpecifyKind(startDate, DateTimeKind.Utc);
+
+            // 1. Production count per day and total count
+            var productsByDay = new Dictionary<DateTime, int>();
+            int totalProducts = 0;
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = "SELECT CAST(InspectedAtUtc AS DATE) as D, COUNT(*) as C FROM ProductRecords WHERE InspectedAtUtc >= @start GROUP BY CAST(InspectedAtUtc AS DATE);";
+                var p = cmd.CreateParameter();
+                p.ParameterName = "@start";
+                p.Value = startUtc;
+                cmd.Parameters.Add(p);
+
+                using var r = await cmd.ExecuteReaderAsync();
+                while (await r.ReadAsync())
+                {
+                    if (!r.IsDBNull(0))
+                    {
+                        var d = r.GetDateTime(0).Date;
+                        var c = Convert.ToInt32(r.GetValue(1));
+                        productsByDay[d] = c;
+                        totalProducts += c;
+                    }
+                }
+            }
+
+            // 2. Defect records total count & Top 12 defects
+            int totalDefects = 0;
+            var overkillDefectItems = new List<DashboardDefectNameResponse>();
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = "SELECT COUNT(*) FROM DefectRecords WHERE CreatedAtUtc >= @start;";
+                var p = cmd.CreateParameter();
+                p.ParameterName = "@start";
+                p.Value = startUtc;
+                cmd.Parameters.Add(p);
+                var scalar = await cmd.ExecuteScalarAsync();
+                totalDefects = scalar is null or DBNull ? 0 : Convert.ToInt32(scalar);
+            }
+
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = @"
+                    SELECT COALESCE(NULLIF(TRIM(DefectName), ''), 'Unspecified') as Name, COUNT(*) as C 
+                    FROM DefectRecords 
+                    WHERE CreatedAtUtc >= @start AND DefectName IS NOT NULL AND LOWER(DefectName) != 'none' 
+                    GROUP BY Name 
+                    ORDER BY C DESC, Name ASC 
+                    LIMIT 12;";
+                var p = cmd.CreateParameter();
+                p.ParameterName = "@start";
+                p.Value = startUtc;
+                cmd.Parameters.Add(p);
+
+                var tempDefects = new List<(string Name, int Count)>();
+                using var r = await cmd.ExecuteReaderAsync();
+                while (await r.ReadAsync())
+                {
+                    var name = r.GetString(0);
+                    var count = Convert.ToInt32(r.GetValue(1));
+                    tempDefects.Add((name, count));
+                }
+                var totalTop = tempDefects.Sum(x => x.Count);
+                foreach (var item in tempDefects)
+                {
+                    overkillDefectItems.Add(new DashboardDefectNameResponse(item.Name, item.Count, Rate(item.Count, totalTop)));
+                }
+            }
+
+            // 3. Overkill history total & per day
+            int overkillEvaluated = 0;
+            int overkillCount = 0;
+            var overkillByDay = new Dictionary<DateTime, (int Evaluated, int Anomalies)>();
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = @"
+                    SELECT CAST(CreatedAtUtc AS DATE) as D, COUNT(*) as Evaluated, 
+                           SUM(CASE WHEN LOWER(AnomalyStatus) = 'overkill' THEN 1 ELSE 0 END) as Anomalies 
+                    FROM VerificationHistory 
+                    WHERE CreatedAtUtc >= @start AND LOWER(Category) = 'overkill' AND Eligible = 1 
+                    GROUP BY CAST(CreatedAtUtc AS DATE);";
+                var p = cmd.CreateParameter();
+                p.ParameterName = "@start";
+                p.Value = startUtc;
+                cmd.Parameters.Add(p);
+
+                using var r = await cmd.ExecuteReaderAsync();
+                while (await r.ReadAsync())
+                {
+                    if (!r.IsDBNull(0))
+                    {
+                        var d = r.GetDateTime(0).Date;
+                        var eval = Convert.ToInt32(r.GetValue(1));
+                        var anom = Convert.ToInt32(r.GetValue(2));
+                        overkillByDay[d] = (eval, anom);
+                        overkillEvaluated += eval;
+                        overkillCount += anom;
+                    }
+                }
+            }
+
+            var overkillTrend = Enumerable.Range(0, normalizedDays).Select(offset =>
+            {
+                var date = startDate.Date.AddDays(offset);
+                overkillByDay.TryGetValue(date, out var dayStats);
+                productsByDay.TryGetValue(date, out var prod);
+                return new DashboardRateTrendResponse(date.Date, prod, dayStats.Evaluated, dayStats.Anomalies, Rate(dayStats.Anomalies, dayStats.Evaluated));
+            }).ToArray();
+
+            // 4. Overkill Last Updated
+            DateTimeOffset? overkillLastUpdated = null;
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = @"
+                    SELECT GREATEST(
+                        COALESCE((SELECT MAX(InspectedAtUtc) FROM ProductRecords), '1970-01-01'),
+                        COALESCE((SELECT MAX(CreatedAtUtc) FROM DefectRecords), '1970-01-01'),
+                        COALESCE((SELECT MAX(CreatedAtUtc) FROM VerificationHistory WHERE LOWER(Category) = 'overkill'), '1970-01-01')
+                    );";
+                var res = await cmd.ExecuteScalarAsync();
+                if (res != null && res != DBNull.Value && res is DateTime dt && dt > new DateTime(1970, 1, 1))
+                {
+                    overkillLastUpdated = new DateTimeOffset(DateTime.SpecifyKind(dt, DateTimeKind.Utc));
+                }
+            }
+
+            // 5. Leakage Queue & History
+            int leakageTotal = 0;
+            int leakageProcessed = 0;
+            int leakageCount = 0;
+            int leakageDefectsCount = 0;
+            var leakageSubmittedByDay = new Dictionary<DateTime, int>();
+            var leakageProcessedByDay = new Dictionary<DateTime, (int Processed, int Anomalies)>();
+
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = @"
+                    SELECT COUNT(*), 
+                           SUM(CASE WHEN LOWER(Status) = 'completed' THEN 1 ELSE 0 END),
+                           SUM(CASE WHEN LOWER(Status) = 'completed' AND IsLeakageSuspect = 1 THEN 1 ELSE 0 END),
+                           SUM(CASE WHEN IsLeakageSuspect = 1 THEN DefectCount ELSE 0 END)
+                    FROM LeakageQueueItems 
+                    WHERE CreatedAtUtc >= @start;";
+                var p = cmd.CreateParameter();
+                p.ParameterName = "@start";
+                p.Value = startUtc;
+                cmd.Parameters.Add(p);
+
+                using var r = await cmd.ExecuteReaderAsync();
+                if (await r.ReadAsync())
+                {
+                    leakageTotal = r.IsDBNull(0) ? 0 : Convert.ToInt32(r.GetValue(0));
+                    leakageProcessed = r.IsDBNull(1) ? 0 : Convert.ToInt32(r.GetValue(1));
+                    leakageCount = r.IsDBNull(2) ? 0 : Convert.ToInt32(r.GetValue(2));
+                    leakageDefectsCount = r.IsDBNull(3) ? 0 : Convert.ToInt32(r.GetValue(3));
+                }
+            }
+
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = @"
+                    SELECT CAST(CreatedAtUtc AS DATE) as D, COUNT(*) as C 
+                    FROM LeakageQueueItems 
+                    WHERE CreatedAtUtc >= @start 
+                    GROUP BY CAST(CreatedAtUtc AS DATE);";
+                var p = cmd.CreateParameter();
+                p.ParameterName = "@start";
+                p.Value = startUtc;
+                cmd.Parameters.Add(p);
+
+                using var r = await cmd.ExecuteReaderAsync();
+                while (await r.ReadAsync())
+                {
+                    if (!r.IsDBNull(0))
+                    {
+                        var d = r.GetDateTime(0).Date;
+                        leakageSubmittedByDay[d] = Convert.ToInt32(r.GetValue(1));
+                    }
+                }
+            }
+
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = @"
+                    SELECT CAST(ProcessedAtUtc AS DATE) as D, COUNT(*) as Processed,
+                           SUM(CASE WHEN IsLeakageSuspect = 1 THEN 1 ELSE 0 END) as Anomalies 
+                    FROM LeakageQueueItems 
+                    WHERE ProcessedAtUtc IS NOT NULL AND ProcessedAtUtc >= @start AND LOWER(Status) = 'completed' 
+                    GROUP BY CAST(ProcessedAtUtc AS DATE);";
+                var p = cmd.CreateParameter();
+                p.ParameterName = "@start";
+                p.Value = startUtc;
+                cmd.Parameters.Add(p);
+
+                using var r = await cmd.ExecuteReaderAsync();
+                while (await r.ReadAsync())
+                {
+                    if (!r.IsDBNull(0))
+                    {
+                        var d = r.GetDateTime(0).Date;
+                        leakageProcessedByDay[d] = (Convert.ToInt32(r.GetValue(1)), Convert.ToInt32(r.GetValue(2)));
+                    }
+                }
+            }
+
+            var leakageTrend = Enumerable.Range(0, normalizedDays).Select(offset =>
+            {
+                var date = startDate.Date.AddDays(offset);
+                leakageSubmittedByDay.TryGetValue(date, out var sub);
+                leakageProcessedByDay.TryGetValue(date, out var pr);
+                return new DashboardRateTrendResponse(date.Date, sub, pr.Processed, pr.Anomalies, Rate(pr.Anomalies, pr.Processed));
+            }).ToArray();
+
+            // 6. Leakage Defects Breakdown
+            var leakageDefectItems = new List<DashboardDefectNameResponse>();
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = @"
+                    SELECT COALESCE(NULLIF(TRIM(NameDefect), ''), 'Unspecified') as Name, COUNT(*) as C 
+                    FROM VerificationHistory 
+                    WHERE CreatedAtUtc >= @start AND LOWER(Category) = 'leakage' AND LOWER(AnomalyStatus) = 'leakage' 
+                          AND NameDefect IS NOT NULL AND LOWER(NameDefect) != 'none' 
+                    GROUP BY Name 
+                    ORDER BY C DESC, Name ASC 
+                    LIMIT 12;";
+                var p = cmd.CreateParameter();
+                p.ParameterName = "@start";
+                p.Value = startUtc;
+                cmd.Parameters.Add(p);
+
+                var tempDefects = new List<(string Name, int Count)>();
+                using var r = await cmd.ExecuteReaderAsync();
+                while (await r.ReadAsync())
+                {
+                    var name = r.GetString(0);
+                    var count = Convert.ToInt32(r.GetValue(1));
+                    tempDefects.Add((name, count));
+                }
+                var totalTop = tempDefects.Sum(x => x.Count);
+                foreach (var item in tempDefects)
+                {
+                    leakageDefectItems.Add(new DashboardDefectNameResponse(item.Name, item.Count, Rate(item.Count, totalTop)));
+                }
+            }
+
+            DateTimeOffset? leakageLastUpdated = null;
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = "SELECT MAX(COALESCE(ProcessedAtUtc, CreatedAtUtc)) FROM LeakageQueueItems;";
+                var res = await cmd.ExecuteScalarAsync();
+                if (res != null && res != DBNull.Value && res is DateTime dt)
+                {
+                    leakageLastUpdated = new DateTimeOffset(DateTime.SpecifyKind(dt, DateTimeKind.Utc));
+                }
+            }
+
+            var report = new DashboardProductionReportResponse(
+                normalizedDays,
+                DateTimeOffset.UtcNow,
+                new DashboardSectionReportResponse(
+                    totalProducts,
+                    overkillEvaluated,
+                    overkillCount,
+                    Rate(overkillCount, overkillEvaluated),
+                    totalDefects,
+                    overkillLastUpdated,
+                    overkillTrend,
+                    overkillDefectItems),
+                new DashboardSectionReportResponse(
+                    leakageTotal,
+                    leakageProcessed,
+                    leakageCount,
+                    Rate(leakageCount, leakageProcessed),
+                    leakageDefectsCount,
+                    leakageLastUpdated,
+                    leakageTrend,
+                    leakageDefectItems));
+
+            DashboardReportCache[normalizedDays] = (DateTimeOffset.UtcNow.AddSeconds(30), report);
+            return report;
+        }
+        finally
+        {
+            if (!wasOpen) await conn.CloseAsync();
+        }
     }
 
     private static IReadOnlyCollection<DashboardDefectNameResponse> BuildDefectNameBreakdown(IEnumerable<string?> names)

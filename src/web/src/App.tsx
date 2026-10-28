@@ -277,7 +277,12 @@ function Workspace({ user, onLogout }: { user: UserProfile; onLogout: () => void
   }
 
   // Once signed in, fetch the remaining tabs in idle time so a later switch is instant.
-  useEffect(() => preloadAllTabs(), [])
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      preloadAllTabs()
+    }, 4000)
+    return () => clearTimeout(timer)
+  }, [])
 
   function handleSubTabChange(newTab: TabId) {
     navigate(section, newTab)
