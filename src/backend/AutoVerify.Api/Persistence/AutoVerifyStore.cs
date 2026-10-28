@@ -2181,11 +2181,33 @@ public sealed class AutoVerifyStore(
             .GroupBy(d => d.KeyId, StringComparer.OrdinalIgnoreCase)
             .ToDictionary(g => g.Key, g => g.ToArray(), StringComparer.OrdinalIgnoreCase);
 
+        // Hybrid Decision Fusion: Batch query AiVerdicts for candidate products
+        var summaryKeyIdsForAi = products.Select(p => p.KeyId).Distinct().ToList();
+        var aiVerdictsByKey = new Dictionary<string, List<AiVerdictEntity>>(StringComparer.OrdinalIgnoreCase);
+        const int aiSummaryBatchSize = 1000;
+        for (var i = 0; i < summaryKeyIdsForAi.Count; i += aiSummaryBatchSize)
+        {
+            var batch = summaryKeyIdsForAi.Skip(i).Take(aiSummaryBatchSize).ToList();
+            var aiList = await db.AiVerdicts.AsNoTracking()
+                .Where(v => batch.Contains(v.KeyId))
+                .ToListAsync();
+            foreach (var v in aiList)
+            {
+                if (!aiVerdictsByKey.TryGetValue(v.KeyId, out var list))
+                {
+                    list = [];
+                    aiVerdictsByKey[v.KeyId] = list;
+                }
+                list.Add(v);
+            }
+        }
+
         var evaluations = new List<AnomalyClassifierEngine.ProductAnomalyEvaluation>(products.Length);
         foreach (var prod in products)
         {
             var prodDefects = defectsByKey.TryGetValue(prod.KeyId, out var pDefs) ? pDefs : [];
-            var eval = AnomalyClassifierEngine.EvaluateProduct(prod, prodDefects, activeRules);
+            var prodAiVerdicts = aiVerdictsByKey.TryGetValue(prod.KeyId, out var pAis) ? pAis : [];
+            var eval = AnomalyClassifierEngine.EvaluateProduct(prod, prodDefects, activeRules, prodAiVerdicts);
             var effectiveCategory = prod.OpReviewMark switch
             {
                 "Overkill" => "Overkill",
@@ -2545,10 +2567,32 @@ public sealed class AutoVerifyStore(
             .Select(g => g.OrderByDescending(p => p.InspectedAtUtc).First())
             .ToArray();
 
+        // Hybrid Decision Fusion: Query AiVerdicts for distinct products
+        var thumbKeyIdsForAi = distinctProducts.Select(p => p.KeyId).Distinct().ToList();
+        var thumbAiVerdictsByKey = new Dictionary<string, List<AiVerdictEntity>>(StringComparer.OrdinalIgnoreCase);
+        const int aiThumbBatchSize = 1000;
+        for (var i = 0; i < thumbKeyIdsForAi.Count; i += aiThumbBatchSize)
+        {
+            var batch = thumbKeyIdsForAi.Skip(i).Take(aiThumbBatchSize).ToList();
+            var aiList = await db.AiVerdicts.AsNoTracking()
+                .Where(v => batch.Contains(v.KeyId))
+                .ToListAsync(cancellationToken);
+            foreach (var v in aiList)
+            {
+                if (!thumbAiVerdictsByKey.TryGetValue(v.KeyId, out var list))
+                {
+                    list = [];
+                    thumbAiVerdictsByKey[v.KeyId] = list;
+                }
+                list.Add(v);
+            }
+        }
+
         foreach (var prod in distinctProducts)
         {
             var prodDefects = defectsByKey.TryGetValue(prod.KeyId, out var pDefs) ? pDefs : [];
-            var eval = AnomalyClassifierEngine.EvaluateProduct(prod, prodDefects, activeRules);
+            var prodAiVerdicts = thumbAiVerdictsByKey.TryGetValue(prod.KeyId, out var pAis) ? pAis : [];
+            var eval = AnomalyClassifierEngine.EvaluateProduct(prod, prodDefects, activeRules, prodAiVerdicts);
             var effectiveCategory = prod.OpReviewMark switch
             {
                 "Overkill" => "Overkill",
@@ -2641,7 +2685,11 @@ public sealed class AutoVerifyStore(
                          prod.PanelId,
                          prod.OpReviewMark,
                          prod.NameDefect,
-                         prod.DefectName
+                         prod.DefectName,
+                         dResult.AiVerdict,
+                         dResult.AiStatus,
+                         dResult.AiAnomalyScore,
+                         dResult.DecisionRoute
                      ));
                 }
             }
@@ -2681,7 +2729,11 @@ public sealed class AutoVerifyStore(
                      prod.PanelId,
                      prod.OpReviewMark,
                      prod.NameDefect,
-                     prod.DefectName
+                     prod.DefectName,
+                     null,
+                     eval.OverallAiStatus,
+                     null,
+                     eval.PrimaryDecisionRoute
                  ));
             }
         }

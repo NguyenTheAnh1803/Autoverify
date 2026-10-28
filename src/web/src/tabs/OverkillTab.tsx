@@ -1667,6 +1667,21 @@ export function OverkillTab({
               </button>
               <button
                 type="button"
+                className={`ghost-button compact ${thumbnailCategory === 'Overkill' ? 'active' : ''}`}
+                style={{
+                  background: thumbnailCategory === 'Overkill' ? 'var(--status-overkill-bg)' : undefined,
+                  color: 'var(--status-overkill-text)',
+                  fontWeight: thumbnailCategory === 'Overkill' ? 600 : 400,
+                }}
+                onClick={() => {
+                  setThumbnailCategory('Overkill')
+                  setThumbnailPage(1)
+                }}
+              >
+                <Icon name="check-circle" className="icon inline-icon" />Confirmed Overkill ({categoryBadgeCounts.overkill})
+              </button>
+              <button
+                type="button"
                 className={`ghost-button compact ${thumbnailCategory === 'RealNG' ? 'active' : ''}`}
                 style={{
                   background: thumbnailCategory === 'RealNG' ? 'var(--status-real-bg)' : undefined,
@@ -1678,7 +1693,7 @@ export function OverkillTab({
                   setThumbnailPage(1)
                 }}
               >
-                Real NG - Confirmed by Script ({categoryBadgeCounts.realNg})
+                Real NG ({categoryBadgeCounts.realNg})
               </button>
               <button
                 type="button"

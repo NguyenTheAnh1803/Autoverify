@@ -6,100 +6,161 @@ using AutoVerify.Api.Services;
 namespace AutoVerify.Api.Verification;
 
 /// <summary>
-/// Evaluates product and defect records using AOI Machine Classifier Rules & Scripts.
-/// Note: Overkill is set to NA until a formal Overkill algorithm/script is configured.
-/// Defect classification strictly requires a matching Script. Without a script, it is marked as NA.
+/// Hybrid Decision & Anomaly Classifier Engine.
+/// Evaluates product and defect records by orchestrating:
+/// 1. AOI Machine Classifier Rules & Python Scripts (ScriptConditionEngine).
+/// 2. Master Deep Learning AI Verdicts (AiVerdictMatrix / AiVerdictEntity).
+/// 3. Operator Review Ground Truth (OpReviewMark).
+/// Integrates these inputs into a unified Confidence Cascade verdict (Consensus, Rule Fast-Path, AI Verified, Conflict).
 /// </summary>
 public static class AnomalyClassifierEngine
 {
     public sealed record DefectClassificationResult(
         DefectRecordEntity Defect,
         bool? IsTrueDefect,
-        string DecisionVerdict, // "RealNG", "NA"
+        string DecisionVerdict, // "RealNG", "Overkill", "NA", "SuspectConflict"
         string RuleCode,
         string RuleVersion,
         string DecisionReason,
-        Dictionary<string, double> ExtractedFeatures
+        Dictionary<string, double> ExtractedFeatures,
+        string? AiVerdict = null,
+        string? AiStatus = null,
+        double? AiAnomalyScore = null,
+        string? DecisionRoute = null // "HYBRID_CONSENSUS", "RULE_FAST_PATH", "AI_DEEPLEARNING", "HYBRID_CONFLICT", "UNCLASSIFIED"
     );
 
     public sealed record ProductAnomalyEvaluation(
         ProductRecordEntity Product,
         IReadOnlyList<DefectClassificationResult> DefectResults,
-        string AnomalyCategory, // "RealNG", "NA", "Leakage", "ConsistentOK"
+        string AnomalyCategory, // "RealNG", "Overkill", "NA", "Leakage", "ConsistentOK", "SuspectConflict"
         double AnomalyScore,
         string VerdictReason,
         int TrueDefectsCount,
-        int FalseAlarmCount
+        int FalseAlarmCount,
+        string? PrimaryDecisionRoute = null,
+        string? OverallAiStatus = null
     );
 
     /// <summary>
-    /// Classifies an individual defect strictly using a matching script.
-    /// If no script is configured or matched, verdict is "NA".
+    /// Classifies an individual defect using Hybrid Decision Cascade (Rule script + AI Deep Learning).
     /// </summary>
     public static DefectClassificationResult ClassifyDefect(
         DefectRecordEntity defect,
         ProductRecordEntity product,
-        IReadOnlyCollection<MachineClassifierRuleEntity> rules)
+        IReadOnlyCollection<MachineClassifierRuleEntity> rules,
+        AiVerdictEntity? aiVerdict = null)
     {
         var features = ExtractAllFeatures(defect);
         var rule = ResolveBestRule(defect, product, rules);
+        var hasScript = rule != null && !string.IsNullOrWhiteSpace(rule.ScriptContent);
 
-        if (rule == null || string.IsNullOrWhiteSpace(rule.ScriptContent))
+        // Extract AI verdict data if present
+        var aiV = aiVerdict != null && aiVerdict.Status == AiVerdictStatus.Done
+            ? aiVerdict.Verdict?.Trim().ToUpperInvariant()
+            : null;
+        var aiScore = aiVerdict?.AnomalyScore;
+        var aiStatus = aiVerdict?.Status;
+
+        if (hasScript)
         {
-            var ruleCode = rule?.RuleCode ?? "NO_SCRIPT";
-            var ruleVer = rule?.Version ?? "1.0";
-            var reason = $"N/A: No classifier script configured for defect '{defect.DefectName}'. Script is required for classification.";
-            return new DefectClassificationResult(defect, null, "NA", ruleCode, ruleVer, reason, features);
-        }
-
-        try
-        {
-            var parsedScript = ScriptConditionEngine.Parse(rule.ScriptContent);
-            var obs = new List<(int RowIndex, Dictionary<string, double> Features, ObservationReference? Observation)>
+            try
             {
-                (1, features, new ObservationReference(
-                    defect.Id, 1, defect.Id.ToString(), defect.KeyId, product.LineCode, product.MachineCode,
-                    defect.EqpName, rule.RuleCode, rule.Version, rule.DefectFamily, rule.DefectClass, defect.Judge,
-                    defect.CreatedAtUtc))
-            };
+                var parsedScript = ScriptConditionEngine.Parse(rule!.ScriptContent!);
+                var obs = new List<(int RowIndex, Dictionary<string, double> Features, ObservationReference? Observation)>
+                {
+                    (1, features, new ObservationReference(
+                        defect.Id, 1, defect.Id.ToString(), defect.KeyId, product.LineCode, product.MachineCode,
+                        defect.EqpName, rule.RuleCode, rule.Version, rule.DefectFamily, rule.DefectClass, defect.Judge,
+                        defect.CreatedAtUtc))
+                };
 
-            var evalResult = ScriptConditionEngine.EvaluateImperative(rule.ScriptContent, parsedScript, obs);
-            var ev = evalResult.Evaluations.FirstOrDefault();
-            var scriptVerdict = ev?.FinalResult ?? false;
+                var evalResult = ScriptConditionEngine.EvaluateImperative(rule.ScriptContent!, parsedScript, obs);
+                var ev = evalResult.Evaluations.FirstOrDefault();
+                var scriptVerdict = ev?.FinalResult ?? false;
 
-            var guardNote = ev?.GuardFailed == true ? $" [Guard failed: {ev.FailedGuardFeature}]" : "";
-            var condSummary = ev != null
-                ? string.Join(", ", ev.ConditionResults.Select(kv => $"{kv.Key}={(kv.Value ? "T" : "F")}"))
-                : "No eval";
+                var guardNote = ev?.GuardFailed == true ? $" [Guard failed: {ev.FailedGuardFeature}]" : "";
+                var condSummary = ev != null
+                    ? string.Join(", ", ev.ConditionResults.Select(kv => $"{kv.Key}={(kv.Value ? "T" : "F")}"))
+                    : "No eval";
 
-            if (scriptVerdict)
-            {
-                var reason = $"Confirmed Real NG: Script [{rule.RuleName}] (Priority {rule.Priority}) evaluated TRUE ({condSummary}).";
-                return new DefectClassificationResult(defect, true, "RealNG", rule.RuleCode, rule.Version, reason, features);
+                if (scriptVerdict)
+                {
+                    if (aiV == "NG")
+                    {
+                        var reason = $"Confirmed Real NG by Consensus: Rule [{rule.RuleName}] evaluated TRUE ({condSummary}) and AI verified NG (score: {aiScore:F2}).";
+                        return new DefectClassificationResult(defect, true, "RealNG", rule.RuleCode, rule.Version, reason, features, aiV, aiStatus, aiScore, "HYBRID_CONSENSUS");
+                    }
+                    if (aiV == "OK")
+                    {
+                        var reason = $"Conflict: Rule [{rule.RuleName}] evaluated TRUE ({condSummary}), but AI verified image as OK (score: {aiScore:F2}). Manual inspection advised.";
+                        return new DefectClassificationResult(defect, true, "SuspectConflict", rule.RuleCode, rule.Version, reason, features, aiV, aiStatus, aiScore, "HYBRID_CONFLICT");
+                    }
+
+                    var ruleReason = $"Confirmed Real NG: Script [{rule.RuleName}] (Priority {rule.Priority}) evaluated TRUE ({condSummary}).";
+                    return new DefectClassificationResult(defect, true, "RealNG", rule.RuleCode, rule.Version, ruleReason, features, aiV, aiStatus, aiScore, "RULE_FAST_PATH");
+                }
+                else
+                {
+                    if (aiV == "OK")
+                    {
+                        var reason = $"Confirmed Overkill by Consensus: Rule [{rule.RuleName}] cleared defect ({condSummary}{guardNote}) and AI verified OK.";
+                        return new DefectClassificationResult(defect, false, "Overkill", rule.RuleCode, rule.Version, reason, features, aiV, aiStatus, aiScore, "HYBRID_CONSENSUS");
+                    }
+                    if (aiV == "NG")
+                    {
+                        var reason = $"Conflict: Rule [{rule.RuleName}] cleared defect ({condSummary}{guardNote}), but AI flagged NG (score: {aiScore:F2}).";
+                        return new DefectClassificationResult(defect, false, "SuspectConflict", rule.RuleCode, rule.Version, reason, features, aiV, aiStatus, aiScore, "HYBRID_CONFLICT");
+                    }
+
+                    var reasonScriptFalse = $"Script [{rule.RuleName}] evaluated FALSE ({condSummary}{guardNote}). No dedicated overkill algorithm, marked as NA.";
+                    return new DefectClassificationResult(defect, false, "NA", rule.RuleCode, rule.Version, reasonScriptFalse, features, aiV, aiStatus, aiScore, "RULE_FAST_PATH");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                var reason = $"Script [{rule.RuleName}] evaluated FALSE ({condSummary}{guardNote}). No overkill algorithm yet, marked as NA.";
-                return new DefectClassificationResult(defect, false, "NA", rule.RuleCode, rule.Version, reason, features);
+                var reason = $"Script execution error in [{rule!.RuleCode}]: {ex.Message}. Marked as NA.";
+                return new DefectClassificationResult(defect, null, "NA", rule.RuleCode, rule.Version, reason, features, aiV, aiStatus, aiScore, "UNCLASSIFIED");
             }
         }
-        catch (Exception ex)
+
+        // When NO classifier script is configured:
+        var fallbackRuleCode = rule?.RuleCode ?? "NO_SCRIPT";
+        var fallbackRuleVer = rule?.Version ?? "1.0";
+
+        if (aiV == "OK")
         {
-            var reason = $"Script execution error in [{rule.RuleCode}]: {ex.Message}. Marked as NA.";
-            return new DefectClassificationResult(defect, null, "NA", rule.RuleCode, rule.Version, reason, features);
+            var reason = $"Confirmed Overkill by AI Deep Learning: AI model verified defect '{defect.DefectName}' as OK (score: {aiScore:F2}).";
+            return new DefectClassificationResult(defect, false, "Overkill", fallbackRuleCode, fallbackRuleVer, reason, features, aiV, aiStatus, aiScore, "AI_DEEPLEARNING");
         }
+        if (aiV == "NG")
+        {
+            var reason = $"Confirmed Real NG by AI Deep Learning: AI model verified defect '{defect.DefectName}' as NG (score: {aiScore:F2}).";
+            return new DefectClassificationResult(defect, true, "RealNG", fallbackRuleCode, fallbackRuleVer, reason, features, aiV, aiStatus, aiScore, "AI_DEEPLEARNING");
+        }
+
+        var unclassifiedReason = $"N/A: No classifier script configured for defect '{defect.DefectName}' and AI verdict pending/unavailable.";
+        return new DefectClassificationResult(defect, null, "NA", fallbackRuleCode, fallbackRuleVer, unclassifiedReason, features, aiV, aiStatus, aiScore, "UNCLASSIFIED");
     }
 
     /// <summary>
-    /// Evaluates a product and all its linked defects.
-    /// Confirmed Real NG when script passes. Overkill is set to NA until a dedicated overkill algorithm/script exists.
+    /// Evaluates a product and all its linked defects using Hybrid Decision Fusion (Rules + AI + OP).
     /// </summary>
     public static ProductAnomalyEvaluation EvaluateProduct(
         ProductRecordEntity product,
         IReadOnlyCollection<DefectRecordEntity> defects,
-        IReadOnlyCollection<MachineClassifierRuleEntity> rules)
+        IReadOnlyCollection<MachineClassifierRuleEntity> rules,
+        IReadOnlyCollection<AiVerdictEntity>? aiVerdicts = null)
     {
-        var defectResults = defects.Select(d => ClassifyDefect(d, product, rules)).ToList();
+        var aiByDefectId = aiVerdicts?
+            .Where(v => v.DefectId != Guid.Empty)
+            .GroupBy(v => v.DefectId)
+            .ToDictionary(g => g.Key, g => g.First()) ?? [];
+
+        var defectResults = defects.Select(d =>
+        {
+            aiByDefectId.TryGetValue(d.Id, out var aiV);
+            return ClassifyDefect(d, product, rules, aiV);
+        }).ToList();
 
         var isStationNg = product.Judge.Equals("NG", StringComparison.OrdinalIgnoreCase)
             || product.Judge.Equals("N", StringComparison.OrdinalIgnoreCase)
@@ -111,66 +172,159 @@ public static class AnomalyClassifierEngine
             || product.Judge.Equals("GOOD", StringComparison.OrdinalIgnoreCase)
             || product.Judge.Equals("PASS", StringComparison.OrdinalIgnoreCase);
 
+        AiFinalStatus? overallAiStatus = null;
+        if (aiVerdicts != null && aiVerdicts.Count > 0)
+        {
+            var defectAiItems = aiVerdicts.Select(v => new AiDefectVerdict(v.Status, v.Verdict)).ToList();
+            overallAiStatus = AiVerdictMatrix.Decide(isStationNg, defectAiItems);
+        }
+
+        // LEVEL 0: OP Review Override (Ground Truth)
+        if (product.OpReviewMark == "Real Defect")
+        {
+            return new ProductAnomalyEvaluation(
+                product, defectResults, "RealNG", 0.05,
+                "Confirmed Real NG: Verified by Operator Review (Ground Truth).",
+                defectResults.Count, 0, "OP_OVERRIDE", overallAiStatus?.ToString());
+        }
+        if (product.OpReviewMark == "Overkill")
+        {
+            return new ProductAnomalyEvaluation(
+                product, defectResults, "Overkill", 0.95,
+                "Confirmed Overkill: Verified by Operator Review (Ground Truth).",
+                0, defectResults.Count, "OP_OVERRIDE", overallAiStatus?.ToString());
+        }
+
         var realNgDefects = defectResults.Where(r => r.DecisionVerdict == "RealNG").ToList();
+        var overkillDefects = defectResults.Where(r => r.DecisionVerdict == "Overkill").ToList();
+        var conflictDefects = defectResults.Where(r => r.DecisionVerdict == "SuspectConflict").ToList();
 
         if (isStationNg)
         {
+            // Case 1: Station NG and at least 1 real NG confirmed (by Rule, AI, or Consensus)
             if (realNgDefects.Count > 0)
             {
                 var topDefect = realNgDefects[0];
+                var route = realNgDefects.Any(d => d.DecisionRoute == "HYBRID_CONSENSUS")
+                    ? "HYBRID_CONSENSUS"
+                    : (realNgDefects.Any(d => d.DecisionRoute == "AI_DEEPLEARNING") ? "AI_DEEPLEARNING" : "RULE_FAST_PATH");
+
                 return new ProductAnomalyEvaluation(
                     product,
                     defectResults,
                     "RealNG",
                     0.05,
-                    $"Confirmed Real NG by script: {realNgDefects.Count} defect(s) satisfied script rule [{topDefect.RuleCode}].",
+                    $"Confirmed Real NG: {realNgDefects.Count} defect(s) verified ({topDefect.DecisionReason}).",
                     realNgDefects.Count,
-                    defectResults.Count - realNgDefects.Count
+                    defectResults.Count - realNgDefects.Count,
+                    route,
+                    overallAiStatus?.ToString()
                 );
             }
 
-            // Station reported NG, but no defect matched any script.
-            var reason = defectResults.Count == 0
-                ? "N/A: Station reported NG but no defect records found. No overkill algorithm exists yet, marked as NA."
-                : $"N/A: Station reported NG, but no overkill classification script configured ({defectResults.Count} defect(s)). Marked as NA.";
+            // Case 2: Station NG, but defects confirmed as Overkill (or overall AI status is OverkillConfirmed)
+            if ((defectResults.Count > 0 && overkillDefects.Count == defectResults.Count) ||
+                overallAiStatus == AiFinalStatus.OverkillConfirmed)
+            {
+                var route = overkillDefects.Any(d => d.DecisionRoute == "HYBRID_CONSENSUS")
+                    ? "HYBRID_CONSENSUS"
+                    : (overkillDefects.Any(d => d.DecisionRoute == "AI_DEEPLEARNING") || overallAiStatus == AiFinalStatus.OverkillConfirmed
+                        ? "AI_DEEPLEARNING"
+                        : "RULE_FAST_PATH");
 
+                return new ProductAnomalyEvaluation(
+                    product,
+                    defectResults,
+                    "Overkill",
+                    0.92,
+                    $"Confirmed Overkill: Station judged '{product.Judge}' (NG) but all defect(s) verified as False Alarms (Overkill).",
+                    0,
+                    defectResults.Count,
+                    route,
+                    overallAiStatus?.ToString()
+                );
+            }
+
+            // Case 3: Conflicting verdicts (Rule NG vs AI OK or vice versa)
+            if (conflictDefects.Count > 0)
+            {
+                return new ProductAnomalyEvaluation(
+                    product,
+                    defectResults,
+                    "SuspectConflict",
+                    0.50,
+                    $"Suspect Anomaly: Conflict between Rule script and AI Deep Learning on {conflictDefects.Count} defect(s). Inspection required.",
+                    0,
+                    defectResults.Count,
+                    "HYBRID_CONFLICT",
+                    overallAiStatus?.ToString()
+                );
+            }
+
+            // Case 4: Station NG with 0 defects
+            if (defectResults.Count == 0)
+            {
+                return new ProductAnomalyEvaluation(
+                    product,
+                    defectResults,
+                    "Overkill",
+                    0.88,
+                    $"Station judged '{product.Judge}' (NG) with 0 defect records found across all defect tables (False Alarm / Overkill).",
+                    0,
+                    0,
+                    "RULE_FAST_PATH",
+                    overallAiStatus?.ToString()
+                );
+            }
+
+            // Case 5: Unclassified (N/A)
             return new ProductAnomalyEvaluation(
                 product,
                 defectResults,
                 "NA",
                 0.50,
-                reason,
+                $"N/A: Station reported NG, but no classifier script configured and AI verdict not conclusive ({defectResults.Count} defect(s)). Marked as NA.",
                 0,
-                defectResults.Count
+                defectResults.Count,
+                "UNCLASSIFIED",
+                overallAiStatus?.ToString()
             );
         }
 
         if (isStationPass)
         {
-            if (realNgDefects.Count > 0)
+            if (realNgDefects.Count > 0 || overallAiStatus == AiFinalStatus.LeakageConfirmed)
             {
-                var topEscape = realNgDefects[0];
+                var topEscape = realNgDefects.FirstOrDefault();
+                var reason = topEscape != null
+                    ? $"Defect Escape (Leakage): Station passed product ('{product.Judge}') but verified real defect: {topEscape.Defect.DefectName}."
+                    : "Defect Escape (Leakage): Station passed product, but AI Deep Learning detected an NG image.";
+
                 return new ProductAnomalyEvaluation(
                     product,
                     defectResults,
                     "Leakage",
                     0.98,
-                    $"Defect Escape (Leakage): Station passed product ('{product.Judge}') but script [{topEscape.RuleCode}] confirmed real defect: {topEscape.Defect.DefectName}.",
+                    reason,
                     realNgDefects.Count,
-                    defectResults.Count - realNgDefects.Count
+                    defectResults.Count - realNgDefects.Count,
+                    "LEAKAGE_DETECTED",
+                    overallAiStatus?.ToString()
                 );
             }
 
-            if (defects.Count == 0)
+            if (defectResults.Count == 0 || overkillDefects.Count == defectResults.Count || overallAiStatus == AiFinalStatus.ConsistentOk)
             {
                 return new ProductAnomalyEvaluation(
                     product,
                     defectResults,
                     "ConsistentOK",
                     0.01,
-                    "Clean product: Station passed with zero defect records.",
+                    "Clean product: Station passed with zero true defect records.",
                     0,
-                    0
+                    0,
+                    "CLEAN_PASS",
+                    overallAiStatus?.ToString()
                 );
             }
 
@@ -179,9 +333,11 @@ public static class AnomalyClassifierEngine
                 defectResults,
                 "NA",
                 0.20,
-                $"N/A: Station passed but contains {defects.Count} defect record(s) without classification scripts. Marked as NA.",
+                $"N/A: Station passed but contains {defectResults.Count} unclassified defect record(s). Marked as NA.",
                 0,
-                defects.Count
+                defectResults.Count,
+                "UNCLASSIFIED",
+                overallAiStatus?.ToString()
             );
         }
 
@@ -192,7 +348,9 @@ public static class AnomalyClassifierEngine
             0.0,
             $"Station judgment '{product.Judge}' not classified.",
             realNgDefects.Count,
-            defectResults.Count - realNgDefects.Count
+            defectResults.Count - realNgDefects.Count,
+            "UNCLASSIFIED",
+            overallAiStatus?.ToString()
         );
     }
 

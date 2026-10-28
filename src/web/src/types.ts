@@ -1065,6 +1065,10 @@ export type AnomalyThumbnailItem = {
   opReviewMark?: string | null
   productNameDefect?: string | null
   productDefectName?: string | null
+  aiVerdict?: string | null
+  aiStatus?: string | null
+  aiAnomalyScore?: number | null
+  decisionRoute?: string | null
 }
 
 export type AnomalyThumbnailQueryRequest = {

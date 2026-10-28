@@ -901,7 +901,11 @@ public sealed record AnomalyThumbnailItemDto(
     string? PanelId = null,
     string? OpReviewMark = null,
     string? ProductNameDefect = null,
-    string? ProductDefectName = null
+    string? ProductDefectName = null,
+    string? AiVerdict = null,
+    string? AiStatus = null,
+    double? AiAnomalyScore = null,
+    string? DecisionRoute = null
 );
 
 public sealed record AnomalyThumbnailQueryRequest(

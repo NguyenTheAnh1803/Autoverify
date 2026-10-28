@@ -28,17 +28,23 @@ export const ThumbnailCard = memo(function ThumbnailCard({
   const isNa = item.anomalyCategory.toLowerCase() === 'na' || item.anomalyCategory === 'N/A'
   const isLeakage = item.anomalyCategory.toLowerCase() === 'leakage'
   const isRealNg = item.anomalyCategory.toLowerCase() === 'realng'
+  const isOverkill = item.anomalyCategory.toLowerCase() === 'overkill'
+  const isConflict = item.anomalyCategory.toLowerCase() === 'suspectconflict' || item.decisionRoute === 'HYBRID_CONFLICT'
   const isOpReviewed = item.opReviewMark === 'Overkill' || item.opReviewMark === 'Real Defect'
 
-  const badgeTone: StatusName = isRealNg ? 'real' : isLeakage ? 'leakage' : isNa ? 'na' : 'ok'
-  const badgeLabel = isRealNg
-    ? (item.opReviewMark === 'Real Defect' ? 'REAL DEFECT (OP)' : 'REAL NG (SCRIPT)')
+  const badgeTone: StatusName = isRealNg ? 'real' : isLeakage ? 'leakage' : isOverkill ? 'overkill' : isConflict ? 'info' : isNa ? 'na' : 'ok'
+  const badgeLabel = isOpReviewed
+    ? (item.opReviewMark === 'Real Defect' ? 'REAL DEFECT (OP)' : 'OVERKILL (OP)')
+    : isRealNg
+    ? (item.decisionRoute === 'HYBRID_CONSENSUS' ? 'REAL NG (CONSENSUS)' : item.decisionRoute === 'AI_DEEPLEARNING' ? 'REAL NG (AI)' : 'REAL NG (RULE)')
+    : isOverkill
+    ? (item.decisionRoute === 'HYBRID_CONSENSUS' ? 'OVERKILL (CONSENSUS)' : item.decisionRoute === 'AI_DEEPLEARNING' ? 'OVERKILL (AI: OK)' : 'OVERKILL (RULE)')
+    : isConflict
+    ? 'CONFLICT SUSPECT'
     : isLeakage
     ? 'LEAKAGE'
     : isNa
     ? 'N/A'
-    : item.opReviewMark === 'Overkill'
-    ? 'OVERKILL (OP)'
     : 'CLEAN OK'
 
   const originalVp = originalVpOf(item)
@@ -152,7 +158,7 @@ export const ThumbnailCard = memo(function ThumbnailCard({
             Original VP: VP{originalVp}
           </span>
 
-          {/* Station Judge vs Rule Verdict Overlay */}
+          {/* Station Judge vs Rule Verdict vs AI Verdict Overlay */}
           <div
             className="gap-xs"
             style={{
@@ -160,6 +166,8 @@ export const ThumbnailCard = memo(function ThumbnailCard({
               bottom: '6px',
               right: '6px',
               display: 'flex',
+              flexWrap: 'wrap',
+              justifyContent: 'flex-end',
             }}
           >
             <span
@@ -168,18 +176,42 @@ export const ThumbnailCard = memo(function ThumbnailCard({
                 background: item.stationJudge === 'NG' ? 'var(--status-ng)' : 'var(--status-ok)',
                 color: '#fff',
               }}
+              title={`Station Judgment: ${item.stationJudge}`}
             >
               Station: {item.stationJudge}
             </span>
             <span
               className="tag-badge text-xs font-bold"
               style={{
-                background: item.ruleVerdict === 'TrueDefect' || item.ruleVerdict === 'RealNG' ? 'var(--status-real)' : 'var(--status-overkill)',
+                background: item.ruleVerdict === 'TrueDefect' || item.ruleVerdict === 'RealNG'
+                  ? 'var(--status-real)'
+                  : (item.ruleCode && item.ruleCode !== 'NO_SCRIPT' ? 'var(--status-overkill)' : 'var(--slate-500)'),
                 color: '#fff',
               }}
+              title={item.ruleCode && item.ruleCode !== 'NO_SCRIPT' ? `Rule [${item.ruleCode}]: ${item.ruleVerdict}` : 'No script configured'}
             >
-              Rule: {item.ruleVerdict === 'TrueDefect' || item.ruleVerdict === 'RealNG' ? 'NG' : 'OK'}
+              Rule: {item.ruleVerdict === 'TrueDefect' || item.ruleVerdict === 'RealNG' ? 'NG' : (item.ruleCode && item.ruleCode !== 'NO_SCRIPT' ? 'OK' : 'N/A')}
             </span>
+            {item.aiVerdict ? (
+              <span
+                className="tag-badge text-xs font-bold"
+                style={{
+                  background: item.aiVerdict === 'NG' ? 'var(--status-ng)' : 'var(--status-ok)',
+                  color: '#fff',
+                }}
+                title={`AI Deep Learning Verdict: ${item.aiVerdict}${item.aiAnomalyScore != null ? ` (score: ${item.aiAnomalyScore.toFixed(2)})` : ''}`}
+              >
+                AI: {item.aiVerdict}
+              </span>
+            ) : item.aiStatus === 'Submitted' ? (
+              <span
+                className="tag-badge text-xs font-bold"
+                style={{ background: 'var(--slate-500)', color: '#fff' }}
+                title="AI Verification in progress..."
+              >
+                AI: Pending
+              </span>
+            ) : null}
           </div>
         </div>
 
@@ -208,6 +240,34 @@ export const ThumbnailCard = memo(function ThumbnailCard({
             <strong className="text-xs text-soft">{item.defectName || 'Unnamed defect'}</strong>
             {item.defectFamily && <StatusPill value={item.defectFamily} />}
           </div>
+
+          {item.decisionRoute && (
+            <div className="hstack gap-xs text-xs" style={{ alignItems: 'center' }}>
+              <span className="text-muted" style={{ fontSize: '11px' }}>Route:</span>
+              <span
+                className="tag-badge text-xs font-medium"
+                style={{
+                  background: item.decisionRoute === 'HYBRID_CONSENSUS' ? 'var(--blue-100)' :
+                              item.decisionRoute === 'AI_DEEPLEARNING' ? 'var(--status-info-bg)' :
+                              item.decisionRoute === 'RULE_FAST_PATH' ? 'var(--status-real-bg)' :
+                              item.decisionRoute === 'HYBRID_CONFLICT' ? 'var(--amber-100)' : 'var(--slate-100)',
+                  color: item.decisionRoute === 'HYBRID_CONSENSUS' ? 'var(--blue-800)' :
+                         item.decisionRoute === 'AI_DEEPLEARNING' ? 'var(--blue-700)' :
+                         item.decisionRoute === 'RULE_FAST_PATH' ? 'var(--status-real-text)' :
+                         item.decisionRoute === 'HYBRID_CONFLICT' ? 'var(--amber-800)' : 'var(--slate-700)',
+                  padding: '1px 6px',
+                  borderRadius: '3px',
+                }}
+              >
+                {item.decisionRoute === 'HYBRID_CONSENSUS' && '⚖️ Consensus (Rule + AI)'}
+                {item.decisionRoute === 'AI_DEEPLEARNING' && '🧠 AI Deep Learning'}
+                {item.decisionRoute === 'RULE_FAST_PATH' && '⚡ Rule Fast-Path'}
+                {item.decisionRoute === 'HYBRID_CONFLICT' && '⚠️ Rule vs AI Conflict'}
+                {item.decisionRoute === 'OP_OVERRIDE' && '👤 Operator Ground Truth'}
+                {item.decisionRoute === 'UNCLASSIFIED' && '❓ Unclassified'}
+              </span>
+            </div>
+          )}
 
           {(item.productNameDefect || item.productDefectName) && (
             <div className="text-xs text-info">
